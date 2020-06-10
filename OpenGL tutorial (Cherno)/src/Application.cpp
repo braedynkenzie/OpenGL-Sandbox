@@ -50,17 +50,29 @@ int main(void)
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // Create vertice positions
-    float positions[6] = {
-        -0.5, -0.5, // First triangle
-        -0.5,  0.5,
+    float positions[] = {
+        -0.5, -0.5, 
          0.5,  0.5,
+        -0.5,  0.5,
+         0.5,  -0.5
+    };
+
+    unsigned int indices[]{
+        0, 1, 2,
+        3, 0, 1
     };
 
     // Create vertex buffer
     unsigned int VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), positions, GL_STATIC_DRAW);
+
+    // Create index buffer
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
 
     // Create and enable vertex attribute pointer
     glEnableVertexAttribArray(0);
@@ -86,7 +98,11 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
         
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // Draw from bound VBO
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        // Draw from element buffer
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
