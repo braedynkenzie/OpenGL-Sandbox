@@ -10,6 +10,7 @@
 
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexArray.h"
 
 struct ShaderProgramSource {
     std::string VertexSource;
@@ -66,7 +67,7 @@ int main(void)
             -0.5, -0.5,
              0.5,  0.5,
             -0.5,  0.5,
-             0.5,  -0.5
+             0.5, -0.5
         };
 
         unsigned int indices[]{
@@ -74,20 +75,17 @@ int main(void)
             3, 0, 1
         };
 
-        // Create Vertex Array Object
-        unsigned int VAO;
-        GLCall(glGenVertexArrays(1, &VAO));
-        GLCall(glBindVertexArray(VAO));
-
-        // Create vertex buffer
+        // Create Vertex Array
+        VertexArray VA;
+        // Create Vertex Buffer
         VertexBuffer VB(positions, 4 * 2 * sizeof(float));
 
-        // Create and enable vertex attribute pointer
-        GLCall(glEnableVertexAttribArray(0));
-        GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0));
+        // Create and associate the layout (Vertex Attribute Pointer)
+        VertexBufferLayout layout;
+        layout.Push<float>(2);
+        VA.AddBuffer(VB, layout);
 
         // Create index buffer
-        unsigned int EBO;
         IndexBuffer IB(indices, 6);
 
         // Shader programs
@@ -99,11 +97,11 @@ int main(void)
         std::cout << shaderSource.FragmentSource << std::endl;
         unsigned int shaderProgram = CreateShader(shaderSource.VertexSource, shaderSource.FragmentSource);
 
-        // Unbind all buffers and vertex arrays
-        GLCall(glBindVertexArray(0));
+        // Unbind vertex array and all buffers
+        VA.Unbind();
+        VB.Unbind();
+        IB.Unbind();
         GLCall(glUseProgram(0));
-        GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-        GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
@@ -122,7 +120,8 @@ int main(void)
             GLCall(glUniform4f(uniformLocation, 0.2f, sin(glfwGetTime()) + 1.0f / 2.0f, 0.8f, 1.0f));
 
             // Bind VAO
-            GLCall(glBindVertexArray(VAO));
+            // Note this binds the associated VertexBuffer, IndexBuffer, and layout
+            VA.Bind(); 
 
             // Draw from element buffer
             GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
@@ -135,6 +134,7 @@ int main(void)
         }
 
         // Release resources on termination
+        //
         GLCall(glDeleteProgram(shaderProgram));
     }
     glfwTerminate();
