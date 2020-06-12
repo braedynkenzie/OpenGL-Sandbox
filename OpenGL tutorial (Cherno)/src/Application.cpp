@@ -35,6 +35,9 @@ int main(void)
     /* Initialize the library */
     if (!glfwInit())
         return -1;
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
@@ -46,6 +49,9 @@ int main(void)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
+
+    // Clamp framerate 
+    GLCall(glfwSwapInterval(1));
 
     // Use GLEW to initialize all our modern OpenGL declarations
     if (glewInit() != GLEW_OK)
@@ -72,6 +78,11 @@ int main(void)
         3, 0, 1
     };
 
+    // Create Vertex Array Object
+    unsigned int VAO;
+    GLCall(glGenVertexArrays(1, &VAO));
+    GLCall(glBindVertexArray(VAO));
+
     // Create vertex buffer
     unsigned int VBO;
     GLCall(glGenBuffers(1, &VBO));
@@ -95,9 +106,13 @@ int main(void)
     std::cout << shaderSource.FragmentSource << std::endl;
     std::cout << "FRAGMENT SHADER SOURCE" << std::endl;
     std::cout << shaderSource.FragmentSource << std::endl;
-    
     unsigned int shaderProgram = CreateShader(shaderSource.VertexSource, shaderSource.FragmentSource);
-    GLCall(glUseProgram(shaderProgram));
+
+    // Unbind all buffers and vertex arrays
+    GLCall(glBindVertexArray(0));
+    GLCall(glUseProgram(0));
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -107,9 +122,16 @@ int main(void)
 
         /* Render here */
         GLCall(glClear(GL_COLOR_BUFFER_BIT));
-        
-        // Draw from bound VBO
-        // GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
+
+        // Bind shader
+        GLCall(glUseProgram(shaderProgram));
+
+        // Set uniforms
+        GLCall(int uniformLocation = glGetUniformLocation(shaderProgram, "u_Color"));
+        GLCall(glUniform4f(uniformLocation, 0.2f, sin(glfwGetTime()) + 1.0f / 2.0f, 0.8f, 1.0f));
+
+        // Bind VAO
+        GLCall(glBindVertexArray(VAO));
 
         // Draw from element buffer
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
