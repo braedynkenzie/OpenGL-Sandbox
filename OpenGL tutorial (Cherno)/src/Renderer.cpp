@@ -17,3 +17,21 @@ bool GLCheckErrors(const char* function, const char* file, int lineNumber)
     }
     return true;
 }
+
+void Renderer::Draw(const VertexArray& VA, const IndexBuffer& IB, const Shader& shader) const
+{
+    // Bind shader
+    shader.Bind();
+
+    // Bind VAO
+    // Note this binds the associated VertexBuffer, IndexBuffer, and layout
+    VA.Bind();
+
+    // Draw from element buffer
+    GLCall(glDrawElements(GL_TRIANGLES, IB.GetCount(), GL_UNSIGNED_INT, nullptr));
+}
+
+void Renderer::Clear() const
+{
+    GLCall(glClear(GL_COLOR_BUFFER_BIT));
+}

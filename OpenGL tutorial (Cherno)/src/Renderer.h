@@ -2,6 +2,10 @@
 
 #include <GL\glew.h>
 
+#include "VertexArray.h"
+#include "IndexBuffer.h"
+#include "Shader.h"
+
 // Macros
 #define ASSERT(x) if (!(x)) { __debugbreak(); }
 #ifdef _DEBUG // if running in debug mode
@@ -12,3 +16,13 @@
 
 void GLClearError();
 bool GLCheckErrors(const char* function, const char* file, int line);
+
+class Renderer
+{
+private:
+
+public:
+    void Draw(const VertexArray& VA, const IndexBuffer& IB, const Shader& shader) const;
+    void Clear() const;
+
+};
