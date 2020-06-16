@@ -13,6 +13,7 @@
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "Shader.h"
+#include "Texture.h"
 
 // Function declarations
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -57,25 +58,36 @@ int main(void)
 
     {
         // Create vertice positions
-        float positions[] = {
-            -0.5, -0.5,
-             0.5,  0.5,
-            -0.5,  0.5,
-             0.5, -0.5
+        float vertices[] = {
+            -0.5, -0.5,    0.0, 0.0,
+             0.5,  0.5,    1.0, 1.0,
+            -0.5,  0.5,    0.0, 1.0,
+             0.5, -0.5,    1.0, 0.0,
         };
+
+        /*float texCoords[] = {
+            0.0, 0.0,
+            1.0, 0.0,
+            0.0, 1.0,
+            1.0, 1.0,
+        };*/
 
         unsigned int indices[]{
             0, 1, 2,
             3, 0, 1
         };
 
+        GLCall(glEnable(GL_BLEND));
+        GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
         // Create Vertex Array
         VertexArray VA;
         // Create Vertex Buffer
-        VertexBuffer VB(positions, 4 * 2 * sizeof(float));
+        VertexBuffer VB(vertices, 4 * 4 * sizeof(float));
 
         // Create and associate the layout (Vertex Attribute Pointer)
         VertexBufferLayout layout;
+        layout.Push<float>(2);
         layout.Push<float>(2);
         VA.AddBuffer(VB, layout);
 
@@ -84,6 +96,13 @@ int main(void)
 
         // Shader programs
         Shader shader("res/shaders/Basic.shader");
+        shader.Bind();
+
+        // Load texture and set uniform in shader
+        //Texture texture("res/textures/tree_render_texture.png");
+        Texture texture("res/textures/metal_border_container_texture.png");
+        texture.Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
+        shader.SetUniform1i("u_Texture", 0);
 
         // Unbind vertex array and all buffers
         VA.Unbind();

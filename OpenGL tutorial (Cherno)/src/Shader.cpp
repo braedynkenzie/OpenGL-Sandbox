@@ -113,13 +113,23 @@ void Shader::SetUniform4f(const std::string& name, float v0, float v1, float v2,
     GLCall(glUniform4f(GetUniformLocation(name), v0, v1, v2, v3));
 }
 
-unsigned int Shader::GetUniformLocation(const std::string& name)
+void Shader::SetUniform1f(const std::string& name, float value)
+{
+    GLCall(glUniform1f(GetUniformLocation(name), value));
+}
+
+void Shader::SetUniform1i(const std::string& name, int value)
+{
+    GLCall(glUniform1i(GetUniformLocation(name), value));
+}
+
+int Shader::GetUniformLocation(const std::string& name)
 {
     // Caching of uniform locations means we don't have to call glGetUniformLocation() every time we want to set a uniform
     if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
         return m_UniformLocationCache[name];
 
-    GLCall(unsigned int uniformLocation = glGetUniformLocation(m_RendererID, name.c_str()));
+    GLCall(int uniformLocation = glGetUniformLocation(m_RendererID, name.c_str()));
     if (uniformLocation == -1) // TODO fix; location is unsigned
         std::cout << "[Warning] Uniform named " << name << " does not exist!" << std::endl;
     m_UniformLocationCache[name] = uniformLocation;
