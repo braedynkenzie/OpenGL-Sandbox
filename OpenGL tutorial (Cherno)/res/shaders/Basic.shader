@@ -26,5 +26,5 @@ out vec4 color;
 void main()
 {
     vec4 texColour = texture(u_Texture, v_TexCoords);
-    color = texColour; // + u_Color;
+    color = texColour;
 };

@@ -99,12 +99,12 @@ int main(void)
         shader.Bind();
 
         // Load texture and set uniform in shader
-        //Texture texture("res/textures/tree_render_texture.png");
-        Texture texture("res/textures/metal_border_container_texture.png");
+        Texture texture("res/textures/tree_render_texture.png");
+        // Texture texture("res/textures/metal_border_container_texture.png");
         texture.Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
         shader.SetUniform1i("u_Texture", 0);
 
-        // Unbind vertex array and all buffers
+        // Unbind everything
         VA.Unbind();
         VB.Unbind();
         IB.Unbind();

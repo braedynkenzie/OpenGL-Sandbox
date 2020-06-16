@@ -74,5 +74,8 @@
     <Image Include="res\textures\tree_render_texture.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\textures\metal_border_container_texture.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
