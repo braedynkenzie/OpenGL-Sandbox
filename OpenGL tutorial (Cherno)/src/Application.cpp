@@ -17,9 +17,16 @@
 #include "glm\glm.hpp"
 #include "glm\gtc\matrix_transform.hpp"
 
+#include "imgui\imgui.h"
+#include "imgui\imgui_impl_glfw_gl3.h"
+
 // Function declarations
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 static void processInput(GLFWwindow* window);
+
+// Global vars
+static const int SCREEN_WIDTH = 800;
+static const int SCREEN_HEIGHT = 600;
 
 int main(void)
 {
@@ -33,7 +40,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(960, 540, "Hello World", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -61,10 +68,16 @@ int main(void)
     {
         // Create vertice positions
         float vertices[] = {
-            -0.5, -0.5,    0.0, 0.0,
+           // positions -- tex coords 
+             -1.0, -1.0,    0.0, 0.0,
+              1.0,  1.0,    1.0, 1.0,
+             -1.0,  1.0,    0.0, 1.0,
+              1.0, -1.0,    1.0, 0.0,
+
+          /*-0.5, -0.5,    0.0, 0.0,
              0.5,  0.5,    1.0, 1.0,
             -0.5,  0.5,    0.0, 1.0,
-             0.5, -0.5,    1.0, 0.0,
+             0.5, -0.5,    1.0, 0.0,*/
         };
 
         /*float texCoords[] = {
@@ -100,10 +113,6 @@ int main(void)
         Shader shader("res/shaders/Basic.shader");
         shader.Bind();
 
-        // Create projection matrix and send to shader
-        glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
-        shader.SetMatrix4f("u_MVP", proj);
-
         // Load texture and set uniform in shader
         Texture texture("res/textures/tree_render_texture.png");
         // Texture texture("res/textures/metal_border_container_texture.png");
@@ -118,6 +127,15 @@ int main(void)
 
         Renderer renderer;
 
+        // ImGui initialization stuff
+        ImGui::CreateContext();
+        ImGui_ImplGlfwGL3_Init(window, true);
+        ImGui::StyleColorsDark();
+        // Varibles to tweak with ImGui
+        glm::vec3 modelTranslation(0.0f, 0.0f, 0.0f);
+        float modelRotationZ = 0.0f;
+        float modelScale = 1.0f;
+
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
         {
@@ -127,12 +145,54 @@ int main(void)
             // Start each new frame by clearing
             renderer.Clear();
 
-            // Bind shader and set its uniforms
-            shader.Bind();
-            shader.SetUniform4f("u_Color", 0.2f, ((sin(glfwGetTime()) + 1.0f) / 2.0f), 0.8f, 1.0f);
+            ImGui_ImplGlfwGL3_NewFrame();
 
-            // Renderer draw call
-            renderer.Draw(VA, IB, shader);
+            // Bind shader and set its uniforms
+			shader.Bind();
+			shader.SetUniform4f("u_Color", 0.2f, ((sin(glfwGetTime()) + 1.0f) / 2.0f), 0.8f, 1.0f);
+            //
+			// Create model, view, projection matrices 
+		    // Send combined MVP matrix to shader
+			glm::mat4 model = glm::mat4(1.0);
+            model = glm::translate(glm::mat4(1.0), modelTranslation);
+            model = glm::rotate(model, glm::radians(modelRotationZ), glm::vec3(0.0f, 0.0f, 1.0f));
+            model = glm::scale(model, glm::vec3(modelScale));
+            glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 0.0f, 0.0f));
+            glm::mat4 proj = glm::ortho(0.0f, (float)SCREEN_WIDTH / 100, 0.0f, (float)SCREEN_HEIGHT / 100, -1.0f, 1.0f);
+			glm::mat4 MVP_matrix = proj * view * model;
+			shader.SetMatrix4f("u_MVP", MVP_matrix);
+
+			// Renderer draw call
+			renderer.Draw(VA, IB, shader);
+
+            // ImGui window rendering
+            {
+                ImGui::SliderFloat3("Model translation", &modelTranslation.x, 0.0f, 10.0f);
+                ImGui::SliderFloat("Model Z axiz rotation", &modelRotationZ, -90.0f, 90.0f);
+                ImGui::SliderFloat("Model scale", &modelScale, -1.0f, 10.0f);
+				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+
+
+                // EXAMPLE WINDOW BELOW
+                //static float f = 0.0f;
+                //static int counter = 0;
+                //ImGui::Text("Hello, world!");                           // Display some text (you can use a format string too)
+                //ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
+                //ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+                //ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our windows open/close state
+                //ImGui::Checkbox("Another Window", &show_another_window);
+
+                //if (ImGui::Button("Button"))                            // Buttons return true when clicked (NB: most widgets return true when edited/activated)
+                //    counter++;
+                //ImGui::SameLine();
+                //ImGui::Text("counter = %d", counter);
+                //ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            }
+
+            ImGui::Render();
+            ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 
             /* Swap front and back buffers */
             glfwSwapBuffers(window);
@@ -144,6 +204,8 @@ int main(void)
         // Release resources on termination
         //
     }
+    ImGui_ImplGlfwGL3_Shutdown();
+    ImGui::DestroyContext();
     glfwTerminate();
     return 0;
 }
