@@ -14,11 +14,15 @@
 #include "VertexArray.h"
 #include "Shader.h"
 #include "Texture.h"
+
 #include "glm\glm.hpp"
 #include "glm\gtc\matrix_transform.hpp"
 
 #include "imgui\imgui.h"
 #include "imgui\imgui_impl_glfw_gl3.h"
+
+#include "tests\TestClearColour.h"
+#include <tests\TestMisc.h>
 
 // Function declarations
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -32,7 +36,7 @@ int main(void)
 {
     GLFWwindow* window;
 
-    /* Initialize the library */
+    /* Initialize glfw library */
     if (!glfwInit())
         return -1;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -73,19 +77,7 @@ int main(void)
               0.5,  0.5,    1.0, 1.0,
              -0.5,  0.5,    0.0, 1.0,
               0.5, -0.5,    1.0, 0.0,
-
-          /*-0.5, -0.5,    0.0, 0.0,
-             0.5,  0.5,    1.0, 1.0,
-            -0.5,  0.5,    0.0, 1.0,
-             0.5, -0.5,    1.0, 0.0,*/
         };
-
-        /*float texCoords[] = {
-            0.0, 0.0,
-            1.0, 0.0,
-            0.0, 1.0,
-            1.0, 1.0,
-        };*/
 
         unsigned int indices[]{
             0, 1, 2,
@@ -131,12 +123,16 @@ int main(void)
         ImGui::CreateContext();
         ImGui_ImplGlfwGL3_Init(window, true);
         ImGui::StyleColorsDark();
-        // Varibles to tweak with ImGui
-        glm::vec3 modelTranslation1(0.0f, 0.0f, 0.0f);
-        glm::vec3 modelTranslation2(0.5f, 0.0f, -0.5f);
-        float modelRotationZ = 0.0f;
-        float modelRotationY = 0.0f;
-        float modelScale = 1.0f;
+        
+        // Test framework
+        test::Test* activeTest = nullptr;
+        test::TestMenu* testMenu = new test::TestMenu(activeTest);
+        activeTest = testMenu;
+
+        testMenu->RegisterTest<test::TestClearColour>("Clear colour test");
+        // TODO finish implementing this test
+        // testMenu->RegisterTest<test::TestMisc>("Miscellaneous");
+
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
@@ -145,62 +141,22 @@ int main(void)
             processInput(window);
 
             // Start each new frame by clearing
+            GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
             renderer.Clear();
 
             ImGui_ImplGlfwGL3_NewFrame();
-
-            // Bind shader and set its uniforms
-			shader.Bind();
-			shader.SetUniform4f("u_Color", 0.2f, ((sin(glfwGetTime()) + 1.0f) / 2.0f), 0.8f, 1.0f);
-            //
-			// Create model, view, projection matrices 
-		    // Send combined MVP matrix to shader
-			glm::mat4 model = glm::mat4(1.0);
-            model = glm::translate(model, modelTranslation1);
-            model = glm::rotate(model, glm::radians(modelRotationZ), glm::vec3(0.0f, 0.0f, 1.0f));
-            model = glm::rotate(model, glm::radians(modelRotationY), glm::vec3(0.0f, 1.0f, 0.0f));
-            model = glm::scale(model, glm::vec3(modelScale));
-            glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 0.0f, -5.0f));
-            // glm::mat4 proj = glm::ortho(0.0f, (float)SCREEN_WIDTH / 100, 0.0f, (float)SCREEN_HEIGHT / 100, -10.0f, 10.0f);
-            glm::mat4 proj = glm::perspective(90.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 10.0f);
-			glm::mat4 MVP_matrix = proj * view * model;
-			shader.SetMatrix4f("u_MVP", MVP_matrix);
-			renderer.Draw(VA, IB, shader);
-
-            // Change model matrix and render a second square
-            model = glm::translate(model, modelTranslation2);
-            model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            MVP_matrix = proj * view * model;
-            shader.SetMatrix4f("u_MVP", MVP_matrix);
-            renderer.Draw(VA, IB, shader);
-
-
-            // ImGui window rendering
+            if (activeTest)
             {
-                ImGui::SliderFloat3("Model 1 translation", &modelTranslation1.x, 0.0f, 10.0f);
-                ImGui::SliderFloat3("Model 2 translation", &modelTranslation2.x, 0.0f, 10.0f);
-                ImGui::SliderFloat("Model Z axis rotation", &modelRotationZ, 0.0f, 360.0f);
-                ImGui::SliderFloat("Model Y axis rotation", &modelRotationY, 0.0f, 360.0f);
-                ImGui::SliderFloat("Model scale", &modelScale, -1.0f, 10.0f);
-				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-
-
-                // EXAMPLE WINDOW BELOW
-                //static float f = 0.0f;
-                //static int counter = 0;
-                //ImGui::Text("Hello, world!");                           // Display some text (you can use a format string too)
-                //ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
-                //ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-                //ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our windows open/close state
-                //ImGui::Checkbox("Another Window", &show_another_window);
-
-                //if (ImGui::Button("Button"))                            // Buttons return true when clicked (NB: most widgets return true when edited/activated)
-                //    counter++;
-                //ImGui::SameLine();
-                //ImGui::Text("counter = %d", counter);
-                //ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+                activeTest->OnUpdate(0.0f);
+                activeTest->OnRender();
+                ImGui::Begin("Test");
+                if (activeTest != testMenu && ImGui::Button("<-"))
+                {
+                    delete activeTest;
+                    activeTest = testMenu;
+                }
+                activeTest->OnImGuiRender();
+                ImGui::End();
             }
 
             ImGui::Render();
@@ -214,7 +170,9 @@ int main(void)
         }
 
         // Release resources on termination
-        //
+        if (activeTest != testMenu)
+            delete testMenu;
+        delete activeTest;
     }
     ImGui_ImplGlfwGL3_Shutdown();
     ImGui::DestroyContext();
