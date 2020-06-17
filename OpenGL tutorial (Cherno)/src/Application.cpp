@@ -14,6 +14,8 @@
 #include "VertexArray.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "glm\glm.hpp"
+#include "glm\gtc\matrix_transform.hpp"
 
 // Function declarations
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -97,6 +99,10 @@ int main(void)
         // Shader programs
         Shader shader("res/shaders/Basic.shader");
         shader.Bind();
+
+        // Create projection matrix and send to shader
+        glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+        shader.SetMatrix4f("u_MVP", proj);
 
         // Load texture and set uniform in shader
         Texture texture("res/textures/tree_render_texture.png");
