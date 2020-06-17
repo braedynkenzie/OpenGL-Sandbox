@@ -69,10 +69,10 @@ int main(void)
         // Create vertice positions
         float vertices[] = {
            // positions -- tex coords 
-             -1.0, -1.0,    0.0, 0.0,
-              1.0,  1.0,    1.0, 1.0,
-             -1.0,  1.0,    0.0, 1.0,
-              1.0, -1.0,    1.0, 0.0,
+             -0.5, -0.5,    0.0, 0.0,
+              0.5,  0.5,    1.0, 1.0,
+             -0.5,  0.5,    0.0, 1.0,
+              0.5, -0.5,    1.0, 0.0,
 
           /*-0.5, -0.5,    0.0, 0.0,
              0.5,  0.5,    1.0, 1.0,
@@ -132,8 +132,10 @@ int main(void)
         ImGui_ImplGlfwGL3_Init(window, true);
         ImGui::StyleColorsDark();
         // Varibles to tweak with ImGui
-        glm::vec3 modelTranslation(0.0f, 0.0f, 0.0f);
+        glm::vec3 modelTranslation1(0.0f, 0.0f, 0.0f);
+        glm::vec3 modelTranslation2(0.5f, 0.0f, -0.5f);
         float modelRotationZ = 0.0f;
+        float modelRotationY = 0.0f;
         float modelScale = 1.0f;
 
         /* Loop until the user closes the window */
@@ -154,21 +156,31 @@ int main(void)
 			// Create model, view, projection matrices 
 		    // Send combined MVP matrix to shader
 			glm::mat4 model = glm::mat4(1.0);
-            model = glm::translate(glm::mat4(1.0), modelTranslation);
+            model = glm::translate(model, modelTranslation1);
             model = glm::rotate(model, glm::radians(modelRotationZ), glm::vec3(0.0f, 0.0f, 1.0f));
+            model = glm::rotate(model, glm::radians(modelRotationY), glm::vec3(0.0f, 1.0f, 0.0f));
             model = glm::scale(model, glm::vec3(modelScale));
-            glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 0.0f, 0.0f));
-            glm::mat4 proj = glm::ortho(0.0f, (float)SCREEN_WIDTH / 100, 0.0f, (float)SCREEN_HEIGHT / 100, -1.0f, 1.0f);
+            glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 0.0f, -5.0f));
+            // glm::mat4 proj = glm::ortho(0.0f, (float)SCREEN_WIDTH / 100, 0.0f, (float)SCREEN_HEIGHT / 100, -10.0f, 10.0f);
+            glm::mat4 proj = glm::perspective(90.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 10.0f);
 			glm::mat4 MVP_matrix = proj * view * model;
 			shader.SetMatrix4f("u_MVP", MVP_matrix);
-
-			// Renderer draw call
 			renderer.Draw(VA, IB, shader);
+
+            // Change model matrix and render a second square
+            model = glm::translate(model, modelTranslation2);
+            model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            MVP_matrix = proj * view * model;
+            shader.SetMatrix4f("u_MVP", MVP_matrix);
+            renderer.Draw(VA, IB, shader);
+
 
             // ImGui window rendering
             {
-                ImGui::SliderFloat3("Model translation", &modelTranslation.x, 0.0f, 10.0f);
-                ImGui::SliderFloat("Model Z axiz rotation", &modelRotationZ, -90.0f, 90.0f);
+                ImGui::SliderFloat3("Model 1 translation", &modelTranslation1.x, 0.0f, 10.0f);
+                ImGui::SliderFloat3("Model 2 translation", &modelTranslation2.x, 0.0f, 10.0f);
+                ImGui::SliderFloat("Model Z axis rotation", &modelRotationZ, 0.0f, 360.0f);
+                ImGui::SliderFloat("Model Y axis rotation", &modelRotationY, 0.0f, 360.0f);
                 ImGui::SliderFloat("Model scale", &modelScale, -1.0f, 10.0f);
 				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
