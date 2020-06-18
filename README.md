@@ -1,4 +1,4 @@
-# OpenGL-tutorial
+# OpenGL-Sandbox
 
 OpenGL application (with ImGui interface) comprising of self contained sandbox tests of different OpenGL features.  
 
