@@ -100,7 +100,7 @@ int main(void)
             {
                 activeTest->OnUpdate(0.0f);
                 activeTest->OnRender();
-                ImGui::Begin("Test");
+                ImGui::Begin("Test directory");
                 if (activeTest != testMenu && ImGui::Button("<-"))
                 {
                     delete activeTest;

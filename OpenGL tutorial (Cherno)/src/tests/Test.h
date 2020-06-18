@@ -26,7 +26,7 @@ namespace test
 	public:
 		TestMenu(Test*& activeTestPtr);
 
-		void OnImGuiRender() override;
+		virtual void OnImGuiRender();
 
 		template<typename T> 
 		void RegisterTest(const std::string& testName)
