@@ -22,7 +22,7 @@
 #include "imgui\imgui_impl_glfw_gl3.h"
 
 #include "tests\TestClearColour.h"
-#include <tests\TestMisc.h>
+#include <tests\TestTexture2D.h>
 
 // Function declarations
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -70,53 +70,6 @@ int main(void)
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     {
-        // Create vertice positions
-        float vertices[] = {
-           // positions -- tex coords 
-             -0.5, -0.5,    0.0, 0.0,
-              0.5,  0.5,    1.0, 1.0,
-             -0.5,  0.5,    0.0, 1.0,
-              0.5, -0.5,    1.0, 0.0,
-        };
-
-        unsigned int indices[]{
-            0, 1, 2,
-            3, 0, 1
-        };
-
-        GLCall(glEnable(GL_BLEND));
-        GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
-        // Create Vertex Array
-        VertexArray VA;
-        // Create Vertex Buffer
-        VertexBuffer VB(vertices, 4 * 4 * sizeof(float));
-
-        // Create and associate the layout (Vertex Attribute Pointer)
-        VertexBufferLayout layout;
-        layout.Push<float>(2);
-        layout.Push<float>(2);
-        VA.AddBuffer(VB, layout);
-
-        // Create index buffer
-        IndexBuffer IB(indices, 6);
-
-        // Shader programs
-        Shader shader("res/shaders/Basic.shader");
-        shader.Bind();
-
-        // Load texture and set uniform in shader
-        Texture texture("res/textures/tree_render_texture.png");
-        // Texture texture("res/textures/metal_border_container_texture.png");
-        texture.Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
-        shader.SetUniform1i("u_Texture", 0);
-
-        // Unbind everything
-        VA.Unbind();
-        VB.Unbind();
-        IB.Unbind();
-        shader.Unbind();
-
         Renderer renderer;
 
         // ImGui initialization stuff
@@ -130,9 +83,7 @@ int main(void)
         activeTest = testMenu;
 
         testMenu->RegisterTest<test::TestClearColour>("Clear colour test");
-        // TODO finish implementing this test
-        // testMenu->RegisterTest<test::TestMisc>("Miscellaneous");
-
+        testMenu->RegisterTest<test::TestTexture2D>("2D Texture test");
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))

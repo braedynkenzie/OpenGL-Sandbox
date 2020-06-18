@@ -7,6 +7,8 @@ namespace test
 	class TestMisc : public Test
 	{
 	private:
+		VertexArray m_VAO;
+		Shader m_Shader;
 		Renderer m_Renderer;
 		glm::vec3 m_ModelTranslation1;
 		glm::vec3 m_ModelTranslation2;
