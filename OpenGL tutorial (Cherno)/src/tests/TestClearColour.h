@@ -8,9 +8,11 @@ namespace test
 	{
 	private:
 		float m_ClearColour[4];
+		// todo delete these
+		GLFWwindow* m_MainWindow;
 
 	public: 
-		TestClearColour();
+		TestClearColour(GLFWwindow*& mainWindow);
 		~TestClearColour();
 
 		void OnUpdate(float deltaTime) override;

@@ -1,4 +1,4 @@
-#include "TestTexture2D.h"
+#include "TestFPSCamera.h"
 
 #include "glm\glm.hpp"
 #include "glm\gtc\matrix_transform.hpp"
@@ -6,12 +6,21 @@
 
 namespace test
 {
-	TestTexture2D::TestTexture2D(GLFWwindow*& mainWindow)
-		: m_MainWindow(mainWindow),
-		m_ModelTranslation(glm::vec3(0.0f, 0.0f, 0.0f)),
-		m_ModelRotationX(0.0), m_ModelRotationY(0.0f), m_ModelRotationZ(0.0f), 
-		m_ModelScale(1.0f), m_SCREEN_WIDTH(800), m_SCREEN_HEIGHT(600)
+	TestFPSCamera::TestFPSCamera(GLFWwindow*& mainWindow)
+		: m_MainWindow((GLFWwindow*)mainWindow), 
+		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)), 
+		m_CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)), 
+		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)), 
+		m_Camera(Camera(m_CameraPos)),
+		m_FirstMouseCapture(true),
+		m_SCREEN_WIDTH(800), m_SCREEN_HEIGHT(600),
+		m_LastCursorX((float) m_SCREEN_WIDTH / 2.0f),
+		m_LastCursorY((float) m_SCREEN_HEIGHT / 2.0f)
 	{
+
+		// Callback function for mouse cursor movement
+		//glfwSetCursorPosCallback(m_MainWindow, mouse_callback); // todo callback
+
 		// Create vertice positions
 		float vertices[] = {
 			// positions      --  tex coords 
@@ -103,15 +112,15 @@ namespace test
 		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
-	TestTexture2D::~TestTexture2D()
+	TestFPSCamera::~TestFPSCamera()
 	{
 	}
 
-	void TestTexture2D::OnUpdate(float deltaTime) {
-
+	void TestFPSCamera::OnUpdate(float deltaTime)
+	{
 	}
 
-	void TestTexture2D::OnRender() 
+	void TestFPSCamera::OnRender()
 	{
 		GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
@@ -125,27 +134,19 @@ namespace test
 		// Create model, view, projection matrices 
 		// Send combined MVP matrix to shader
 		glm::mat4 modelMatrix = glm::mat4(1.0);
-		modelMatrix = glm::translate(modelMatrix, m_ModelTranslation);
-		modelMatrix = glm::rotate(modelMatrix, glm::radians(m_ModelRotationX), glm::vec3(1.0f, 0.0f, 0.0f));
-		modelMatrix = glm::rotate(modelMatrix, glm::radians(m_ModelRotationY), glm::vec3(0.0f, 1.0f, 0.0f));
-		modelMatrix = glm::rotate(modelMatrix, glm::radians(m_ModelRotationZ), glm::vec3(0.0f, 0.0f, 1.0f));
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f + m_ModelScale));
-		glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 0.0f, -5.0f));
-		// glm::mat4 proj = glm::ortho(0.0f, (float)SCREEN_WIDTH / 100, 0.0f, (float)SCREEN_HEIGHT / 100, -10.0f, 10.0f);
-		glm::mat4 proj = glm::perspective(90.0f, (float)m_SCREEN_WIDTH / (float)m_SCREEN_HEIGHT, 0.1f, 10.0f);
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0));
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
+		// View/Projection transformations
+		glm::mat4 proj = glm::perspective(glm::radians(m_Camera.Zoom), (float)m_SCREEN_WIDTH / (float)m_SCREEN_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 view = m_Camera.GetViewMatrix();
 		glm::mat4 MVP_matrix = proj * view * modelMatrix;
 		m_Shader->SetMatrix4f("u_MVP", MVP_matrix);
 		renderer.Draw(*m_VA, *m_IB, *m_Shader);
 	}
 
-	void TestTexture2D::OnImGuiRender()
+	void TestFPSCamera::OnImGuiRender()
 	{
 		// ImGui interface
-		ImGui::SliderFloat3("Model 1 translation", &m_ModelTranslation.x, -5.0f, 5.0f);
-		ImGui::SliderFloat("Model X axis rotation", &m_ModelRotationX, 0.0f, 360.0f);
-		ImGui::SliderFloat("Model Y axis rotation", &m_ModelRotationY, 0.0f, 360.0f);
-		ImGui::SliderFloat("Model Z axis rotation", &m_ModelRotationZ, 0.0f, 360.0f);
-		ImGui::SliderFloat("Model scale", &m_ModelScale, -1.0f, 5.0f);
 	}
 }
 

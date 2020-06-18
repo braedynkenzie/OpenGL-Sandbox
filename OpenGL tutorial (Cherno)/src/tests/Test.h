@@ -4,6 +4,12 @@
 #include <vector>
 #include <iostream>
 
+#include <GL/glew.h>
+#include "GLFW\glfw3.h"
+
+#include "imgui\imgui.h"
+
+
 namespace test
 {
 	class Test 
@@ -21,20 +27,26 @@ namespace test
 	{
 	private:
 		Test*& m_CurrentTest;
-		std::vector<std::pair<std::string, std::function<Test*()>>> m_Tests;
+		std::vector<std::pair<std::string, test::Test*>> m_Tests;
 
 	public:
 		TestMenu(Test*& activeTestPtr);
 
-		virtual void OnImGuiRender();
+		void OnImGuiRender() override;
 
-		template<typename T> 
-		void RegisterTest(const std::string& testName)
+		template<typename T>
+		void RegisterTestLambda(const std::string& testName, GLFWwindow* window)
 		{
 			std::cout << "Registering test: " << testName << std::endl;
-			m_Tests.push_back(std::make_pair(testName, []() { return new T; }));
+			m_Tests.push_back(std::make_pair(testName, [&window]() { return new T(window); }));
 		}
-
+		
+		template<typename T>
+			void RegisterTest(const std::string& testName, T test)
+		{
+			std::cout << "Registering test: " << testName << std::endl;
+			m_Tests.push_back(std::make_pair(testName, test));
+		}
 	};
 }
 

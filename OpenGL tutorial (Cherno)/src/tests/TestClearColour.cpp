@@ -1,12 +1,12 @@
 #include "TestClearColour.h"
-#include <GL\glew.h>
+
 #include "Renderer.h"
-#include "imgui\imgui.h"
 
 namespace test
 {
-	TestClearColour::TestClearColour()
-		: m_ClearColour{ 0.2f, 0.3f, 0.8f, 1.0f }
+	TestClearColour::TestClearColour(GLFWwindow*& mainWindow)
+		: m_ClearColour{ 0.2f, 0.3f, 0.8f, 1.0f },
+		m_MainWindow(mainWindow)
 	{
 	}
 

@@ -21,8 +21,10 @@
 #include "imgui\imgui.h"
 #include "imgui\imgui_impl_glfw_gl3.h"
 
+#include "tests\Test.h"
 #include "tests\TestClearColour.h"
-#include <tests\TestTexture2D.h>
+#include "tests\TestTexture2D.h"
+#include "tests\TestFPSCamera.h"
 
 // Function declarations
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -44,7 +46,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(960, 540, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(960, 540, "OpenGL sandbox", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -68,7 +70,6 @@ int main(void)
     //
     // Window being resized
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
     {
         Renderer renderer;
 
@@ -81,9 +82,13 @@ int main(void)
         test::Test* activeTest = nullptr;
         test::TestMenu* testMenu = new test::TestMenu(activeTest);
         activeTest = testMenu;
-
-        testMenu->RegisterTest<test::TestClearColour>("Clear colour test");
-        testMenu->RegisterTest<test::TestTexture2D>("2D Texture test");
+        // Init tests
+        test::TestClearColour* clearColourTest  = new test::TestClearColour(window);
+        test::TestTexture2D* texture2DTest      = new test::TestTexture2D(window);
+        test::TestFPSCamera* cameraTest         = new test::TestFPSCamera(window);
+        testMenu->RegisterTest<test::TestClearColour*>("Clear colour test", (test::TestClearColour*) clearColourTest);
+        testMenu->RegisterTest<test::TestTexture2D*>("2D Texture test", (test::TestTexture2D*) texture2DTest);
+        testMenu->RegisterTest<test::TestFPSCamera*>("First person camera test", (test::TestFPSCamera*) cameraTest);
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
@@ -103,7 +108,12 @@ int main(void)
                 ImGui::Begin("Test directory");
                 if (activeTest != testMenu && ImGui::Button("<-"))
                 {
-                    delete activeTest;
+                    //delete activeTest;
+
+                    // Testing
+                    //delete testMenu;
+                    //activeTest = nullptr;
+                    //testMenu = new test::TestMenu(activeTest);
                     activeTest = testMenu;
                 }
                 activeTest->OnImGuiRender();
@@ -120,10 +130,11 @@ int main(void)
             glfwPollEvents();
         }
 
+        // TODO: debug
         // Release resources on termination
-        if (activeTest != testMenu)
+        /*if (activeTest != testMenu)
             delete testMenu;
-        delete activeTest;
+        delete activeTest;*/
     }
     ImGui_ImplGlfwGL3_Shutdown();
     ImGui::DestroyContext();
