@@ -132,7 +132,7 @@ namespace test
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f + m_ModelScale));
 		glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 0.0f, -5.0f));
 		// glm::mat4 proj = glm::ortho(0.0f, (float)SCREEN_WIDTH / 100, 0.0f, (float)SCREEN_HEIGHT / 100, -10.0f, 10.0f);
-		glm::mat4 proj = glm::perspective(90.0f, (float)m_SCREEN_WIDTH / (float)m_SCREEN_HEIGHT, 0.1f, 10.0f);
+		glm::mat4 proj = glm::perspective(glm::radians(55.0f), (float)m_SCREEN_WIDTH / (float)m_SCREEN_HEIGHT, 0.1f, 10.0f);
 		glm::mat4 MVP_matrix = proj * view * modelMatrix;
 		m_Shader->SetMatrix4f("u_MVP", MVP_matrix);
 		renderer.Draw(*m_VA, *m_IB, *m_Shader);

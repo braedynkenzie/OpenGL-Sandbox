@@ -18,6 +18,7 @@ namespace test
 	class TestFPSCamera : public Test
 	{
 	private:
+		static TestFPSCamera* instance;
 		GLFWwindow* m_MainWindow; // todo make unique pointer? prob not
 		std::unique_ptr<VertexArray> m_VA;
 		std::unique_ptr<VertexBuffer> m_VB;
@@ -35,12 +36,16 @@ namespace test
 		float m_Yaw;
 		float m_Pitch;
 
-	public: 
+	public:
+
 		TestFPSCamera(GLFWwindow*& mainWindow);
 		~TestFPSCamera();
 
 		void OnUpdate(float deltaTime) override;
 		void OnRender() override;
 		void OnImGuiRender() override;
+
+		Camera* GetCamera() { return &m_Camera; }
+		static TestFPSCamera* GetInstance() { return instance; }
 	};
 }

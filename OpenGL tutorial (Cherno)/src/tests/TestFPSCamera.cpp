@@ -6,8 +6,20 @@
 
 namespace test
 {
+	// Function declarations
+	void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+	void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
+
+	TestFPSCamera* TestFPSCamera::instance;
+
+	float lastCursorX;
+	float lastCursorY;
+	float yaw = 0.0f;
+	float pitch = 0.0f;
+	bool firstMouseCapture = true;
+
 	TestFPSCamera::TestFPSCamera(GLFWwindow*& mainWindow)
-		: m_MainWindow((GLFWwindow*)mainWindow), 
+		: m_MainWindow(mainWindow), 
 		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)), 
 		m_CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)), 
 		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)), 
@@ -17,9 +29,15 @@ namespace test
 		m_LastCursorX((float) m_SCREEN_WIDTH / 2.0f),
 		m_LastCursorY((float) m_SCREEN_HEIGHT / 2.0f)
 	{
+		instance = this;
+
+		float lastCursorX = m_SCREEN_WIDTH / 2.0f;
+		float lastCursorY = m_SCREEN_HEIGHT / 2.0f;
 
 		// Callback function for mouse cursor movement
-		//glfwSetCursorPosCallback(m_MainWindow, mouse_callback); // todo callback
+		glfwSetCursorPosCallback(m_MainWindow, mouse_callback); // todo callback
+		// Callback function for scrolling zoom
+		glfwSetScrollCallback(m_MainWindow, scroll_callback);
 
 		// Create vertice positions
 		float vertices[] = {
@@ -118,6 +136,8 @@ namespace test
 
 	void TestFPSCamera::OnUpdate(float deltaTime)
 	{
+		// Hide and capture mouse cursor
+		glfwSetInputMode(m_MainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
 
 	void TestFPSCamera::OnRender()
@@ -148,5 +168,35 @@ namespace test
 	{
 		// ImGui interface
 	}
-}
 
+	void scroll_callback(GLFWwindow* window, double xOffset, double yOffset)
+	{
+		test::TestFPSCamera* cameraTest = test::TestFPSCamera::GetInstance();
+		Camera* camera = cameraTest->GetCamera();
+		camera->ProcessMouseScroll(yOffset);
+	}
+
+	void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+	{
+		// Fixes first mouse cursor capture by OpenGL window
+		if (firstMouseCapture)
+		{
+			lastCursorX = xpos;
+			lastCursorY = ypos;
+			firstMouseCapture = false;
+		}
+		float xOffset = xpos - lastCursorX;
+		float yOffset = lastCursorY - ypos; // reverse the y-coordinates
+		float cursorSensitivity = 0.08f;
+		xOffset *= cursorSensitivity;
+		yOffset *= cursorSensitivity;
+		yaw += xOffset;
+		pitch += yOffset;
+		lastCursorX = xpos;
+		lastCursorY = ypos;
+
+		test::TestFPSCamera* test = test::TestFPSCamera::GetInstance();
+		Camera* camera = test->GetCamera();
+		camera->ProcessMouseMovement(xOffset, yOffset);
+	}
+}

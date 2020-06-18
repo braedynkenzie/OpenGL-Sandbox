@@ -108,12 +108,6 @@ int main(void)
                 ImGui::Begin("Test directory");
                 if (activeTest != testMenu && ImGui::Button("<-"))
                 {
-                    //delete activeTest;
-
-                    // Testing
-                    //delete testMenu;
-                    //activeTest = nullptr;
-                    //testMenu = new test::TestMenu(activeTest);
                     activeTest = testMenu;
                 }
                 activeTest->OnImGuiRender();
@@ -131,7 +125,8 @@ int main(void)
         }
 
         // TODO: debug
-        // Release resources on termination
+        // TODO: deallocate heap memory (tests)
+        // Release OpenGL resources on termination
         /*if (activeTest != testMenu)
             delete testMenu;
         delete activeTest;*/
