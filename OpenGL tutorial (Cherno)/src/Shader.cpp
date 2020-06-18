@@ -128,7 +128,7 @@ void Shader::SetUniform1i(const std::string& name, int value)
     GLCall(glUniform1i(GetUniformLocation(name), value));
 }
 
-int Shader::GetUniformLocation(const std::string& name)
+int Shader::GetUniformLocation(const std::string& name) const
 {
     // Caching of uniform locations means we don't have to call glGetUniformLocation() every time we want to set a uniform
     if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())

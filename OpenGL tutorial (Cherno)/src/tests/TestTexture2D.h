@@ -23,7 +23,7 @@ namespace test
 		std::unique_ptr<Texture> m_Texture;
 		glm::vec3 m_ModelTranslation1, m_ModelTranslation2;
 		float m_ModelRotationY, m_ModelRotationZ, m_ModelScale;
-		float m_SCREEN_WIDTH, m_SCREEN_HEIGHT;
+		const int m_SCREEN_WIDTH, m_SCREEN_HEIGHT;
 	public: 
 		TestTexture2D();
 		~TestTexture2D();

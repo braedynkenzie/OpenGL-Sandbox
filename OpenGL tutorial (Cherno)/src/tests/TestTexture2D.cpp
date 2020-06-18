@@ -14,7 +14,7 @@ namespace test
 		: m_ModelTranslation1(glm::vec3(0.0f, 0.0f, 0.0f)), 
 		m_ModelTranslation2(glm::vec3(0.5f, 0.0f, -0.5f)),
 		m_ModelRotationY(0.0f), m_ModelRotationZ(0.0f), m_ModelScale(1.0f),
-		m_SCREEN_WIDTH(800.0f), m_SCREEN_HEIGHT(600.0f)
+		m_SCREEN_WIDTH(800), m_SCREEN_HEIGHT(600)
 	{
 		// Create vertice positions
 		float vertices[] = {
@@ -58,6 +58,11 @@ namespace test
 		m_IB->Unbind();
 		m_Shader->Unbind();
 
+		// Enable OpenGL z-buffer depth comparisons
+		glEnable(GL_DEPTH_TEST);
+		// Render only those fragments with lower depth values
+		glDepthFunc(GL_LESS);
+
 		GLCall(glEnable(GL_BLEND));
 		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
@@ -73,7 +78,7 @@ namespace test
 	void TestTexture2D::OnRender()
 	{
 		GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
-		GLCall(glClear(GL_COLOR_BUFFER_BIT));
+		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 		Renderer renderer;
 
