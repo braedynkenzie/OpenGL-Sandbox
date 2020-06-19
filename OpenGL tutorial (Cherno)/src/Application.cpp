@@ -33,6 +33,8 @@ static void processInput(GLFWwindow* window);
 // Global vars
 static const int SCREEN_WIDTH = 800;
 static const int SCREEN_HEIGHT = 600;
+test::Test* activeTest;
+test::TestMenu* testMenu;
 
 int main(void)
 {
@@ -79,8 +81,8 @@ int main(void)
         ImGui::StyleColorsDark();
         
         // Test framework
-        test::Test* activeTest = nullptr;
-        test::TestMenu* testMenu = new test::TestMenu(activeTest);
+        activeTest = nullptr;
+        testMenu = new test::TestMenu(activeTest, window);
         activeTest = testMenu;
         // Init tests
         test::TestClearColour* clearColourTest  = new test::TestClearColour(window);
@@ -143,6 +145,13 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
+    if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS)
+    {
+        activeTest = testMenu;
+        // Unhide and uncapture mouse cursor when switching between tests
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+        
     // Toggle between wireframe/fully shaded modes
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

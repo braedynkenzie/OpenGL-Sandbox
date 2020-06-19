@@ -2,8 +2,9 @@
 
 namespace test
 {
-	TestMenu::TestMenu(Test*& activeTestPtr)
-		: m_CurrentTest(activeTestPtr)
+	TestMenu::TestMenu(Test*& activeTestPtr, GLFWwindow* mainWindow)
+		: m_CurrentTest(activeTestPtr),
+		m_MainWindow(mainWindow)
 	{
 	}
 

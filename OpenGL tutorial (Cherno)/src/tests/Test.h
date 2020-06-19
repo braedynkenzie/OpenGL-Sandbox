@@ -28,9 +28,10 @@ namespace test
 	private:
 		Test*& m_CurrentTest;
 		std::vector<std::pair<std::string, test::Test*>> m_Tests;
+		GLFWwindow* m_MainWindow;
 
 	public:
-		TestMenu(Test*& activeTestPtr);
+		TestMenu(Test*& activeTestPtr, GLFWwindow* mainWindow);
 
 		void OnImGuiRender() override;
 

@@ -45,12 +45,13 @@ public:
     float Zoom;
 
     // Constructor with vectors
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), float zoom = ZOOM, glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY)
     {
         Position = position;
         WorldUp = up;
         Yaw = yaw;
         Pitch = pitch;
+        Zoom = zoom;
         updateCameraVectors();
     }
     // Constructor with scalar values
@@ -81,6 +82,29 @@ public:
             Position -= Right * velocity;
         if (direction == RIGHT)
             Position += Right * velocity;
+
+        if (Position.y < 0.0f)
+            Position.y = 0.0f;
+    }
+
+    // Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
+    void ProcessKeyboardForMapView(Camera_Movement direction, float deltaTime, float yPosBottomLimit, float yPosUpperLimit)
+    {
+        float velocity = MovementSpeed * deltaTime;
+        if (direction == FORWARD)
+            Position += (Up * velocity) + (Front * velocity);
+        if (direction == BACKWARD)
+            Position -= (Up * velocity) + (Front * velocity);
+        if (direction == LEFT)
+            Position -= Right * velocity;
+        if (direction == RIGHT)
+            Position += Right * velocity;
+
+        // Limit y min/max positions
+        if (Position.y > yPosUpperLimit)
+            Position.y = yPosUpperLimit;
+        if (Position.y < yPosBottomLimit)
+            Position.y = yPosBottomLimit;
     }
 
     // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.

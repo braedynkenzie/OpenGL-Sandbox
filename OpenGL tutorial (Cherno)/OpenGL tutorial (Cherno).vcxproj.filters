@@ -2090,5 +2090,11 @@
     <Image Include="res\textures\metal_border_container_texture.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\textures\world_map_texture.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\high_res_world_map_texture.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

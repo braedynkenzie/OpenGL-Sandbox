@@ -2,35 +2,43 @@
 
 #include "glm\glm.hpp"
 #include "glm\gtc\matrix_transform.hpp"
+#include <vendor\stb_image\stb_image.h>
 
+// Global variables
+float deltaTime = 0.0f; // Time to render last frame
+float lastFrameTime = 0.0f; // Timestamp of last frame
+float startTime = glfwGetTime();
+
+float lastCursorX;
+float lastCursorY;
+float yaw = 0.0f;
+float pitch = 0.0f;
+bool firstMouseCapture = true;
 
 namespace test
 {
 	// Function declarations
 	void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 	void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
+	void processInput(GLFWwindow* window);
 
+	// Init static variable
 	TestFPSCamera* TestFPSCamera::instance;
-
-	float lastCursorX;
-	float lastCursorY;
-	float yaw = 0.0f;
-	float pitch = 0.0f;
-	bool firstMouseCapture = true;
 
 	TestFPSCamera::TestFPSCamera(GLFWwindow*& mainWindow)
 		: m_MainWindow(mainWindow), 
 		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)), 
 		m_CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)), 
 		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)), 
-		m_Camera(Camera(m_CameraPos)),
+		m_Camera(Camera(m_CameraPos, 80.0f)),
 		m_FirstMouseCapture(true),
-		m_SCREEN_WIDTH(800), m_SCREEN_HEIGHT(600),
+		m_SCREEN_WIDTH(800), m_SCREEN_HEIGHT(600), // TODO make into const global variables
 		m_LastCursorX((float) m_SCREEN_WIDTH / 2.0f),
 		m_LastCursorY((float) m_SCREEN_HEIGHT / 2.0f)
 	{
 		instance = this;
 
+		// Mouse cursor should start in the middle of the window
 		float lastCursorX = m_SCREEN_WIDTH / 2.0f;
 		float lastCursorY = m_SCREEN_HEIGHT / 2.0f;
 
@@ -41,77 +49,41 @@ namespace test
 
 		// Create vertice positions
 		float vertices[] = {
-			// positions      --  tex coords 
-			  -0.5, -0.5, -0.5,    0.0, 0.0, // Cube front
-			   0.5,  0.5, -0.5,    1.0, 1.0,
-			  -0.5,  0.5, -0.5,    0.0, 1.0,
-			   0.5, -0.5, -0.5,    1.0, 0.0,
-
-			  -0.5, -0.5,  0.5,    0.0, 0.0, // Cube back
-			   0.5,  0.5,  0.5,    1.0, 1.0,
-			  -0.5,  0.5,  0.5,    0.0, 1.0,
-			   0.5, -0.5,  0.5,    1.0, 0.0,
-
-			  -0.5, -0.5, -0.5,    0.0, 0.0, // Cube left
-			  -0.5,  0.5,  0.5,    1.0, 1.0,
-			  -0.5,  0.5, -0.5,    0.0, 1.0,
-			  -0.5, -0.5,  0.5,    1.0, 0.0,
-
-			   0.5, -0.5,  0.5,    0.0, 0.0, // Cube right
-			   0.5,  0.5, -0.5,    1.0, 1.0,
-			   0.5,  0.5,  0.5,    0.0, 1.0,
-			   0.5, -0.5, -0.5,    1.0, 0.0,
-
-			  -0.5,  0.5, -0.5,    1.0, 1.0, // Cube top
-			   0.5,  0.5,  0.5,    0.0, 0.0,
-			  -0.5,  0.5,  0.5,    1.0, 0.0,
-			   0.5,  0.5, -0.5,    0.0, 1.0,
-
-			  -0.5, -0.5,  0.5,    0.0, 0.0, // Cube bottom
-			   0.5, -0.5, -0.5,    1.0, 1.0,
-			   0.5, -0.5,  0.5,    1.0, 0.0,
-			  -0.5, -0.5, -0.5,    0.0, 1.0,
+		 //       positions     --   tex coords 
+			  -80.0, -10.0, -80.0,    0.0, 1.0, // Floor
+			   80.0, -10.0,  80.0,    1.0, 0.0,
+			  -80.0, -10.0,  80.0,    0.0, 0.0,
+			   80.0, -10.0, -80.0,    1.0, 1.0,
 		};
 
 		unsigned int indices[]{
 			0, 1, 2,
 			3, 0, 1,
-
-			4, 5, 6,
-			7, 4, 5,
-
-			8, 9, 10,
-			11, 8, 9,
-
-			12, 13, 14,
-			15, 12, 13,
-
-			16, 17, 18,
-			19, 16, 17,
-
-			20, 21, 22,
-			23, 20, 21
 		};
 
 		m_VA = std::make_unique<VertexArray>();
 
 		// Init Vertex Buffer and bind to Vertex Array (m_VA)
-		m_VB = std::make_unique<VertexBuffer>(vertices, 5 * 4 * 6 * sizeof(float));
+		m_VB = std::make_unique<VertexBuffer>(vertices, 5 * 4 * sizeof(float));
 
 		// Create and associate the layout (Vertex Attribute Pointer)
 		VertexBufferLayout layout;
-		layout.Push<float>(3);
-		layout.Push<float>(2);
+		layout.Push<float>(3); // Vertex position vec3
+		layout.Push<float>(2); // Texture coordinates vec2
 		m_VA->AddBuffer(*m_VB, layout);
 
 		// Init index buffer and bind to Vertex Array (m_VA)
-		m_IB = std::make_unique<IndexBuffer>(indices, 6 * 6);
+		m_IB = std::make_unique<IndexBuffer>(indices, 6);
 
+		// Load shader
 		m_Shader = std::make_unique<Shader>("res/shaders/Basic.shader");
+
+		// Flip texture along y axis before loading
+		stbi_set_flip_vertically_on_load(true);
 
 		// Bind shader program and set uniforms
 		m_Shader->Bind();
-		m_Texture = std::make_unique<Texture>("res/textures/tree_render_texture.png");
+		m_Texture = std::make_unique<Texture>("res/textures/high_res_world_map_texture.png");
 		m_Texture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
 		m_Shader->SetUniform1i("u_Texture", 0);
 
@@ -142,6 +114,14 @@ namespace test
 
 	void TestFPSCamera::OnRender()
 	{
+		// Calculate deltaTime
+		float currentFrameTime = glfwGetTime();
+		deltaTime = currentFrameTime - lastFrameTime;
+		lastFrameTime = currentFrameTime;
+
+		// Process WASD keyboard camera movement
+		processInput(m_MainWindow);
+
 		GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
@@ -149,14 +129,12 @@ namespace test
 
 		// Bind shader and set its per frame uniforms
 		m_Shader->Bind();
-		m_Shader->SetUniform4f("u_Color", 0.2f, ((sin(glfwGetTime()) + 1.0f) / 2.0f), 0.8f, 1.0f);
 		//
 		// Create model, view, projection matrices 
 		// Send combined MVP matrix to shader
 		glm::mat4 modelMatrix = glm::mat4(1.0);
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0));
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(50.0, 0.0, 36.0));
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
-		// View/Projection transformations
 		glm::mat4 proj = glm::perspective(glm::radians(m_Camera.Zoom), (float)m_SCREEN_WIDTH / (float)m_SCREEN_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = m_Camera.GetViewMatrix();
 		glm::mat4 MVP_matrix = proj * view * modelMatrix;
@@ -167,6 +145,10 @@ namespace test
 	void TestFPSCamera::OnImGuiRender()
 	{
 		// ImGui interface
+		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
+		ImGui::Text("- Use WASD keys to move camera");
+		ImGui::Text("- Use scroll wheel to change FOV");
+		ImGui::Text("- Avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	}
 
 	void scroll_callback(GLFWwindow* window, double xOffset, double yOffset)
@@ -198,5 +180,20 @@ namespace test
 		test::TestFPSCamera* test = test::TestFPSCamera::GetInstance();
 		Camera* camera = test->GetCamera();
 		camera->ProcessMouseMovement(xOffset, yOffset);
+	}
+
+	void processInput(GLFWwindow* window) {
+		test::TestFPSCamera* test = test::TestFPSCamera::GetInstance();
+		Camera* camera = test->GetCamera();
+
+		// Camera position movement
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+			camera->ProcessKeyboardForMapView(FORWARD, deltaTime, -0.0f, 0.0f);
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+			camera->ProcessKeyboardForMapView(BACKWARD, deltaTime, -0.0f, 0.0f);
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+			camera->ProcessKeyboardForMapView(LEFT, deltaTime, -0.0f, 0.0f);
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+			camera->ProcessKeyboardForMapView(RIGHT, deltaTime, -0.0f, 0.0f);
 	}
 }
