@@ -99,7 +99,8 @@ int main(void)
             processInput(window);
 
             // Start each new frame by clearing
-            GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
+            float* clearColour = clearColourTest->GetClearColour();
+            GLCall(glClearColor(clearColour[0], clearColour[1], clearColour[2], clearColour[3]));
             renderer.Clear();
 
             ImGui_ImplGlfwGL3_NewFrame();
@@ -111,6 +112,7 @@ int main(void)
                 if (activeTest != testMenu && ImGui::Button("<-"))
                 {
                     activeTest = testMenu;
+                    activeTest->OnActivated();
                 }
                 activeTest->OnImGuiRender();
                 ImGui::End();
@@ -148,8 +150,7 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS)
     {
         activeTest = testMenu;
-        // Unhide and uncapture mouse cursor when switching between tests
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        activeTest->OnActivated();
     }
         
     // Toggle between wireframe/fully shaded modes

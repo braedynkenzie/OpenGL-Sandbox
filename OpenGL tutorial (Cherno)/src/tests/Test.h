@@ -21,6 +21,7 @@ namespace test
 		virtual void OnUpdate(float deltaTime) {}
 		virtual void OnRender() {}
 		virtual void OnImGuiRender() {}
+		virtual void OnActivated() = 0;
 	};
 
 	class TestMenu : public Test
@@ -34,6 +35,7 @@ namespace test
 		TestMenu(Test*& activeTestPtr, GLFWwindow* mainWindow);
 
 		void OnImGuiRender() override;
+		void OnActivated() override;
 
 		template<typename T>
 		void RegisterTestLambda(const std::string& testName, GLFWwindow* window)

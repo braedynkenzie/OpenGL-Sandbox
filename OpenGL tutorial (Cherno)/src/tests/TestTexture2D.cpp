@@ -2,6 +2,7 @@
 
 #include "glm\glm.hpp"
 #include "glm\gtc\matrix_transform.hpp"
+#include <tests\TestClearColour.h>
 
 
 namespace test
@@ -113,7 +114,8 @@ namespace test
 
 	void TestTexture2D::OnRender() 
 	{
-		GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
+		float* clearColour = test::TestClearColour::GetClearColour();
+		GLCall(glClearColor(clearColour[0], clearColour[1], clearColour[2], clearColour[3]));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 		Renderer renderer;
@@ -146,6 +148,15 @@ namespace test
 		ImGui::SliderFloat("Model Y axis rotation", &m_ModelRotationY, 0.0f, 360.0f);
 		ImGui::SliderFloat("Model Z axis rotation", &m_ModelRotationZ, 0.0f, 360.0f);
 		ImGui::SliderFloat("Model scale", &m_ModelScale, -1.0f, 5.0f);
+	}
+
+	void TestTexture2D::OnActivated()
+	{
+		// Bind shader program and reset any uniforms
+		m_Shader->Bind();
+		m_Texture = std::make_unique<Texture>("res/textures/tree_render_texture.png");
+		m_Texture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
+		m_Shader->SetUniform1i("u_Texture", 0);
 	}
 }
 

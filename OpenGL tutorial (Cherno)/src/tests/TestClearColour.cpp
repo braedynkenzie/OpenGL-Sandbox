@@ -4,9 +4,11 @@
 
 namespace test
 {
+	float START_CLEAR_COLOUR[4] = { 0.2f, 0.8f, 0.8f, 1.0f };
+	float TestClearColour::m_ClearColour[4] = { START_CLEAR_COLOUR[0], START_CLEAR_COLOUR[1], START_CLEAR_COLOUR[2], START_CLEAR_COLOUR[3] };
+
 	TestClearColour::TestClearColour(GLFWwindow*& mainWindow)
-		: m_ClearColour{ 0.2f, 0.3f, 0.8f, 1.0f },
-		m_MainWindow(mainWindow)
+		: m_MainWindow(mainWindow)
 	{
 	}
 
@@ -27,6 +29,10 @@ namespace test
 	void TestClearColour::OnImGuiRender()
 	{
 		ImGui::ColorEdit4("Clear colour", m_ClearColour);
+	}
+
+	void TestClearColour::OnActivated()
+	{
 	}
 }
 

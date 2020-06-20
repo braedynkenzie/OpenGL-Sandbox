@@ -3,6 +3,7 @@
 #include "glm\glm.hpp"
 #include "glm\gtc\matrix_transform.hpp"
 #include <vendor\stb_image\stb_image.h>
+#include <tests\TestClearColour.h>
 
 // Global variables
 float deltaTime = 0.0f; // Time to render last frame
@@ -30,7 +31,7 @@ namespace test
 		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)), 
 		m_CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)), 
 		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)), 
-		m_Camera(Camera(m_CameraPos, 80.0f)),
+		m_Camera(Camera(m_CameraPos, 110.0f)),
 		m_FirstMouseCapture(true),
 		m_SCREEN_WIDTH(800), m_SCREEN_HEIGHT(600), // TODO make into const global variables
 		m_LastCursorX((float) m_SCREEN_WIDTH / 2.0f),
@@ -122,7 +123,8 @@ namespace test
 		// Process WASD keyboard camera movement
 		processInput(m_MainWindow);
 
-		GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
+		float* clearColour = test::TestClearColour::GetClearColour();
+		GLCall(glClearColor(clearColour[0], clearColour[1], clearColour[2], clearColour[3]));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 		Renderer renderer;
@@ -135,7 +137,7 @@ namespace test
 		glm::mat4 modelMatrix = glm::mat4(1.0);
 		modelMatrix = glm::translate(modelMatrix, glm::vec3(50.0, 0.0, 36.0));
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
-		glm::mat4 proj = glm::perspective(glm::radians(m_Camera.Zoom), (float)m_SCREEN_WIDTH / (float)m_SCREEN_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 proj = glm::perspective(glm::radians(m_Camera.Zoom), (float)m_SCREEN_WIDTH / (float)m_SCREEN_HEIGHT, 0.1f, 200.0f);
 		glm::mat4 view = m_Camera.GetViewMatrix();
 		glm::mat4 MVP_matrix = proj * view * modelMatrix;
 		m_Shader->SetMatrix4f("u_MVP", MVP_matrix);
@@ -149,6 +151,15 @@ namespace test
 		ImGui::Text("- Use WASD keys to move camera");
 		ImGui::Text("- Use scroll wheel to change FOV");
 		ImGui::Text("- Avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	}
+
+	void TestFPSCamera::OnActivated()
+	{
+		// Bind shader program and reset any uniforms
+		m_Shader->Bind();
+		m_Texture = std::make_unique<Texture>("res/textures/high_res_world_map_texture.png");
+		m_Texture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
+		m_Shader->SetUniform1i("u_Texture", 0);
 	}
 
 	void scroll_callback(GLFWwindow* window, double xOffset, double yOffset)

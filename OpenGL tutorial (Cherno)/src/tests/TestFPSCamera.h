@@ -44,6 +44,7 @@ namespace test
 		void OnUpdate(float deltaTime) override;
 		void OnRender() override;
 		void OnImGuiRender() override;
+		void OnActivated() override;
 
 		Camera* GetCamera() { return &m_Camera; }
 		static TestFPSCamera* GetInstance() { return instance; }

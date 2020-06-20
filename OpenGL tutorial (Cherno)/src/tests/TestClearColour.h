@@ -7,7 +7,7 @@ namespace test
 	class TestClearColour : public Test
 	{
 	private:
-		float m_ClearColour[4];
+		static float m_ClearColour[4];
 		// todo delete these
 		GLFWwindow* m_MainWindow;
 
@@ -18,5 +18,8 @@ namespace test
 		void OnUpdate(float deltaTime) override;
 		void OnRender() override;
 		void OnImGuiRender() override;
+		void OnActivated() override;
+
+		static float* GetClearColour() { return m_ClearColour; }
 	};
 }
