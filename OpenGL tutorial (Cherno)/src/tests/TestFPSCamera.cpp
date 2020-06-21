@@ -86,7 +86,7 @@ namespace test
 		m_Shader->Bind();
 		m_Texture = std::make_unique<Texture>("res/textures/high_res_world_map_texture.png");
 		m_Texture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
-		m_Shader->SetUniform1i("u_Texture", 0);
+		m_Shader->SetUniform1i("u_Texture0", 0);
 
 		// Unbind everything
 		m_VA->Unbind();
@@ -159,7 +159,7 @@ namespace test
 		m_Shader->Bind();
 		m_Texture = std::make_unique<Texture>("res/textures/high_res_world_map_texture.png");
 		m_Texture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
-		m_Shader->SetUniform1i("u_Texture", 0);
+		m_Shader->SetUniform1i("u_Texture0", 0);
 	}
 
 	void scroll_callback(GLFWwindow* window, double xOffset, double yOffset)

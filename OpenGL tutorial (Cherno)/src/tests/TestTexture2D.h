@@ -21,7 +21,8 @@ namespace test
 		std::unique_ptr<VertexBuffer> m_VB;
 		std::unique_ptr<IndexBuffer> m_IB;
 		std::unique_ptr<Shader> m_Shader;
-		std::unique_ptr<Texture> m_Texture;
+		std::unique_ptr<Texture> m_Textures[2];
+		int m_ActiveTexture;
 		glm::vec3 m_ModelTranslation;
 		float m_ModelRotationX, m_ModelRotationY, m_ModelRotationZ, m_ModelScale;
 		const int m_SCREEN_WIDTH, m_SCREEN_HEIGHT;

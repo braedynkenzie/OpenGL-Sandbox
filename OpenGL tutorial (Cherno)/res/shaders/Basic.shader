@@ -19,7 +19,9 @@ void main()
 #version 330 core
 
 uniform vec4 u_Color;
-uniform sampler2D u_Texture;
+uniform sampler2D u_Texture0;
+uniform sampler2D u_Texture1;
+uniform int u_ActiveTexture;
 
 in vec2 v_TexCoords;
 
@@ -27,6 +29,14 @@ out vec4 color;
 
 void main()
 {
-    vec4 texColour = texture(u_Texture, v_TexCoords);
+    vec4 texColour;
+    if (u_ActiveTexture == 0)
+    {
+        texColour = texture(u_Texture0, v_TexCoords);
+    }
+    else if (u_ActiveTexture == 1)
+    {
+        texColour = texture(u_Texture1, v_TexCoords);
+    }
     color = texColour;
 };

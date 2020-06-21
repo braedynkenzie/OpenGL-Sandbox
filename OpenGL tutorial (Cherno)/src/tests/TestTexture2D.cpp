@@ -3,12 +3,14 @@
 #include "glm\glm.hpp"
 #include "glm\gtc\matrix_transform.hpp"
 #include <tests\TestClearColour.h>
-
+#include <string>	
 
 namespace test
 {
+	const int TEXTURE_COUNT = 2;
+
 	TestTexture2D::TestTexture2D(GLFWwindow*& mainWindow)
-		: m_MainWindow(mainWindow),
+		: m_MainWindow(mainWindow), m_ActiveTexture(0),
 		m_ModelTranslation(glm::vec3(0.0f, 0.0f, 0.0f)),
 		m_ModelRotationX(0.0), m_ModelRotationY(0.0f), m_ModelRotationZ(0.0f), 
 		m_ModelScale(1.0f), m_SCREEN_WIDTH(800), m_SCREEN_HEIGHT(600)
@@ -83,11 +85,18 @@ namespace test
 
 		m_Shader = std::make_unique<Shader>("res/shaders/Basic.shader");
 
+		// Load/create textures
+		m_Textures[0] = std::make_unique<Texture>("res/textures/tree_render_texture.png");
+		m_Textures[1] = std::make_unique<Texture>("res/textures/tree_render_texture2.png");
+		
 		// Bind shader program and set uniforms
 		m_Shader->Bind();
-		m_Texture = std::make_unique<Texture>("res/textures/tree_render_texture.png");
-		m_Texture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
-		m_Shader->SetUniform1i("u_Texture", 0);
+		for (int i = 0; i < TEXTURE_COUNT; i++)
+		{
+			m_Textures[i]->Bind(i); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
+			std::string textureName = "u_Texture" + std::to_string(i);
+			m_Shader->SetUniform1i(textureName, i);
+		}
 
 		// Unbind everything
 		m_VA->Unbind();
@@ -108,8 +117,8 @@ namespace test
 	{
 	}
 
-	void TestTexture2D::OnUpdate(float deltaTime) {
-
+	void TestTexture2D::OnUpdate(float deltaTime) 
+	{
 	}
 
 	void TestTexture2D::OnRender() 
@@ -148,15 +157,32 @@ namespace test
 		ImGui::SliderFloat("Model Y axis rotation", &m_ModelRotationY, 0.0f, 360.0f);
 		ImGui::SliderFloat("Model Z axis rotation", &m_ModelRotationZ, 0.0f, 360.0f);
 		ImGui::SliderFloat("Model scale", &m_ModelScale, -1.0f, 5.0f);
+		if (ImGui::Button("Switch texture"))
+		{
+			if (m_ActiveTexture == 0)
+			{
+				m_Shader->SetUniform1i("u_ActiveTexture", 1);
+				m_ActiveTexture = 1;
+			}
+			else if (m_ActiveTexture == 1)
+			{
+				m_Shader->SetUniform1i("u_ActiveTexture", 0);
+				m_ActiveTexture = 0;
+			}
+		}
+			
 	}
 
 	void TestTexture2D::OnActivated()
 	{
 		// Bind shader program and reset any uniforms
 		m_Shader->Bind();
-		m_Texture = std::make_unique<Texture>("res/textures/tree_render_texture.png");
-		m_Texture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
-		m_Shader->SetUniform1i("u_Texture", 0);
+		for (int i = 0; i < TEXTURE_COUNT; i++)
+		{
+			m_Textures[i]->Bind(i); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
+			std::string textureName = "u_Texture" + std::to_string(i);
+			m_Shader->SetUniform1i(textureName, i);
+		}
 	}
 }
 

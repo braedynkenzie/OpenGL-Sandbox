@@ -106,7 +106,7 @@ int main(void)
             ImGui_ImplGlfwGL3_NewFrame();
             if (activeTest)
             {
-                activeTest->OnUpdate(0.0f);
+                activeTest->OnUpdate(0.0f); // TODO remove ?
                 activeTest->OnRender();
                 ImGui::Begin("Test directory");
                 if (activeTest != testMenu && ImGui::Button("<-"))
