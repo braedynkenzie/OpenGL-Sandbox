@@ -15,11 +15,11 @@
 
 namespace test
 {
-	class TestFPSCamera : public Test
+	class TestPhongLighting : public Test
 	{
 	private:
-		static TestFPSCamera* instance;
-		GLFWwindow* m_MainWindow; 
+		static TestPhongLighting* instance;
+		GLFWwindow* m_MainWindow;
 		std::unique_ptr<VertexArray> m_VA;
 		std::unique_ptr<VertexBuffer> m_VB;
 		std::unique_ptr<IndexBuffer> m_IB;
@@ -29,11 +29,13 @@ namespace test
 		glm::vec3 m_CameraFront;
 		glm::vec3 m_CameraUp;
 		Camera m_Camera;
+		float m_Yaw;
+		float m_Pitch;
 
 	public:
 
-		TestFPSCamera(GLFWwindow*& mainWindow);
-		~TestFPSCamera();
+		TestPhongLighting(GLFWwindow*& mainWindow);
+		~TestPhongLighting();
 
 		void OnUpdate(float deltaTime) override;
 		void OnRender() override;
@@ -41,6 +43,6 @@ namespace test
 		void OnActivated() override;
 
 		Camera* GetCamera() { return &m_Camera; }
-		static TestFPSCamera* GetInstance() { return instance; }
+		static TestPhongLighting* GetInstance() { return instance; }
 	};
 }

@@ -1,4 +1,4 @@
-#include "TestFPSCamera.h"
+#include "TestPhongLighting.h"
 
 #include "glm\glm.hpp"
 #include "glm\gtc\matrix_transform.hpp"
@@ -10,14 +10,14 @@
 namespace test
 {
 	// Function declarations
-	void mouse_callbackCameraTest(GLFWwindow* window, double xpos, double ypos);
-	void scroll_callbackCameraTest(GLFWwindow* window, double xOffset, double yOffset);
-	void processInputCameraTest(GLFWwindow* window);
+	void mouse_callbackPhongTest(GLFWwindow* window, double xpos, double ypos);
+	void scroll_callbackPhongTest(GLFWwindow* window, double xOffset, double yOffset);
+	void processInputPhongTest(GLFWwindow* window);
 
 	// Init static variable
-	TestFPSCamera* TestFPSCamera::instance;
+	TestPhongLighting* TestPhongLighting::instance;
 
-	TestFPSCamera::TestFPSCamera(GLFWwindow*& mainWindow)
+	TestPhongLighting::TestPhongLighting(GLFWwindow*& mainWindow)
 		: m_MainWindow(mainWindow), 
 		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)), 
 		m_CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)), 
@@ -31,9 +31,9 @@ namespace test
 		lastCursorY = SCREEN_HEIGHT / 2.0f;
 
 		// Callback function for mouse cursor movement
-		glfwSetCursorPosCallback(m_MainWindow, mouse_callbackCameraTest); // todo callback
+		glfwSetCursorPosCallback(m_MainWindow, mouse_callbackPhongTest);
 		// Callback function for scrolling zoom
-		glfwSetScrollCallback(m_MainWindow, scroll_callbackCameraTest);
+		glfwSetScrollCallback(m_MainWindow, scroll_callbackPhongTest);
 
 		// Create vertice positions
 		float vertices[] = {
@@ -64,7 +64,7 @@ namespace test
 		m_IB = std::make_unique<IndexBuffer>(indices, 6);
 
 		// Load shader
-		m_Shader = std::make_unique<Shader>("res/shaders/Basic.shader");
+		m_Shader = std::make_unique<Shader>("res/shaders/BasicPhongModel.shader");
 
 		// Flip texture along y axis before loading
 		stbi_set_flip_vertically_on_load(true);
@@ -90,17 +90,17 @@ namespace test
 		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
-	TestFPSCamera::~TestFPSCamera()
+	TestPhongLighting::~TestPhongLighting()
 	{
 	}
 
-	void TestFPSCamera::OnUpdate(float deltaTime)
+	void TestPhongLighting::OnUpdate(float deltaTime)
 	{
 		// Hide and capture mouse cursor
 		glfwSetInputMode(m_MainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
 
-	void TestFPSCamera::OnRender()
+	void TestPhongLighting::OnRender()
 	{
 		// Calculate deltaTime
 		float currentFrameTime = glfwGetTime();
@@ -108,7 +108,7 @@ namespace test
 		lastFrameTime = currentFrameTime;
 
 		// Process WASD keyboard camera movement
-		processInputCameraTest(m_MainWindow);
+		processInputPhongTest(m_MainWindow);
 
 		float* clearColour = test::TestClearColour::GetClearColour();
 		GLCall(glClearColor(clearColour[0], clearColour[1], clearColour[2], clearColour[3]));
@@ -131,7 +131,7 @@ namespace test
 		renderer.Draw(*m_VA, *m_IB, *m_Shader);
 	}
 
-	void TestFPSCamera::OnImGuiRender()
+	void TestPhongLighting::OnImGuiRender()
 	{
 		// ImGui interface
 		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
@@ -140,7 +140,7 @@ namespace test
 		ImGui::Text("- Avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	}
 
-	void TestFPSCamera::OnActivated()
+	void TestPhongLighting::OnActivated()
 	{
 		// Bind shader program and reset any uniforms
 		m_Shader->Bind();
@@ -150,21 +150,21 @@ namespace test
 
 		// Reset all callbacks
 		// Callback function for keyboard inputs
-		processInputCameraTest(m_MainWindow);
+		processInputPhongTest(m_MainWindow);
 		// Callback function for mouse cursor movement
-		glfwSetCursorPosCallback(m_MainWindow, mouse_callbackCameraTest);
+		glfwSetCursorPosCallback(m_MainWindow, mouse_callbackPhongTest);
 		// Callback function for scrolling zoom
-		glfwSetScrollCallback(m_MainWindow, scroll_callbackCameraTest);
+		glfwSetScrollCallback(m_MainWindow, scroll_callbackPhongTest);
 	}
 
-	void scroll_callbackCameraTest(GLFWwindow* window, double xOffset, double yOffset)
+	void scroll_callbackPhongTest(GLFWwindow* window, double xOffset, double yOffset)
 	{
-		test::TestFPSCamera* cameraTest = test::TestFPSCamera::GetInstance();
-		Camera* activeCamera = cameraTest->GetCamera();
-		activeCamera->ProcessMouseScroll(yOffset);
+		test::TestPhongLighting* lightingTest = test::TestPhongLighting::GetInstance();
+		Camera* phongCamera = lightingTest->GetCamera();
+		phongCamera->ProcessMouseScroll(yOffset);
 	}
 
-	void mouse_callbackCameraTest(GLFWwindow* window, double xpos, double ypos)
+	void mouse_callbackPhongTest(GLFWwindow* window, double xpos, double ypos)
 	{
 		// Fixes first mouse cursor capture by OpenGL window
 		if (firstMouseCapture)
@@ -183,23 +183,23 @@ namespace test
 		lastCursorX = xpos;
 		lastCursorY = ypos;
 
-		test::TestFPSCamera* cameraTest = test::TestFPSCamera::GetInstance();
-		Camera* activeCamera = cameraTest->GetCamera();
-		activeCamera->ProcessMouseMovement(xOffset, yOffset);
+		test::TestPhongLighting* lightingTest = test::TestPhongLighting::GetInstance();
+		Camera* phongCamera = lightingTest->GetCamera();
+		phongCamera->ProcessMouseMovement(xOffset, yOffset);
 	}
 
-	void processInputCameraTest(GLFWwindow* window) {
-		test::TestFPSCamera* test = test::TestFPSCamera::GetInstance();
-		Camera* camera = test->GetCamera();
+	void processInputPhongTest(GLFWwindow* window) {
+		test::TestPhongLighting* lightingTest = test::TestPhongLighting::GetInstance();
+		Camera* phongCamera = lightingTest->GetCamera();
 
 		// Camera position movement
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			camera->ProcessKeyboardForMapView(FORWARD, deltaTime, -0.0f, 0.0f);
+			phongCamera->ProcessKeyboard(FORWARD, deltaTime);
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			camera->ProcessKeyboardForMapView(BACKWARD, deltaTime, -0.0f, 0.0f);
+			phongCamera->ProcessKeyboard(BACKWARD, deltaTime);
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			camera->ProcessKeyboardForMapView(LEFT, deltaTime, -0.0f, 0.0f);
+			phongCamera->ProcessKeyboard(LEFT, deltaTime);
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			camera->ProcessKeyboardForMapView(RIGHT, deltaTime, -0.0f, 0.0f);
+			phongCamera->ProcessKeyboard(RIGHT, deltaTime);
 	}
 }

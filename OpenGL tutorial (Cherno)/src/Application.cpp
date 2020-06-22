@@ -25,14 +25,12 @@
 #include "tests\TestClearColour.h"
 #include "tests\TestTexture2D.h"
 #include "tests\TestFPSCamera.h"
+#include "tests\TestPhongLighting.h"
 
 // Function declarations
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 static void processInput(GLFWwindow* window);
 
-// Global vars
-static const int SCREEN_WIDTH = 800;
-static const int SCREEN_HEIGHT = 600;
 test::Test* activeTest;
 test::TestMenu* testMenu;
 
@@ -84,13 +82,16 @@ int main(void)
         activeTest = nullptr;
         testMenu = new test::TestMenu(activeTest, window);
         activeTest = testMenu;
-        // Init tests
+        // Initialize test sandboxes
         test::TestClearColour* clearColourTest  = new test::TestClearColour(window);
         test::TestTexture2D* texture2DTest      = new test::TestTexture2D(window);
-        test::TestFPSCamera* cameraTest         = new test::TestFPSCamera(window);
+        test::TestFPSCamera* cameraTest = new test::TestFPSCamera(window);
+        test::TestPhongLighting* phongLightingTest = new test::TestPhongLighting(window);
+        // Register all test sandboxes
         testMenu->RegisterTest<test::TestClearColour*>("Clear colour test", (test::TestClearColour*) clearColourTest);
         testMenu->RegisterTest<test::TestTexture2D*>("2D Texture test", (test::TestTexture2D*) texture2DTest);
         testMenu->RegisterTest<test::TestFPSCamera*>("First person camera test", (test::TestFPSCamera*) cameraTest);
+        testMenu->RegisterTest<test::TestPhongLighting*>("Phong lighting model test", (test::TestPhongLighting*) phongLightingTest);
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
