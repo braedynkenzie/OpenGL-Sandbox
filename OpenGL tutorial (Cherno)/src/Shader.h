@@ -23,10 +23,14 @@ public:
 	void Unbind() const;
 
 	// Set uniforms
-	void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3); 
+	void SetVec3f(const std::string& name, float v0, float v1, float v2);
+	void SetVec3(const std::string& name, glm::vec3 vector);
+	void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
 	void SetUniform1f(const std::string& name, float value);
 	void SetUniform1i(const std::string& name, int value);
 	void SetMatrix4f(const std::string& name, const glm::mat4& matrix4);
+	void SetBool(const std::string& name, bool value);
+	void SetFloat(const std::string& name, float value);
 
 private:
 	ShaderProgramSource ParseShader(const std::string& filepath);

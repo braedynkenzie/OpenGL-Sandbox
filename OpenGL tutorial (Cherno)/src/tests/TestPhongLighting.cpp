@@ -22,7 +22,12 @@ namespace test
 		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)), 
 		m_CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)), 
 		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)), 
-		m_Camera(Camera(m_CameraPos, 110.0f))
+		m_Camera(Camera(m_CameraPos, 75.0f)),
+		m_IsFlashlightOn(true),
+		m_FlashlightColour(glm::vec3(0.7f)), m_fl_diffuseIntensity(glm::vec3(1.0f)),
+		m_fl_ambientIntensity(glm::vec3(0.2f)), m_fl_specularIntensity(glm::vec3(0.4f)),
+		m_fl_diffuseColour( m_FlashlightColour * m_fl_diffuseIntensity), 
+		m_fl_ambientColour(m_fl_diffuseColour * m_fl_ambientIntensity)
 	{
 		instance = this;
 
@@ -37,11 +42,11 @@ namespace test
 
 		// Create vertice positions
 		float vertices[] = {
-		 //       positions     --   tex coords 
-			  -80.0, -10.0, -80.0,    0.0, 1.0, // Floor
-			   80.0, -10.0,  80.0,    1.0, 0.0,
-			  -80.0, -10.0,  80.0,    0.0, 0.0,
-			   80.0, -10.0, -80.0,    1.0, 1.0,
+		 //       positions     --   tex coords    --    normals
+			  -800.0, -10.0, -800.0,      0.0, 100.0,      0.0, 1.0, 0.0,
+			   800.0, -10.0,  800.0,    100.0,   0.0,      0.0, 1.0, 0.0,
+			  -800.0, -10.0,  800.0,      0.0,   0.0,      0.0, 1.0, 0.0,
+			   800.0, -10.0, -800.0,    100.0, 100.0,      0.0, 1.0, 0.0,
 		};
 
 		unsigned int indices[]{
@@ -52,12 +57,13 @@ namespace test
 		m_VA = std::make_unique<VertexArray>();
 
 		// Init Vertex Buffer and bind to Vertex Array (m_VA)
-		m_VB = std::make_unique<VertexBuffer>(vertices, 5 * 4 * sizeof(float));
+		m_VB = std::make_unique<VertexBuffer>(vertices, 8 * 4 * sizeof(float));
 
 		// Create and associate the layout (Vertex Attribute Pointer)
 		VertexBufferLayout layout;
-		layout.Push<float>(3); // Vertex position vec3
-		layout.Push<float>(2); // Texture coordinates vec2
+		layout.Push<float>(3); // Vertex position,vec3
+		layout.Push<float>(2); // Texture coordinates, vec2
+		layout.Push<float>(3); // Normals, vec3
 		m_VA->AddBuffer(*m_VB, layout);
 
 		// Init index buffer and bind to Vertex Array (m_VA)
@@ -65,15 +71,6 @@ namespace test
 
 		// Load shader
 		m_Shader = std::make_unique<Shader>("res/shaders/BasicPhongModel.shader");
-
-		// Flip texture along y axis before loading
-		stbi_set_flip_vertically_on_load(true);
-
-		// Bind shader program and set uniforms
-		m_Shader->Bind();
-		m_Texture = std::make_unique<Texture>("res/textures/high_res_world_map_texture.png");
-		m_Texture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
-		m_Shader->SetUniform1i("u_Texture0", 0);
 
 		// Unbind everything
 		m_VA->Unbind();
@@ -111,12 +108,14 @@ namespace test
 		processInputPhongTest(m_MainWindow);
 
 		float* clearColour = test::TestClearColour::GetClearColour();
-		GLCall(glClearColor(clearColour[0], clearColour[1], clearColour[2], clearColour[3]));
+		float darknessFactor = 10.0f;
+		GLCall(glClearColor(clearColour[0] / darknessFactor, clearColour[1] / darknessFactor, 
+			clearColour[2] / darknessFactor, clearColour[3] / darknessFactor));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 		Renderer renderer;
 
-		// Bind shader and set its per frame uniforms
+		// Bind shader and set any 'per frame' uniforms
 		m_Shader->Bind();
 		//
 		// Create model, view, projection matrices 
@@ -124,10 +123,32 @@ namespace test
 		glm::mat4 modelMatrix = glm::mat4(1.0);
 		modelMatrix = glm::translate(modelMatrix, glm::vec3(50.0, 0.0, 36.0));
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
-		glm::mat4 proj = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
-		glm::mat4 view = m_Camera.GetViewMatrix();
-		glm::mat4 MVP_matrix = proj * view * modelMatrix;
-		m_Shader->SetMatrix4f("u_MVP", MVP_matrix);
+		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
+		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
+		m_Shader->SetMatrix4f("model", modelMatrix);
+		m_Shader->SetMatrix4f("view", viewMatrix);
+		m_Shader->SetMatrix4f("proj", projMatrix);
+
+		// Update camera's viewing position each frame
+		m_Shader->SetVec3f("viewPos", m_Camera.Position.x, m_Camera.Position.y, m_Camera.Position.z);
+
+		// Flashlight's properties
+		//
+		m_Shader->SetBool("u_Flashlight.on", m_IsFlashlightOn);
+		m_Shader->SetVec3("u_Flashlight.ambient", m_fl_ambientColour);
+		m_Shader->SetVec3("u_Flashlight.diffuse", m_fl_diffuseColour);
+		m_Shader->SetVec3("u_Flashlight.specular", m_fl_specularIntensity);
+		// Flashlight attenuation properties
+		m_Shader->SetFloat("u_Flashlight.constant", 1.0f);
+		m_Shader->SetFloat("u_Flashlight.linear", 0.09f);
+		m_Shader->SetFloat("u_Flashlight.quadratic", 0.032f);
+		// Flashlight position and direction
+		m_Shader->SetVec3f("u_Flashlight.position", m_Camera.Position.x, m_Camera.Position.y, m_Camera.Position.z);
+		m_Shader->SetVec3f("u_Flashlight.direction", m_Camera.Front.x, m_Camera.Front.y, m_Camera.Front.z);
+		// Flashlight cutoff angle
+		m_Shader->SetFloat("u_Flashlight.cutOff", glm::cos(glm::radians(5.0f)));
+		m_Shader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(30.0f)));
+
 		renderer.Draw(*m_VA, *m_IB, *m_Shader);
 	}
 
@@ -142,11 +163,17 @@ namespace test
 
 	void TestPhongLighting::OnActivated()
 	{
-		// Bind shader program and reset any uniforms
+		// Bind shader program and set uniforms
 		m_Shader->Bind();
-		m_Texture = std::make_unique<Texture>("res/textures/high_res_world_map_texture.png");
+		m_Texture = std::make_unique<Texture>("res/textures/dirt_ground_texture.png");
 		m_Texture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
-		m_Shader->SetUniform1i("u_Texture0", 0);
+		m_Shader->SetUniform1i("u_Material.diffuse", 0); 
+		m_Shader->SetVec3f("u_Material.specular", 0.5f, 0.5f, 0.5f);
+		m_Shader->SetFloat("u_Material.shininess", 16.0f);
+		// Set texture mode to repeat
+		// TODO mipmapping
+		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
 
 		// Reset all callbacks
 		// Callback function for keyboard inputs
@@ -194,12 +221,12 @@ namespace test
 
 		// Camera position movement
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			phongCamera->ProcessKeyboard(FORWARD, deltaTime);
+			phongCamera->ProcessKeyboardForMapView(FORWARD, deltaTime, -0.2f, 0.2f);
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			phongCamera->ProcessKeyboard(BACKWARD, deltaTime);
+			phongCamera->ProcessKeyboardForMapView(BACKWARD, deltaTime, -0.2f, 0.2f);
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			phongCamera->ProcessKeyboard(LEFT, deltaTime);
+			phongCamera->ProcessKeyboardForMapView(LEFT, deltaTime, -0.2f, 0.2f);
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			phongCamera->ProcessKeyboard(RIGHT, deltaTime);
+			phongCamera->ProcessKeyboardForMapView(RIGHT, deltaTime, -0.2f, 0.2f);
 	}
 }

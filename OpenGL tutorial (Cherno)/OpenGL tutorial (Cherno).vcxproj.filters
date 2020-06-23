@@ -2112,5 +2112,8 @@
     <Image Include="res\textures\tree_render_texture2.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\textures\dirt_ground_texture.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -1,0 +1,16 @@
+
+*.obj
+*.ipch
+*.html
+*.tlog
+*.idb
+*.hpp
+*.inl
+*.log
+*.obj
+*.pdb
+*.ipdb
+*.css
+*.txt
+*.ilk
+*.ini
