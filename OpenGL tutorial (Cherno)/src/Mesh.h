@@ -22,7 +22,7 @@ struct Vertex {
 	glm::vec3 Bitangent;
 };
 
-struct Texture {
+struct ModelTexture {
 	unsigned int id;
 	string type;
 	aiString path; // we store the path of the texture to compare with other textures
@@ -35,10 +35,10 @@ public:
 	// Mesh Data 
 	vector<Vertex> vertices;
 	vector<unsigned int> indices;
-	vector<Texture> textures;
+	vector<ModelTexture> textures;
 
 	// Constructor: takes a vector of vertices and their corresponding indices and texture data vectors
-	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures)
+	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<ModelTexture> textures)
 	{
 		this->vertices = vertices;
 		this->indices = indices;
@@ -48,10 +48,10 @@ public:
 		setupMesh();
 	}
 
-	void Draw(Shader shaderProgram) 
+	void Draw(Shader* shaderProgram) 
 	{
-		unsigned int diffuseNum = 1;
-		unsigned int specularNum = 1;
+		unsigned int diffuseNum = 0;
+		unsigned int specularNum = 0;
 		for (unsigned int i = 0; i < textures.size(); i++)
 		{
 			glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
@@ -65,7 +65,7 @@ public:
 				ss << specularNum++; // transfer unsigned int to stream
 			number = ss.str();
 			// shaderProgram.setFloat(("material." + name + number).c_str(), i);
-			shaderProgram.SetFloat((name + number).c_str(), i);
+			shaderProgram->SetInt((name + number).c_str(), i);
 			glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		}
 		glActiveTexture(GL_TEXTURE0);

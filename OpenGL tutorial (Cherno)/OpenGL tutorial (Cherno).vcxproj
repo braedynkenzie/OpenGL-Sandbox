@@ -177,6 +177,7 @@
     <ClCompile Include="src\VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\shaders\Backpack.shader" />
     <None Include="res\shaders\Basic.shader" />
     <None Include="res\shaders\BasicPhongModel.shader" />
     <None Include="src\res\shaders\Basic.shader" />

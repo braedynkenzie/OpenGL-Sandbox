@@ -28,13 +28,13 @@ class Model
 public:
 
 	// Constructor
-	Model(char* path)
+	Model(const char* path)
 	{
 		loadModel(path);
 	}
 
 	// Draw all the model's meshes
-	void Draw(Shader shaderProgram)
+	void Draw(Shader* shaderProgram)
 	{
 		for (unsigned int i = 0; i < this->meshes.size(); i++)
 			meshes[i].Draw(shaderProgram);
@@ -45,10 +45,10 @@ private:
 	// Model Data 
 	vector<Mesh> meshes; 
 	string directory;
-	vector<Texture> textures_loaded;
+	vector<ModelTexture> textures_loaded;
 
 	// Import model into memory using assimp
-	void loadModel(string path)
+	void loadModel(const string& path)
 	{
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -86,7 +86,7 @@ private:
 		// - retrieving the relevant material data
 		vector<Vertex> meshVertices;
 		vector<unsigned int> meshIndices;
-		vector<Texture> meshTextures;
+		vector<ModelTexture> meshTextures;
 		// For each vertex in the mesh ...
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 		{
@@ -129,18 +129,18 @@ private:
 		if (mesh->mMaterialIndex >= 0)
 		{
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-			vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+			vector<ModelTexture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 			meshTextures.insert(meshTextures.end(), diffuseMaps.begin(), diffuseMaps.end());
-			vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+			vector<ModelTexture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 			meshTextures.insert(meshTextures.end(), specularMaps.begin(), specularMaps.end());
 		}
 		return Mesh(meshVertices, meshIndices, meshTextures);
 	}
 
-	// Loads textures if they're not loaded yet. Data is returned as a Texture struct.
-	vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName)
+	// Loads textures if they're not loaded yet. Data is returned as a ModelTexture struct.
+	vector<ModelTexture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName)
 	{
-		vector<Texture> textures;
+		vector<ModelTexture> textures;
 		for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 		{
 			aiString str;
@@ -157,7 +157,7 @@ private:
 			}
 			if (!skip)
 			{ // Only load if texture hasn’t been loaded already
-				Texture texture;
+				ModelTexture texture;
 				texture.id = TextureFromFile(str.C_Str(), directory);
 				texture.type = typeName;
 				texture.path = str;

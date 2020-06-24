@@ -93,8 +93,6 @@ namespace test
 
 	void TestPhongLighting::OnUpdate(float deltaTime)
 	{
-		// Hide and capture mouse cursor
-		glfwSetInputMode(m_MainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
 
 	void TestPhongLighting::OnRender()
@@ -163,6 +161,9 @@ namespace test
 
 	void TestPhongLighting::OnActivated()
 	{
+		// Hide and capture mouse cursor
+		glfwSetInputMode(m_MainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 		// Bind shader program and set uniforms
 		m_Shader->Bind();
 		m_Texture = std::make_unique<Texture>("res/textures/dirt_ground_texture.png");

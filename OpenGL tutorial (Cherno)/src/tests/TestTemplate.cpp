@@ -3,11 +3,23 @@
 #include "Renderer.h"
 #include <tests\TestClearColour.h>
 
+#include "Globals.h"
+
 namespace test
 {
 	TestTemplate::TestTemplate(GLFWwindow*& mainWindow)
 		: m_MainWindow(mainWindow)
 	{
+
+		// TODO fill in here with specifics
+
+		// Enable OpenGL z-buffer depth comparisons
+		glEnable(GL_DEPTH_TEST);
+		// Render only those fragments with lower depth values
+		glDepthFunc(GL_LESS);
+
+		GLCall(glEnable(GL_BLEND));
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
 	TestTemplate::~TestTemplate()

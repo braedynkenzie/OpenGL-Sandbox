@@ -1187,6 +1187,7 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="res\shaders\BasicPhongModel.shader" />
+    <None Include="res\shaders\Backpack.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">
