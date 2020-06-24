@@ -24,8 +24,8 @@ namespace test
 		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)), 
 		m_Camera(Camera(m_CameraPos, 75.0f)),
 		m_IsFlashlightOn(true),
-		m_FlashlightColour(glm::vec3(0.7f)), m_fl_diffuseIntensity(glm::vec3(1.0f)),
-		m_fl_ambientIntensity(glm::vec3(0.2f)), m_fl_specularIntensity(glm::vec3(0.4f)),
+		m_FlashlightColour(glm::vec3(1.0f)), m_fl_diffuseIntensity(glm::vec3(1.0f)),
+		m_fl_ambientIntensity(glm::vec3(0.4f)), m_fl_specularIntensity(glm::vec3(0.2f)),
 		m_fl_diffuseColour( m_FlashlightColour * m_fl_diffuseIntensity), 
 		m_fl_ambientColour(m_fl_diffuseColour * m_fl_ambientIntensity)
 	{
@@ -140,8 +140,8 @@ namespace test
 		m_Shader->SetVec3("u_Flashlight.specular", m_fl_specularIntensity);
 		// Flashlight attenuation properties
 		m_Shader->SetFloat("u_Flashlight.constant", 1.0f);
-		m_Shader->SetFloat("u_Flashlight.linear", 0.09f);
-		m_Shader->SetFloat("u_Flashlight.quadratic", 0.032f);
+		m_Shader->SetFloat("u_Flashlight.linear", 0.06f);
+		m_Shader->SetFloat("u_Flashlight.quadratic", 0.005f);
 		// Flashlight position and direction
 		m_Shader->SetVec3f("u_Flashlight.position", m_Camera.Position.x, m_Camera.Position.y, m_Camera.Position.z);
 		m_Shader->SetVec3f("u_Flashlight.direction", m_Camera.Front.x, m_Camera.Front.y, m_Camera.Front.z);
@@ -221,12 +221,12 @@ namespace test
 
 		// Camera position movement
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			phongCamera->ProcessKeyboardForMapView(FORWARD, deltaTime, -0.2f, 0.2f);
+			phongCamera->ProcessKeyboardForWalkingView(FORWARD, deltaTime, -0.2f);
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			phongCamera->ProcessKeyboardForMapView(BACKWARD, deltaTime, -0.2f, 0.2f);
+			phongCamera->ProcessKeyboardForWalkingView(BACKWARD, deltaTime, -0.2f);
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			phongCamera->ProcessKeyboardForMapView(LEFT, deltaTime, -0.2f, 0.2f);
+			phongCamera->ProcessKeyboardForWalkingView(LEFT, deltaTime, -0.2f);
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			phongCamera->ProcessKeyboardForMapView(RIGHT, deltaTime, -0.2f, 0.2f);
+			phongCamera->ProcessKeyboardForWalkingView(RIGHT, deltaTime, -0.2f);
 	}
 }
