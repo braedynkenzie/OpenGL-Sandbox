@@ -27,7 +27,10 @@ namespace test
 		m_FlashlightColour(glm::vec3(1.0f)), m_fl_diffuseIntensity(glm::vec3(1.0f)),
 		m_fl_ambientIntensity(glm::vec3(0.4f)), m_fl_specularIntensity(glm::vec3(0.2f)),
 		m_fl_diffuseColour( m_FlashlightColour * m_fl_diffuseIntensity), 
-		m_fl_ambientColour(m_fl_diffuseColour * m_fl_ambientIntensity)
+		m_fl_ambientColour(m_fl_diffuseColour * m_fl_ambientIntensity),
+		m_PointLightPos(glm::vec3(2.0f, 2.0f, -40.0f)),
+		m_pl_diffuseIntensity(glm::vec3(0.9f)), m_pl_ambientIntensity(glm::vec3(0.4f)), 
+		m_pl_specularIntensity(glm::vec3(0.8f))
 	{
 		instance = this;
 
@@ -40,43 +43,82 @@ namespace test
 		// Callback function for scrolling zoom
 		glfwSetScrollCallback(m_MainWindow, scroll_callbackPhongTest);
 
-		// Create vertice positions
-		float vertices[] = {
-		  //       positions      --     tex coords     --    normals
-			  -800.0, -10.0, -800.0,      0.0, 100.0,      0.0, 1.0, 0.0,
-			   800.0, -10.0,  800.0,    100.0,   0.0,      0.0, 1.0, 0.0,
-			  -800.0, -10.0,  800.0,      0.0,   0.0,      0.0, 1.0, 0.0,
-			   800.0, -10.0, -800.0,    100.0, 100.0,      0.0, 1.0, 0.0,
+		// Create vertices and incdices
+		float groundVertices[] = {
+			//       positions      --     tex coords     --    normals
+				-800.0, -10.0, -800.0,      0.0, 100.0,      0.0, 1.0, 0.0,
+				 800.0, -10.0,  800.0,    100.0,   0.0,      0.0, 1.0, 0.0,
+				-800.0, -10.0,  800.0,      0.0,   0.0,      0.0, 1.0, 0.0,
+				 800.0, -10.0, -800.0,    100.0, 100.0,      0.0, 1.0, 0.0,
 		};
 
-		unsigned int indices[]{
+		unsigned int groundIndices[]{
 			0, 2, 1,
 			3, 0, 1,
 		};
 
-		m_VA = std::make_unique<VertexArray>();
+		float pointLightVertices[] = {
+			//       positions    --   tex coords
+				-0.5, -0.5, -0.5,       0.0, 0.0,		// bottom front left,	0
+				 0.5,  0.5, -0.5,       1.0, 1.0,		// top front right,		1
+				-0.5,  0.5, -0.5,       0.0, 1.0,		// top front left,		2
+				 0.5, -0.5, -0.5,       1.0, 0.0,		// bottom front right,	3
+				 0.5,  0.5,  0.5,       1.0, 1.0,		// top back right,		4
+				-0.5, -0.5,  0.5,       0.0, 0.0,		// bottom back left,	5
+				-0.5,  0.5,  0.5,       0.0, 1.0,		// top back left,		6
+				 0.5, -0.5,  0.5,       1.0, 0.0,		// bottom back right,	7
+		};
 
+		unsigned int pointLightIndices[]{
+			 0, 1, 2, // Front left
+			 1, 0, 3, // Front right
+
+			 4, 5, 6, // Back left
+			 5, 4, 7, // Back right
+
+			 5, 2, 6, // Left left
+			 2, 5, 0, // Left right
+
+			 3, 4, 1, // Right left
+			 4, 3, 7, // Right right
+
+			 2, 4, 6, // Top left
+			 4, 2, 1, // Top right
+
+			 5, 3, 0, // Bottom left
+			 3, 5, 7, // Bottom right
+		};
+
+		// Ground Vertex Array setup
+		m_VA_Ground = std::make_unique<VertexArray>();
 		// Init Vertex Buffer and bind to Vertex Array (m_VA)
-		m_VB = std::make_unique<VertexBuffer>(vertices, 8 * 4 * sizeof(float));
-
+		m_VB_Ground = std::make_unique<VertexBuffer>(groundVertices, 8 * 4 * sizeof(float));
 		// Create and associate the layout (Vertex Attribute Pointer)
-		VertexBufferLayout layout;
-		layout.Push<float>(3); // Vertex position,vec3
-		layout.Push<float>(2); // Texture coordinates, vec2
-		layout.Push<float>(3); // Normals, vec3
-		m_VA->AddBuffer(*m_VB, layout);
-
+		VertexBufferLayout groundVBLayout;
+		groundVBLayout.Push<float>(3); // Vertex position,vec3
+		groundVBLayout.Push<float>(2); // Texture coordinates, vec2
+		groundVBLayout.Push<float>(3); // Normals, vec3
+		m_VA_Ground->AddBuffer(*m_VB_Ground, groundVBLayout);
 		// Init index buffer and bind to Vertex Array (m_VA)
-		m_IB = std::make_unique<IndexBuffer>(indices, 6);
+		m_IB_Ground = std::make_unique<IndexBuffer>(groundIndices, 6);
 
-		// Load shader
-		m_Shader = std::make_unique<Shader>("res/shaders/BasicPhongModel.shader");
+		// Pointlight Vertex Array setup
+		m_VA_PointLight = std::make_unique<VertexArray>();
+		// Init Vertex Buffer and bind to Vertex Array (m_VA)
+		m_VB_PointLight = std::make_unique<VertexBuffer>(pointLightVertices, 5 * 8 * sizeof(float));
+		// Create and associate the layout (Vertex Attribute Pointer)
+		VertexBufferLayout pointLightVBLayout;
+		pointLightVBLayout.Push<float>(3); // Vertex position,vec3
+		pointLightVBLayout.Push<float>(2); // Texture coordinates, vec2
+		m_VA_PointLight->AddBuffer(*m_VB_PointLight, pointLightVBLayout);
+		// Init index buffer and bind to Vertex Array (m_VA)
+		m_IB_PointLight = std::make_unique<IndexBuffer>(pointLightIndices, 6 * 6);
 
-		// Unbind everything
-		m_VA->Unbind();
-		m_VB->Unbind();
-		m_IB->Unbind();
-		m_Shader->Unbind();
+		// Load shaders
+		m_GroundShader = std::make_unique<Shader>("res/shaders/BasicPhongModel.shader");
+		m_PointLightsShader = std::make_unique<Shader>("res/shaders/PointLights.shader");
+
+		// NOTE: Would unbind any buffers/shaders here if necessary
 
 		// Enable OpenGL z-buffer depth comparisons
 		glEnable(GL_DEPTH_TEST);
@@ -111,10 +153,16 @@ namespace test
 			clearColour[2] / darknessFactor, clearColour[3] / darknessFactor));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
+		// Point light colour
+		glm::vec3 lightColor;
+		lightColor.x = sin(glfwGetTime() * 1.0f) / 2.0f + 0.7f;
+		lightColor.y = sin(glfwGetTime() * 0.5f) / 2.0f + 0.7f;
+		lightColor.z = sin(glfwGetTime() * 0.4f) / 2.0f + 0.7f;
+
 		Renderer renderer;
 
 		// Bind shader and set any 'per frame' uniforms
-		m_Shader->Bind();
+		m_GroundShader->Bind();
 		//
 		// Create model, view, projection matrices 
 		// Send combined MVP matrix to shader
@@ -123,31 +171,63 @@ namespace test
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
 		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
 		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
-		m_Shader->SetMatrix4f("model", modelMatrix);
-		m_Shader->SetMatrix4f("view", viewMatrix);
-		m_Shader->SetMatrix4f("proj", projMatrix);
+		m_GroundShader->SetMatrix4f("model", modelMatrix);
+		m_GroundShader->SetMatrix4f("view", viewMatrix);
+		m_GroundShader->SetMatrix4f("proj", projMatrix);
 
 		// Update camera's viewing position each frame
-		m_Shader->SetVec3f("viewPos", m_Camera.Position.x, m_Camera.Position.y, m_Camera.Position.z);
+		m_GroundShader->SetVec3f("viewPos", m_Camera.Position.x, m_Camera.Position.y, m_Camera.Position.z);
 
 		// Flashlight's properties
 		//
-		m_Shader->SetBool("u_Flashlight.on", m_IsFlashlightOn);
-		m_Shader->SetVec3("u_Flashlight.ambient", m_fl_ambientColour);
-		m_Shader->SetVec3("u_Flashlight.diffuse", m_fl_diffuseColour);
-		m_Shader->SetVec3("u_Flashlight.specular", m_fl_specularIntensity);
+		m_GroundShader->SetBool("u_Flashlight.on", m_IsFlashlightOn);
+		m_GroundShader->SetVec3("u_Flashlight.ambient", m_fl_ambientColour);
+		m_GroundShader->SetVec3("u_Flashlight.diffuse", m_fl_diffuseColour);
+		m_GroundShader->SetVec3("u_Flashlight.specular", m_fl_specularIntensity);
 		// Flashlight attenuation properties
-		m_Shader->SetFloat("u_Flashlight.constant", 1.0f);
-		m_Shader->SetFloat("u_Flashlight.linear", 0.06f);
-		m_Shader->SetFloat("u_Flashlight.quadratic", 0.005f);
+		m_GroundShader->SetFloat("u_Flashlight.constant", 1.0f);
+		m_GroundShader->SetFloat("u_Flashlight.linear", 0.06f);
+		m_GroundShader->SetFloat("u_Flashlight.quadratic", 0.005f);
 		// Flashlight position and direction
-		m_Shader->SetVec3f("u_Flashlight.position", m_Camera.Position.x, m_Camera.Position.y, m_Camera.Position.z);
-		m_Shader->SetVec3f("u_Flashlight.direction", m_Camera.Front.x, m_Camera.Front.y, m_Camera.Front.z);
+		m_GroundShader->SetVec3f("u_Flashlight.position", m_Camera.Position.x, m_Camera.Position.y, m_Camera.Position.z);
+		m_GroundShader->SetVec3f("u_Flashlight.direction", m_Camera.Front.x, m_Camera.Front.y, m_Camera.Front.z);
 		// Flashlight cutoff angle
-		m_Shader->SetFloat("u_Flashlight.cutOff", glm::cos(glm::radians(5.0f)));
-		m_Shader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(30.0f)));
+		m_GroundShader->SetFloat("u_Flashlight.cutOff", glm::cos(glm::radians(5.0f)));
+		m_GroundShader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(30.0f)));
+		//
+		// Point light properties in m_PointLightsShader
+		glm::vec3 pl_diffuseColor = lightColor * m_pl_diffuseIntensity;
+		glm::vec3 pl_ambientColor = pl_diffuseColor * m_pl_ambientIntensity;
+		m_PointLightsShader->Bind();
+		// Model matrix: Translate and scale the light object
+		glm::mat4 pointLightsModelMatrix = glm::mat4(1.0f);
+		// movingLightPos = pointLightPos;
+		/*if (isMovingLight) {
+			movingLightPos.x *= (float)(sin(glfwGetTime()) * 3.0f);
+			movingLightPos.y *= (float)(cos(glfwGetTime()) * 3.0f);
+		}*/
+		pointLightsModelMatrix = glm::translate(pointLightsModelMatrix, m_PointLightPos); // movingLightPos);
+		pointLightsModelMatrix = glm::scale(pointLightsModelMatrix, glm::vec3(1.0f));
+		m_PointLightsShader->SetMatrix4f("model", pointLightsModelMatrix);
+		m_PointLightsShader->SetMatrix4f("view", viewMatrix);
+		m_PointLightsShader->SetMatrix4f("proj", projMatrix);
+		// Light colour uniform
+		m_PointLightsShader->SetVec3("pointLightColour", lightColor * 0.8f);
+		//
+		// Point light properties in m_GroundShader
+		m_GroundShader->Bind();
+		m_GroundShader->SetVec3("pointLights[0].ambient", pl_ambientColor);
+		m_GroundShader->SetVec3("pointLights[0].diffuse", pl_diffuseColor);
+		m_GroundShader->SetVec3("pointLights[0].specular", m_pl_specularIntensity);
+		// Point light attenuation properties
+		m_GroundShader->SetFloat("pointLights[0].constant", 1.0f);
+		m_GroundShader->SetFloat("pointLights[0].linear", 0.01f);
+		m_GroundShader->SetFloat("pointLights[0].quadratic", 0.004f);
+		// Point light position
+		m_GroundShader->SetVec3("pointLights[0].position", m_PointLightPos); //movingLightPos);
 
-		renderer.Draw(*m_VA, *m_IB, *m_Shader);
+		renderer.Draw(*m_VA_Ground, *m_IB_Ground, *m_GroundShader); 
+		renderer.Draw(*m_VA_PointLight, *m_IB_PointLight, *m_PointLightsShader);
 	}
 
 	void TestPhongLighting::OnImGuiRender()
@@ -165,21 +245,21 @@ namespace test
 		glfwSetInputMode(m_MainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 		// Bind shader program and set uniforms
-		m_Shader->Bind();
+		m_GroundShader->Bind();
 		m_Texture = std::make_unique<Texture>("res/textures/dirt_ground_texture.png");
 		m_Texture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
-		m_Shader->SetUniform1i("u_Material.diffuse", 0); 
-		m_Shader->SetVec3f("u_Material.specular", 0.5f, 0.5f, 0.5f);
-		m_Shader->SetFloat("u_Material.shininess", 16.0f);
+		m_GroundShader->SetInt("u_Material.diffuse", 0); 
+		m_GroundShader->SetVec3f("u_Material.specular", 0.5f, 0.5f, 0.5f);
+		m_GroundShader->SetFloat("u_Material.shininess", 16.0f);
 		// Reset MVP matrices on activation
 		glm::mat4 modelMatrix = glm::mat4(1.0);
 		modelMatrix = glm::translate(modelMatrix, glm::vec3(50.0, 0.0, 36.0));
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
 		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
 		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
-		m_Shader->SetMatrix4f("model", modelMatrix);
-		m_Shader->SetMatrix4f("view", viewMatrix);
-		m_Shader->SetMatrix4f("proj", projMatrix);
+		m_GroundShader->SetMatrix4f("model", modelMatrix);
+		m_GroundShader->SetMatrix4f("view", viewMatrix);
+		m_GroundShader->SetMatrix4f("proj", projMatrix);
 		// Set texture mode to repeat
 		// TODO mipmapping
 		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));

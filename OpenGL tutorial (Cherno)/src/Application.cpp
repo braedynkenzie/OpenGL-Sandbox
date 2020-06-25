@@ -93,10 +93,10 @@ int main(void)
         test::TestPhongLighting* phongLightingTest = new test::TestPhongLighting(window);
         test::TestModelLoading* modelLoadingTest = new test::TestModelLoading(window);
         // Register all test sandboxes
-        testMenu->RegisterTest<test::TestClearColour*>("Clear colour test", (test::TestClearColour*) clearColourTest);
-        testMenu->RegisterTest<test::TestTexture2D*>("2D Texture test", (test::TestTexture2D*) texture2DTest);
-        testMenu->RegisterTest<test::TestFPSCamera*>("First person camera test", (test::TestFPSCamera*) cameraTest);
-        testMenu->RegisterTest<test::TestPhongLighting*>("Phong lighting model test", (test::TestPhongLighting*) phongLightingTest);
+        testMenu->RegisterTest<test::TestClearColour*>("Change background colour", (test::TestClearColour*) clearColourTest);
+        testMenu->RegisterTest<test::TestTexture2D*>("Textured cube test", (test::TestTexture2D*) texture2DTest);
+        testMenu->RegisterTest<test::TestFPSCamera*>("First person camera (map)", (test::TestFPSCamera*) cameraTest);
+        testMenu->RegisterTest<test::TestPhongLighting*>("Phong lighting model sandbox", (test::TestPhongLighting*) phongLightingTest);
         testMenu->RegisterTest<test::TestModelLoading*>("Model loading test", (test::TestModelLoading*) modelLoadingTest);
 
         /* Loop until the user closes the window */

@@ -13,10 +13,10 @@ Shader::Shader(const std::string& filepath)
     m_RendererID = CreateShader(shaderSource.VertexSource, shaderSource.FragmentSource);
 
     // Debugging
-    std::cout << "VERTEX SHADER SOURCE" << std::endl;
+   /* std::cout << "VERTEX SHADER SOURCE" << std::endl;
     std::cout << shaderSource.FragmentSource << std::endl;
     std::cout << "FRAGMENT SHADER SOURCE" << std::endl;
-    std::cout << shaderSource.FragmentSource << std::endl;
+    std::cout << shaderSource.FragmentSource << std::endl;*/
 }
 
 Shader::~Shader()

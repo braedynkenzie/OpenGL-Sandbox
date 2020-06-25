@@ -23,10 +23,10 @@ namespace test
 		m_BackpackPos(glm::vec3(0.0f, 0.0f, 0.0f)),
 		m_BackpackModel(nullptr),
 		m_Shader(new Shader("res/shaders/Backpack.shader")),
-		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)),
+		m_CameraPos(glm::vec3(0.0f, 0.0f, 4.0f)),
 		m_CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)),
 		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)),
-		m_Camera(Camera(m_CameraPos, 75.0f)),
+		m_Camera(Camera(m_CameraPos, 60.0f)),
 		m_IsFlashlightOn(true),
 		m_FlashlightColour(glm::vec3(1.0f)), m_fl_diffuseIntensity(glm::vec3(1.0f)),
 		m_fl_ambientIntensity(glm::vec3(0.4f)), m_fl_specularIntensity(glm::vec3(0.2f)),
@@ -46,11 +46,11 @@ namespace test
 
 		// Create vertice positions
 		float vertices[] = {
-		 //       positions      --     tex coords     --    normals
-			  -800.0, -10.0, -800.0,      0.0, 100.0,      0.0, 1.0, 0.0,
-			   800.0, -10.0,  800.0,    100.0,   0.0,      0.0, 1.0, 0.0,
-			  -800.0, -10.0,  800.0,      0.0,   0.0,      0.0, 1.0, 0.0,
-			   800.0, -10.0, -800.0,    100.0, 100.0,      0.0, 1.0, 0.0,
+		 //       positions         --     normals    --    tex coords    
+			  -800.0, -10.0, -800.0,    0.0, 1.0, 0.0,	    0.0, 100.0,
+			   800.0, -10.0,  800.0,    0.0, 1.0, 0.0,	  100.0,   0.0,
+			  -800.0, -10.0,  800.0,    0.0, 1.0, 0.0,	    0.0,   0.0,
+			   800.0, -10.0, -800.0,    0.0, 1.0, 0.0,	  100.0, 100.0,
 		};
 
 		unsigned int indices[]{
@@ -66,8 +66,8 @@ namespace test
 		// Create and associate the layout (Vertex Attribute Pointer)
 		VertexBufferLayout layout;
 		layout.Push<float>(3); // Vertex position,vec3
-		layout.Push<float>(2); // Texture coordinates, vec2
 		layout.Push<float>(3); // Normals, vec3
+		layout.Push<float>(2); // Texture coordinates, vec2
 		m_VA->AddBuffer(*m_VB, layout);
 
 		// Init index buffer and bind to Vertex Array (m_VA)
@@ -147,11 +147,13 @@ namespace test
 		// Flashlight cutoff angle
 		m_Shader->SetFloat("u_Flashlight.cutOff", glm::cos(glm::radians(5.0f)));
 		m_Shader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(30.0f)));
-
+		// Bind ground texture
+		m_GroundTexture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
+		m_Shader->SetUniform1i("texture_diffuse0", 0);
+		// Render the ground
 		renderer.Draw(*m_VA, *m_IB, *m_Shader);
 
-		// Render the loaded backpack model
-		// TODO figure out why this draw call is taking so long
+		// Load model's uniforms and render the loaded backpack model
 		m_BackpackModel->Draw(m_Shader);
 	}
 
@@ -166,11 +168,13 @@ namespace test
 
 	void TestModelLoading::OnActivated()
 	{
+		// Only want to load the model the first time we activate this OpenGL test
 		if (!modelLoaded)
 		{
 			// Flip texture along y axis before loading
 			stbi_set_flip_vertically_on_load(true);
 			m_BackpackModel = new Model((char*)"res/models/backpack/backpack.obj");
+			//m_BackpackModel = new Model((char*)"res/models/nature/BlenderNatureAsset.obj");
 			modelLoaded = true;
 		}
 
@@ -183,11 +187,11 @@ namespace test
 		glCullFace(GL_BACK); // cull back faces
 		glFrontFace(GL_CCW); // tell OpenGL that front faces have CCW winding order
 
+		// Load ground texture
+		m_GroundTexture = std::make_unique<Texture>("res/textures/dirt_ground_texture.png");
+
 		// Bind shader program and set uniforms
 		m_Shader->Bind();
-		m_GroundTexture = std::make_unique<Texture>("res/textures/dirt_ground_texture.png");
-		m_GroundTexture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
-		m_Shader->SetUniform1i("texture_diffuse0", 0); 
 		m_Shader->SetVec3f("u_Material.specular", 0.5f, 0.5f, 0.5f);
 		m_Shader->SetFloat("u_Material.shininess", 16.0f);
 		// Reset MVP matrices on activation

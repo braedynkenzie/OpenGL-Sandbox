@@ -1188,6 +1188,7 @@
     </None>
     <None Include="res\shaders\BasicPhongModel.shader" />
     <None Include="res\shaders\Backpack.shader" />
+    <None Include="res\shaders\PointLights.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">
