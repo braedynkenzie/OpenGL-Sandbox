@@ -163,6 +163,7 @@ namespace test
 		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
 		ImGui::Text("- Use WASD keys to move camera");
 		ImGui::Text("- Use scroll wheel to change FOV");
+		ImGui::Text("- Press '1' and '2' to toggle wireframe mode");
 		ImGui::Text("- Avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	}
 

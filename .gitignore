@@ -1,5 +1,4 @@
 
-*.obj
 *.ipch
 *.html
 *.tlog
@@ -7,10 +6,134 @@
 *.hpp
 *.inl
 *.log
-*.obj
-*.pdb
-*.ipdb
 *.css
 *.txt
-*.ilk
 *.ini
+OpenGL tutorial (Cherno)/x64/Release/VertexBuffer.obj
+OpenGL tutorial (Cherno)/x64/Release/VertexArray.obj
+OpenGL tutorial (Cherno)/x64/Release/vc142.pdb
+OpenGL tutorial (Cherno)/x64/Release/Texture.obj
+OpenGL tutorial (Cherno)/x64/Release/TestTexture2D.obj
+OpenGL tutorial (Cherno)/x64/Release/TestTemplate.obj
+OpenGL tutorial (Cherno)/x64/Release/TestPhongLighting.obj
+OpenGL tutorial (Cherno)/x64/Release/TestModelLoading2.obj
+OpenGL tutorial (Cherno)/x64/Release/TestModelLoading.obj
+OpenGL tutorial (Cherno)/x64/Release/TestFPSCamera.obj
+OpenGL tutorial (Cherno)/x64/Release/TestClearColour.obj
+OpenGL tutorial (Cherno)/x64/Release/Test.obj
+OpenGL tutorial (Cherno)/x64/Release/stb_image.obj
+OpenGL tutorial (Cherno)/x64/Release/Shader.obj
+OpenGL tutorial (Cherno)/x64/Release/Renderer.obj
+OpenGL tutorial (Cherno)/x64/Release/IndexBuffer.obj
+OpenGL tutorial (Cherno)/x64/Release/imgui_impl_glfw_gl3.obj
+OpenGL tutorial (Cherno)/x64/Release/imgui_draw.obj
+OpenGL tutorial (Cherno)/x64/Release/imgui_demo.obj
+OpenGL tutorial (Cherno)/x64/Release/imgui.obj
+OpenGL tutorial (Cherno)/x64/Release/Globals.obj
+OpenGL tutorial (Cherno)/x64/Release/glm.obj
+OpenGL tutorial (Cherno)/x64/Release/Application.obj
+OpenGL tutorial (Cherno)/x64/Debug/VertexBuffer.obj
+OpenGL tutorial (Cherno)/x64/Debug/VertexArray.obj
+OpenGL tutorial (Cherno)/x64/Debug/vc142.pdb
+OpenGL tutorial (Cherno)/x64/Debug/Texture.obj
+OpenGL tutorial (Cherno)/x64/Debug/TestTexture2D.obj
+OpenGL tutorial (Cherno)/x64/Debug/TestTemplate.obj
+OpenGL tutorial (Cherno)/x64/Debug/TestPhongLighting.obj
+OpenGL tutorial (Cherno)/x64/Debug/TestModelLoading2.obj
+OpenGL tutorial (Cherno)/x64/Debug/TestModelLoading.obj
+OpenGL tutorial (Cherno)/x64/Debug/TestFPSCamera.obj
+OpenGL tutorial (Cherno)/x64/Debug/TestClearColour.obj
+OpenGL tutorial (Cherno)/x64/Debug/Test.obj
+OpenGL tutorial (Cherno)/x64/Debug/stb_image.obj
+OpenGL tutorial (Cherno)/x64/Debug/Shader.obj
+OpenGL tutorial (Cherno)/x64/Debug/Renderer.obj
+OpenGL tutorial (Cherno)/x64/Debug/IndexBuffer.obj
+OpenGL tutorial (Cherno)/x64/Debug/imgui_impl_glfw_gl3.obj
+OpenGL tutorial (Cherno)/x64/Debug/imgui_draw.obj
+OpenGL tutorial (Cherno)/x64/Debug/imgui_demo.obj
+OpenGL tutorial (Cherno)/x64/Debug/imgui.obj
+OpenGL tutorial (Cherno)/x64/Debug/Globals.obj
+OpenGL tutorial (Cherno)/x64/Debug/glm.obj
+OpenGL tutorial (Cherno)/x64/Debug/Application.obj
+.vs/OpenGL tutorial (Cherno)/v16/Browse.VC.db
+.vs/OpenGL tutorial (Cherno)/v16/Browse.VC.opendb
+Debug/OpenGL tutorial (Cherno).pdb
+Dependencies/includes/assimp/.editorconfig
+Dependencies/includes/assimp/aabb.h
+Dependencies/includes/assimp/ai_assert.h
+Dependencies/includes/assimp/anim.h
+Dependencies/includes/assimp/BaseImporter.h
+Dependencies/includes/assimp/Bitmap.h
+Dependencies/includes/assimp/BlobIOSystem.h
+Dependencies/includes/assimp/ByteSwapper.h
+Dependencies/includes/assimp/camera.h
+Dependencies/includes/assimp/cexport.h
+Dependencies/includes/assimp/cfileio.h
+Dependencies/includes/assimp/cimport.h
+Dependencies/includes/assimp/color4.h
+Dependencies/includes/assimp/Compiler/poppack1.h
+Dependencies/includes/assimp/Compiler/pstdint.h
+Dependencies/includes/assimp/Compiler/pushpack1.h
+Dependencies/includes/assimp/config.h
+Dependencies/includes/assimp/config.h.in
+Dependencies/includes/assimp/CreateAnimMesh.h
+Dependencies/includes/assimp/DefaultIOStream.h
+Dependencies/includes/assimp/DefaultIOSystem.h
+Dependencies/includes/assimp/Defines.h
+Dependencies/includes/assimp/defs.h
+Dependencies/includes/assimp/Exceptional.h
+Dependencies/includes/assimp/fast_atof.h
+Dependencies/includes/assimp/GenericProperty.h
+Dependencies/includes/assimp/Hash.h
+Dependencies/includes/assimp/importerdesc.h
+Dependencies/includes/assimp/IOStreamBuffer.h
+Dependencies/includes/assimp/irrXMLWrapper.h
+Dependencies/includes/assimp/light.h
+Dependencies/includes/assimp/LineSplitter.h
+Dependencies/includes/assimp/LogAux.h
+Dependencies/includes/assimp/Macros.h
+Dependencies/includes/assimp/material.h
+Dependencies/includes/assimp/MathFunctions.h
+Dependencies/includes/assimp/matrix3x3.h
+Dependencies/includes/assimp/matrix4x4.h
+Dependencies/includes/assimp/MemoryIOWrapper.h
+Dependencies/includes/assimp/mesh.h
+Dependencies/includes/assimp/metadata.h
+Dependencies/includes/assimp/ParsingUtils.h
+Dependencies/includes/assimp/pbrmaterial.h
+Dependencies/includes/assimp/port/AndroidJNI/AndroidJNIIOSystem.h
+Dependencies/includes/assimp/postprocess.h
+Dependencies/includes/assimp/Profiler.h
+Dependencies/includes/assimp/qnan.h
+Dependencies/includes/assimp/quaternion.h
+Dependencies/includes/assimp/RemoveComments.h
+Dependencies/includes/assimp/scene.h
+Dependencies/includes/assimp/SceneCombiner.h
+Dependencies/includes/assimp/SGSpatialSort.h
+Dependencies/includes/assimp/SkeletonMeshBuilder.h
+Dependencies/includes/assimp/SmoothingGroups.h
+Dependencies/includes/assimp/SpatialSort.h
+Dependencies/includes/assimp/StandardShapes.h
+Dependencies/includes/assimp/StreamReader.h
+Dependencies/includes/assimp/StreamWriter.h
+Dependencies/includes/assimp/StringComparison.h
+Dependencies/includes/assimp/StringUtils.h
+Dependencies/includes/assimp/Subdivision.h
+Dependencies/includes/assimp/texture.h
+Dependencies/includes/assimp/TinyFormatter.h
+Dependencies/includes/assimp/types.h
+Dependencies/includes/assimp/vector2.h
+Dependencies/includes/assimp/vector3.h
+Dependencies/includes/assimp/version.h
+Dependencies/includes/assimp/Vertex.h
+Dependencies/includes/assimp/XMLTools.h
+Dependencies/includes/assimp/ZipArchiveIOSystem.h
+Dependencies/includes/GLEW/bin/Release/Win32/glewinfo.exe
+Dependencies/includes/GLEW/bin/Release/Win32/visualinfo.exe
+Dependencies/includes/GLEW/bin/Release/x64/glewinfo.exe
+Dependencies/includes/GLEW/bin/Release/x64/visualinfo.exe
+Dependencies/includes/GLEW/doc/github.png
+Dependencies/includes/GLEW/doc/glew.png
+Dependencies/includes/GLEW/doc/new.png
+Dependencies/includes/GLEW/doc/ogl_sm.jpg
+Dependencies/includes/GLEW/doc/travis.png

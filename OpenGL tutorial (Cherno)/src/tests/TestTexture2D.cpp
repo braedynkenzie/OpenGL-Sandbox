@@ -18,13 +18,13 @@ namespace test
 		// Create vertice positions
 		float vertices[] = {
 			// positions      --  tex coords 
-			  -0.5, -0.5, -0.5,    0.0, 0.0, // Cube front
-			   0.5,  0.5, -0.5,    1.0, 1.0,
+			   0.5,  0.5, -0.5,    1.0, 1.0, // Cube back
+			  -0.5, -0.5, -0.5,    0.0, 0.0, 
 			  -0.5,  0.5, -0.5,    0.0, 1.0,
 			   0.5, -0.5, -0.5,    1.0, 0.0,
 
-			  -0.5, -0.5,  0.5,    0.0, 0.0, // Cube back
-			   0.5,  0.5,  0.5,    1.0, 1.0,
+			  -0.5, -0.5,  0.5,    0.0, 0.0, // Cube front
+			   0.5,  0.5,  0.5,    1.0, 1.0, 
 			  -0.5,  0.5,  0.5,    0.0, 1.0,
 			   0.5, -0.5,  0.5,    1.0, 0.0,
 
@@ -38,8 +38,8 @@ namespace test
 			   0.5,  0.5,  0.5,    0.0, 1.0,
 			   0.5, -0.5, -0.5,    1.0, 0.0,
 
-			  -0.5,  0.5, -0.5,    1.0, 1.0, // Cube top
-			   0.5,  0.5,  0.5,    0.0, 0.0,
+			   0.5,  0.5,  0.5,    0.0, 0.0, // Cube top
+			  -0.5,  0.5, -0.5,    1.0, 1.0, 
 			  -0.5,  0.5,  0.5,    1.0, 0.0,
 			   0.5,  0.5, -0.5,    0.0, 1.0,
 
@@ -51,22 +51,22 @@ namespace test
 
 		unsigned int indices[]{
 			0, 1, 2,
-			3, 0, 1,
+			3, 1, 0,
 
 			4, 5, 6,
-			7, 4, 5,
+			7, 5, 4,
 
 			8, 9, 10,
-			11, 8, 9,
+			11, 9, 8,
 
 			12, 13, 14,
-			15, 12, 13,
+			15, 13, 12,
 
 			16, 17, 18,
-			19, 16, 17,
+			19, 17, 16,
 
 			20, 21, 22,
-			23, 20, 21
+			23, 21, 20
 		};
 
 		m_VA = std::make_unique<VertexArray>();
@@ -158,6 +158,7 @@ namespace test
 		ImGui::SliderFloat("Model Y axis rotation", &m_ModelRotationY, 0.0f, 360.0f);
 		ImGui::SliderFloat("Model Z axis rotation", &m_ModelRotationZ, 0.0f, 360.0f);
 		ImGui::SliderFloat("Model scale", &m_ModelScale, -1.0f, 5.0f);
+		ImGui::Text("- Press '1' and '2' to toggle wireframe mode");
 		if (ImGui::Button("Switch texture"))
 		{
 			if (m_ActiveTexture == 0)
