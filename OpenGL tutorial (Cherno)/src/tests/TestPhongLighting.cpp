@@ -42,7 +42,7 @@ namespace test
 
 		// Create vertice positions
 		float vertices[] = {
-		 //       positions     --   tex coords    --    normals
+		  //       positions      --     tex coords     --    normals
 			  -800.0, -10.0, -800.0,      0.0, 100.0,      0.0, 1.0, 0.0,
 			   800.0, -10.0,  800.0,    100.0,   0.0,      0.0, 1.0, 0.0,
 			  -800.0, -10.0,  800.0,      0.0,   0.0,      0.0, 1.0, 0.0,
@@ -50,7 +50,7 @@ namespace test
 		};
 
 		unsigned int indices[]{
-			0, 1, 2,
+			0, 2, 1,
 			3, 0, 1,
 		};
 
@@ -171,6 +171,15 @@ namespace test
 		m_Shader->SetUniform1i("u_Material.diffuse", 0); 
 		m_Shader->SetVec3f("u_Material.specular", 0.5f, 0.5f, 0.5f);
 		m_Shader->SetFloat("u_Material.shininess", 16.0f);
+		// Reset MVP matrices on activation
+		glm::mat4 modelMatrix = glm::mat4(1.0);
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(50.0, 0.0, 36.0));
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
+		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
+		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
+		m_Shader->SetMatrix4f("model", modelMatrix);
+		m_Shader->SetMatrix4f("view", viewMatrix);
+		m_Shader->SetMatrix4f("proj", projMatrix);
 		// Set texture mode to repeat
 		// TODO mipmapping
 		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));

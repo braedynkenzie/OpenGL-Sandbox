@@ -124,14 +124,15 @@ namespace test
 	void TestTexture2D::OnRender() 
 	{
 		float* clearColour = test::TestClearColour::GetClearColour();
-		GLCall(glClearColor(clearColour[0], clearColour[1], clearColour[2], clearColour[3]));
+		float darknessFactor = 2.0f;
+		GLCall(glClearColor(clearColour[0] / darknessFactor, clearColour[1] / darknessFactor,
+			clearColour[2] / darknessFactor, clearColour[3] / darknessFactor));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 		Renderer renderer;
 
 		// Bind shader and set its per frame uniforms
 		m_Shader->Bind();
-		m_Shader->SetUniform4f("u_Color", 0.2f, ((sin(glfwGetTime()) + 1.0f) / 2.0f), 0.8f, 1.0f);
 		//
 		// Create model, view, projection matrices 
 		// Send combined MVP matrix to shader
@@ -170,7 +171,6 @@ namespace test
 				m_ActiveTexture = 0;
 			}
 		}
-			
 	}
 
 	void TestTexture2D::OnActivated()

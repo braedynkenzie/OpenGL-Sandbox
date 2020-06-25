@@ -78,6 +78,9 @@ int main(void)
         ImGui::CreateContext();
         ImGui_ImplGlfwGL3_Init(window, true);
         ImGui::StyleColorsDark();
+
+        // Flip texture along y axis before loading
+        stbi_set_flip_vertically_on_load(true);
         
         // Test framework
         activeTest = nullptr;
@@ -110,8 +113,13 @@ int main(void)
             ImGui_ImplGlfwGL3_NewFrame();
             if (activeTest)
             {
-                activeTest->OnUpdate(0.0f); // TODO remove ?
+                activeTest->OnUpdate(0.0f);
+                //double timestampBefore = glfwGetTime();
+                //std::cout << "LOG: Before OnRender" << std::endl;
                 activeTest->OnRender();
+                //double onRenderTime = (glfwGetTime() - timestampBefore);
+                //std::cout << "LOG: After OnRender, took " << onRenderTime << " ms" <<std::endl;
+                //std::cout << std::endl << std::endl << std::endl;
                 ImGui::Begin("Test directory");
                 if (activeTest != testMenu && ImGui::Button("<-"))
                 {

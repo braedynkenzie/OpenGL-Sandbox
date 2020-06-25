@@ -1,8 +1,8 @@
 #shader vertex
 #version 330 core
 layout(location = 0) in vec3 a_Position;
-layout(location = 1) in vec2 a_TextureCoords;
-layout(location = 2) in vec3 a_Normal;
+layout(location = 1) in vec3 a_Normal;
+layout(location = 2) in vec2 a_TextureCoords;
 
 out vec2 TexCoords;
 out vec3 Normal;
@@ -39,7 +39,7 @@ out vec4 FragColour;
 uniform vec3 viewPos;
 
 uniform sampler2D texture_diffuse0;
-uniform sampler2D texture_specular0;
+//uniform sampler2D texture_specular0;
 
 struct Material {
 	vec3 specular;
@@ -115,7 +115,7 @@ vec3 CalcSpotLight(vec3 norm, vec3 FragPos, vec3 viewDir)
 		fl_specular = (fl_spec * u_Material.specular) * u_Flashlight.specular;
 		// Flashlight attenuation
 		float flashlightDistance = length(u_Flashlight.position - FragPos);
-		float fl_attenuation = 2.6 / (u_Flashlight.constant + u_Flashlight.linear * flashlightDistance + u_Flashlight.quadratic * (flashlightDistance * flashlightDistance));
+		float fl_attenuation = 1.2 / (u_Flashlight.constant + u_Flashlight.linear * flashlightDistance + u_Flashlight.quadratic * (flashlightDistance * flashlightDistance));
 		fl_ambient *= fl_attenuation;
 		fl_diffuse *= fl_attenuation;
 		fl_specular *= fl_attenuation;

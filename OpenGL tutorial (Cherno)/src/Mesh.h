@@ -48,7 +48,7 @@ public:
 		setupMesh();
 	}
 
-	void Draw(Shader* shaderProgram) 
+	void Draw(Shader* shaderProgram)
 	{
 		unsigned int diffuseNum = 0;
 		unsigned int specularNum = 0;
@@ -56,13 +56,14 @@ public:
 		{
 			glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
 				// retrieve texture number (the N in diffuse_textureN)
-				stringstream ss;
+			stringstream ss;
 			string number;
 			string name = textures[i].type;
 			if (name == "texture_diffuse")
 				ss << diffuseNum++; // transfer unsigned int to stream
 			else if (name == "texture_specular")
-				ss << specularNum++; // transfer unsigned int to stream
+				continue; // not using specular map for now
+				//ss << specularNum++; // transfer unsigned int to stream
 			number = ss.str();
 			// shaderProgram.setFloat(("material." + name + number).c_str(), i);
 			shaderProgram->SetInt((name + number).c_str(), i);

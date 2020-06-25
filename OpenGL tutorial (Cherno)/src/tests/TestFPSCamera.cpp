@@ -46,7 +46,7 @@ namespace test
 
 		unsigned int indices[]{
 			0, 1, 2,
-			3, 0, 1,
+			3, 1, 0,
 		};
 
 		m_VA = std::make_unique<VertexArray>();
@@ -111,7 +111,9 @@ namespace test
 		processInputCameraTest(m_MainWindow);
 
 		float* clearColour = test::TestClearColour::GetClearColour();
-		GLCall(glClearColor(clearColour[0], clearColour[1], clearColour[2], clearColour[3]));
+		float darknessFactor = 2.0f;
+		GLCall(glClearColor(clearColour[0] / darknessFactor, clearColour[1] / darknessFactor,
+			clearColour[2] / darknessFactor, clearColour[3] / darknessFactor));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 		Renderer renderer;
