@@ -10,7 +10,7 @@ namespace test
 	const int TEXTURE_COUNT = 2;
 
 	TestTexture2D::TestTexture2D(GLFWwindow*& mainWindow)
-		: m_MainWindow(mainWindow), m_ActiveTexture(0),
+		: m_MainWindow(mainWindow), m_ActiveTexture(1),
 		m_ModelTranslation(glm::vec3(0.0f, 0.0f, 0.0f)),
 		m_ModelRotationX(0.0), m_ModelRotationY(0.0f), m_ModelRotationZ(0.0f), 
 		m_ModelScale(1.0f), m_SCREEN_WIDTH(800), m_SCREEN_HEIGHT(600)
@@ -95,8 +95,11 @@ namespace test
 		{
 			m_Textures[i]->Bind(i); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
 			std::string textureName = "u_Texture" + std::to_string(i);
-			m_Shader->SetUniform1i(textureName, i);
+			m_Shader->SetInt(textureName, i);
 		}
+
+		m_Shader->SetInt("u_ActiveTexture", 1);
+		m_ActiveTexture = 1;
 
 		// Unbind everything
 		m_VA->Unbind();

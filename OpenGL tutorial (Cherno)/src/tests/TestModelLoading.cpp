@@ -146,7 +146,7 @@ namespace test
 		m_Shader->SetVec3f("u_Flashlight.direction", m_Camera.Front.x, m_Camera.Front.y, m_Camera.Front.z);
 		// Flashlight cutoff angle
 		m_Shader->SetFloat("u_Flashlight.cutOff", glm::cos(glm::radians(5.0f)));
-		m_Shader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(30.0f)));
+		m_Shader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(50.0f)));
 		// Bind ground texture
 		m_GroundTexture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
 		m_Shader->SetUniform1i("texture_diffuse0", 0);

@@ -13,12 +13,17 @@ namespace test
 	void mouse_callbackPhongTest(GLFWwindow* window, double xpos, double ypos);
 	void scroll_callbackPhongTest(GLFWwindow* window, double xOffset, double yOffset);
 	void processInputPhongTest(GLFWwindow* window);
+	void SetupPointLights(Shader* pointLightsShader, Shader* groundShader, const std::vector<PointLight>& pointLights, const glm::vec3& diffuseIntensity, const glm::vec3& ambientIntensity,
+		const glm::vec3& specularIntensity, const glm::mat4& viewMatrix, const glm::mat4& projMatrix, Renderer renderer, VertexArray* VA_PointLight, IndexBuffer* IB_PointLight);
 
 	// Init static variable
 	TestPhongLighting* TestPhongLighting::instance;
 
 	TestPhongLighting::TestPhongLighting(GLFWwindow*& mainWindow)
 		: m_MainWindow(mainWindow), 
+		m_PointLights(std::vector<PointLight>()),
+		m_GroundShader(new Shader("res/shaders/BasicPhongModel.shader")),
+	    m_PointLightsShader(new Shader("res/shaders/PointLights.shader")),
 		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)), 
 		m_CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)), 
 		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)), 
@@ -28,9 +33,12 @@ namespace test
 		m_fl_ambientIntensity(glm::vec3(0.4f)), m_fl_specularIntensity(glm::vec3(0.2f)),
 		m_fl_diffuseColour( m_FlashlightColour * m_fl_diffuseIntensity), 
 		m_fl_ambientColour(m_fl_diffuseColour * m_fl_ambientIntensity),
-		m_PointLightPos(glm::vec3(2.0f, 2.0f, -40.0f)),
-		m_pl_diffuseIntensity(glm::vec3(0.9f)), m_pl_ambientIntensity(glm::vec3(0.4f)), 
-		m_pl_specularIntensity(glm::vec3(0.8f))
+		m_FloatingLightColour(glm::vec3(1.0, 1.0, 1.0)),
+		m_FloatingLightPos(glm::vec3(2.0f, 2.0f, -40.0f)),
+		m_FloatingLightDiffuseIntensity(glm::vec3(0.9f)), m_FloatingLightAmbientIntensity(glm::vec3(0.4f)), 
+		m_FloatingLightSpecularIntensity(glm::vec3(0.8f)),
+		m_FloatingLightDiffuseColour(),
+		m_FloatingLightAmbientColour()
 	{
 		instance = this;
 
@@ -103,20 +111,16 @@ namespace test
 		m_IB_Ground = std::make_unique<IndexBuffer>(groundIndices, 6);
 
 		// Pointlight Vertex Array setup
-		m_VA_PointLight = std::make_unique<VertexArray>();
+		m_VA_PointLight = new VertexArray();
 		// Init Vertex Buffer and bind to Vertex Array (m_VA)
-		m_VB_PointLight = std::make_unique<VertexBuffer>(pointLightVertices, 5 * 8 * sizeof(float));
+		m_VB_PointLight = new VertexBuffer(pointLightVertices, 5 * 8 * sizeof(float));
 		// Create and associate the layout (Vertex Attribute Pointer)
 		VertexBufferLayout pointLightVBLayout;
 		pointLightVBLayout.Push<float>(3); // Vertex position,vec3
 		pointLightVBLayout.Push<float>(2); // Texture coordinates, vec2
 		m_VA_PointLight->AddBuffer(*m_VB_PointLight, pointLightVBLayout);
 		// Init index buffer and bind to Vertex Array (m_VA)
-		m_IB_PointLight = std::make_unique<IndexBuffer>(pointLightIndices, 6 * 6);
-
-		// Load shaders
-		m_GroundShader = std::make_unique<Shader>("res/shaders/BasicPhongModel.shader");
-		m_PointLightsShader = std::make_unique<Shader>("res/shaders/PointLights.shader");
+		m_IB_PointLight = new IndexBuffer(pointLightIndices, 6 * 6);
 
 		// NOTE: Would unbind any buffers/shaders here if necessary
 
@@ -154,15 +158,23 @@ namespace test
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 		// Point light colour
-		glm::vec3 lightColor;
-		lightColor.x = sin(glfwGetTime() * 1.0f) / 2.0f + 0.7f;
-		lightColor.y = sin(glfwGetTime() * 0.5f) / 2.0f + 0.7f;
-		lightColor.z = sin(glfwGetTime() * 0.4f) / 2.0f + 0.7f;
+		m_FloatingLightColour.x = sin(glfwGetTime() * 1.0f) / 2.0f + 0.7f;
+		m_FloatingLightColour.y = sin(glfwGetTime() * 0.5f) / 2.0f + 0.7f;
+		m_FloatingLightColour.z = sin(glfwGetTime() * 0.4f) / 2.0f + 0.7f;
+		// Set all point lights' changing colour
+		for (int i = 0; i < m_PointLights.size(); i++)
+		{
+			PointLight* pointLight = &m_PointLights[i];
+			pointLight->Colour = glm::vec3(m_FloatingLightColour.x + cos(i - 0.4), m_FloatingLightColour.y + sin(i - 0.4), m_FloatingLightColour.z + sin(i - 0.4));
+			//pointLight->Colour = m_FloatingLightColour;
+		}
 
 		Renderer renderer;
 
 		// Bind shader and set any 'per frame' uniforms
 		m_GroundShader->Bind();
+		// Set the current number of point lights
+		// m_GroundShader->SetInt("numPointLights", m_PointLights.size());
 		//
 		// Create model, view, projection matrices 
 		// Send combined MVP matrix to shader
@@ -195,39 +207,49 @@ namespace test
 		m_GroundShader->SetFloat("u_Flashlight.cutOff", glm::cos(glm::radians(5.0f)));
 		m_GroundShader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(30.0f)));
 		//
-		// Point light properties in m_PointLightsShader
-		glm::vec3 pl_diffuseColor = lightColor * m_pl_diffuseIntensity;
-		glm::vec3 pl_ambientColor = pl_diffuseColor * m_pl_ambientIntensity;
-		m_PointLightsShader->Bind();
-		// Model matrix: Translate and scale the light object
-		glm::mat4 pointLightsModelMatrix = glm::mat4(1.0f);
-		// movingLightPos = pointLightPos;
-		/*if (isMovingLight) {
-			movingLightPos.x *= (float)(sin(glfwGetTime()) * 3.0f);
-			movingLightPos.y *= (float)(cos(glfwGetTime()) * 3.0f);
-		}*/
-		pointLightsModelMatrix = glm::translate(pointLightsModelMatrix, m_PointLightPos); // movingLightPos);
-		pointLightsModelMatrix = glm::scale(pointLightsModelMatrix, glm::vec3(1.0f));
-		m_PointLightsShader->SetMatrix4f("model", pointLightsModelMatrix);
-		m_PointLightsShader->SetMatrix4f("view", viewMatrix);
-		m_PointLightsShader->SetMatrix4f("proj", projMatrix);
-		// Light colour uniform
-		m_PointLightsShader->SetVec3("pointLightColour", lightColor * 0.8f);
-		//
-		// Point light properties in m_GroundShader
-		m_GroundShader->Bind();
-		m_GroundShader->SetVec3("pointLights[0].ambient", pl_ambientColor);
-		m_GroundShader->SetVec3("pointLights[0].diffuse", pl_diffuseColor);
-		m_GroundShader->SetVec3("pointLights[0].specular", m_pl_specularIntensity);
-		// Point light attenuation properties
-		m_GroundShader->SetFloat("pointLights[0].constant", 1.0f);
-		m_GroundShader->SetFloat("pointLights[0].linear", 0.01f);
-		m_GroundShader->SetFloat("pointLights[0].quadratic", 0.004f);
-		// Point light position
-		m_GroundShader->SetVec3("pointLights[0].position", m_PointLightPos); //movingLightPos);
-
+		// Set all point light uniforms and render them
+		SetupPointLights(m_PointLightsShader, m_GroundShader, m_PointLights, m_FloatingLightDiffuseIntensity, m_FloatingLightAmbientIntensity, m_FloatingLightSpecularIntensity, viewMatrix, projMatrix, renderer, m_VA_PointLight, m_IB_PointLight);
+		// Render ground
 		renderer.Draw(*m_VA_Ground, *m_IB_Ground, *m_GroundShader); 
-		renderer.Draw(*m_VA_PointLight, *m_IB_PointLight, *m_PointLightsShader);
+	}
+
+	void SetupPointLights(Shader* pointLightsShader, Shader* groundShader, const std::vector<PointLight>& pointLights, const glm::vec3& diffuseIntensity, const glm::vec3& ambientIntensity,
+		const glm::vec3& specularIntensity, const glm::mat4& viewMatrix, const glm::mat4& projMatrix, Renderer renderer, VertexArray* VA_PointLight, IndexBuffer* IB_PointLight)
+	{
+		for (int i = 0; i < pointLights.size(); i++)
+		{
+			PointLight pointLight = pointLights[i];
+			// Point light properties in m_PointLightsShader
+			glm::vec3 floatingLightDiffuseColour = pointLight.Colour * diffuseIntensity;
+			glm::vec3 floatingLightAmbientColour = floatingLightDiffuseColour * ambientIntensity;
+			pointLightsShader->Bind();
+			// Model matrix: Translate and scale the light object
+			glm::mat4 pointLightsModelMatrix = glm::mat4(1.0f);
+			pointLightsModelMatrix = glm::translate(pointLightsModelMatrix, pointLight.Position);
+			pointLightsModelMatrix = glm::scale(pointLightsModelMatrix, glm::vec3(1.0f));
+			pointLightsShader->SetMatrix4f("model", pointLightsModelMatrix);
+			pointLightsShader->SetMatrix4f("view", viewMatrix);
+			pointLightsShader->SetMatrix4f("proj", projMatrix);
+			// Light colour uniform
+			pointLightsShader->SetVec3("pointLightColour", pointLight.Colour * 0.8f);
+			//
+			// Render call for each pointlight
+			renderer.Draw(*VA_PointLight, *IB_PointLight, *pointLightsShader);
+			
+			// Point light properties in m_GroundShader
+			groundShader->Bind();
+			std::string index = std::to_string(i);
+			groundShader->SetVec3("pointLights[" + index +  "].ambient", floatingLightAmbientColour); // TODO change pointlight indices
+			groundShader->SetVec3("pointLights[" + index + "].diffuse", floatingLightDiffuseColour);
+			groundShader->SetVec3("pointLights[" + index + "].specular", specularIntensity);
+			// Point light attenuation properties 
+			groundShader->SetFloat("pointLights[" + index + "].constant", 1.0f);
+			groundShader->SetFloat("pointLights[" + index + "].linear", 0.01f);
+			groundShader->SetFloat("pointLights[" + index + "].quadratic", 0.004f);
+			// Point light position
+			groundShader->SetVec3("pointLights[" + index + "].position", pointLight.Position);
+		}
+
 	}
 
 	void TestPhongLighting::OnImGuiRender()
@@ -244,6 +266,15 @@ namespace test
 	{
 		// Hide and capture mouse cursor
 		glfwSetInputMode(m_MainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+		// Clear all pointlights and then add floating light source back
+		m_PointLights.clear();
+		PointLight floatingLight1 = { m_FloatingLightColour, m_FloatingLightPos, glm::vec3(0.0), 0.0 };
+		m_PointLights.push_back(floatingLight1);
+		PointLight floatingLight2 = { m_FloatingLightColour, m_FloatingLightPos + glm::vec3(4.0, -8.0, -60.0), glm::vec3(0.0), 0.0 };
+		m_PointLights.push_back(floatingLight2);
+		PointLight floatingLight3 = { m_FloatingLightColour, m_FloatingLightPos + glm::vec3(-6.0, -5.0, -120.0), glm::vec3(0.0), 0.0 };
+		m_PointLights.push_back(floatingLight3);
 
 		// Bind shader program and set uniforms
 		m_GroundShader->Bind();
