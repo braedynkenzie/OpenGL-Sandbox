@@ -44,11 +44,11 @@ namespace test
 		// Flashlight properties
 		bool m_IsFlashlightOn;
 		glm::vec3 m_FlashlightColour;
-		glm::vec3 m_fl_diffuseIntensity;
-		glm::vec3 m_fl_ambientIntensity;
-		glm::vec3 m_fl_specularIntensity;
-		glm::vec3 m_fl_diffuseColour;
-		glm::vec3 m_fl_ambientColour;
+		glm::vec3 m_FlashlightDiffuseIntensity;
+		glm::vec3 m_FlashlightAmbientIntensity;
+		glm::vec3 m_FlashlightSpecularIntensity;
+		glm::vec3 m_FlashlightDiffuseColour;
+		glm::vec3 m_FlashlightAmbientColour;
 		// Point light properties
 		glm::vec3 m_FloatingLightColour;
 		glm::vec3 m_FloatingLightPos;
@@ -67,6 +67,8 @@ namespace test
 		void OnRender() override;
 		void OnImGuiRender() override;
 		void OnActivated() override;
+
+		void NewProjectile();
 
 		Camera* GetCamera() { return &m_Camera; }
 		static TestPhongLighting* GetInstance() { return instance; }

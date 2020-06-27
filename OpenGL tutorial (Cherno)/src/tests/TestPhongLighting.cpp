@@ -13,6 +13,7 @@ namespace test
 	void mouse_callbackPhongTest(GLFWwindow* window, double xpos, double ypos);
 	void scroll_callbackPhongTest(GLFWwindow* window, double xOffset, double yOffset);
 	void processInputPhongTest(GLFWwindow* window);
+	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 	void SetupPointLights(Shader* pointLightsShader, Shader* groundShader, const std::vector<PointLight>& pointLights, const glm::vec3& diffuseIntensity, const glm::vec3& ambientIntensity,
 		const glm::vec3& specularIntensity, const glm::mat4& viewMatrix, const glm::mat4& projMatrix, Renderer renderer, VertexArray* VA_PointLight, IndexBuffer* IB_PointLight);
 
@@ -29,10 +30,10 @@ namespace test
 		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)), 
 		m_Camera(Camera(m_CameraPos, 75.0f)),
 		m_IsFlashlightOn(true),
-		m_FlashlightColour(glm::vec3(1.0f)), m_fl_diffuseIntensity(glm::vec3(1.0f)),
-		m_fl_ambientIntensity(glm::vec3(0.4f)), m_fl_specularIntensity(glm::vec3(0.2f)),
-		m_fl_diffuseColour( m_FlashlightColour * m_fl_diffuseIntensity), 
-		m_fl_ambientColour(m_fl_diffuseColour * m_fl_ambientIntensity),
+		m_FlashlightColour(glm::vec3(1.0f)), m_FlashlightDiffuseIntensity(glm::vec3(1.0f)),
+		m_FlashlightAmbientIntensity(glm::vec3(0.4f)), m_FlashlightSpecularIntensity(glm::vec3(0.2f)),
+		m_FlashlightDiffuseColour( m_FlashlightColour * m_FlashlightDiffuseIntensity), 
+		m_FlashlightAmbientColour(m_FlashlightDiffuseColour * m_FlashlightAmbientIntensity),
 		m_FloatingLightColour(glm::vec3(1.0, 1.0, 1.0)),
 		m_FloatingLightPos(glm::vec3(2.0f, 2.0f, -40.0f)),
 		m_FloatingLightDiffuseIntensity(glm::vec3(0.9f)), m_FloatingLightAmbientIntensity(glm::vec3(0.4f)), 
@@ -193,19 +194,25 @@ namespace test
 		// Flashlight's properties
 		//
 		m_GroundShader->SetBool("u_Flashlight.on", m_IsFlashlightOn);
-		m_GroundShader->SetVec3("u_Flashlight.ambient", m_fl_ambientColour);
-		m_GroundShader->SetVec3("u_Flashlight.diffuse", m_fl_diffuseColour);
-		m_GroundShader->SetVec3("u_Flashlight.specular", m_fl_specularIntensity);
+		m_GroundShader->SetVec3("u_Flashlight.ambient", m_FlashlightAmbientColour);
+		m_GroundShader->SetVec3("u_Flashlight.diffuse", m_FlashlightDiffuseColour);
+		m_GroundShader->SetVec3("u_Flashlight.specular", m_FlashlightSpecularIntensity);
 		// Flashlight attenuation properties
 		m_GroundShader->SetFloat("u_Flashlight.constant", 1.0f);
 		m_GroundShader->SetFloat("u_Flashlight.linear", 0.06f);
 		m_GroundShader->SetFloat("u_Flashlight.quadratic", 0.005f);
 		// Flashlight position and direction
-		m_GroundShader->SetVec3f("u_Flashlight.position", m_Camera.Position.x, m_Camera.Position.y, m_Camera.Position.z);
-		m_GroundShader->SetVec3f("u_Flashlight.direction", m_Camera.Front.x, m_Camera.Front.y, m_Camera.Front.z);
+		glm::vec3 flashlightPosition = m_Camera.Position;
+		glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0), 2.0f * m_Camera.Right);
+		flashlightPosition = glm::vec3(translationMatrix * glm::vec4(flashlightPosition, 1.0));
+		m_GroundShader->SetVec3f("u_Flashlight.position", flashlightPosition.x, flashlightPosition.y, flashlightPosition.z);
+		glm::vec3 flashlightDirection = m_Camera.Front;
+		glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0), glm::radians(4.0f), glm::vec3(0.0, 1.0, 0.0));
+		flashlightDirection = glm::vec3(rotationMatrix * glm::vec4(flashlightDirection, 1.0));
+		m_GroundShader->SetVec3f("u_Flashlight.direction", flashlightDirection.x, flashlightDirection.y, flashlightDirection.z);
 		// Flashlight cutoff angle
-		m_GroundShader->SetFloat("u_Flashlight.cutOff", glm::cos(glm::radians(5.0f)));
-		m_GroundShader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(30.0f)));
+		m_GroundShader->SetFloat("u_Flashlight.cutOff", glm::cos(glm::radians(2.0f)));
+		m_GroundShader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(35.0f)));
 		//
 		// Set all point light uniforms and render them
 		SetupPointLights(m_PointLightsShader, m_GroundShader, m_PointLights, m_FloatingLightDiffuseIntensity, m_FloatingLightAmbientIntensity, m_FloatingLightSpecularIntensity, viewMatrix, projMatrix, renderer, m_VA_PointLight, m_IB_PointLight);
@@ -306,6 +313,13 @@ namespace test
 		glfwSetScrollCallback(m_MainWindow, scroll_callbackPhongTest);
 	}
 
+	void TestPhongLighting::NewProjectile()
+	{
+		// TODO
+		PointLight floatingLight4 = { m_FloatingLightColour, m_FloatingLightPos + glm::vec3(-6.0, -5.0, -100.0), glm::vec3(0.0), 0.0 };
+		m_PointLights.push_back(floatingLight4);
+	}
+
 	void scroll_callbackPhongTest(GLFWwindow* window, double xOffset, double yOffset)
 	{
 		test::TestPhongLighting* lightingTest = test::TestPhongLighting::GetInstance();
@@ -335,6 +349,17 @@ namespace test
 		test::TestPhongLighting* lightingTest = test::TestPhongLighting::GetInstance();
 		Camera* phongCamera = lightingTest->GetCamera();
 		phongCamera->ProcessMouseMovement(xOffset, yOffset);
+	}
+
+	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+	{
+		test::TestPhongLighting* lightingTest = test::TestPhongLighting::GetInstance();
+
+		if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+			lightingTest->NewProjectile();
+
+		//if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+		//	lightingTest->NewProjectile();
 	}
 
 	void processInputPhongTest(GLFWwindow* window) {
