@@ -50,6 +50,7 @@ struct Material {
 uniform Material u_Material;
 
 struct PointLight {
+	bool isActive;
 	vec3 position;
 
 	vec3 ambient;
@@ -61,8 +62,9 @@ struct PointLight {
 	float linear;
 	float quadratic;
 };
-#define NUM_POINT_LIGHTS 3
-uniform PointLight pointLights[NUM_POINT_LIGHTS];
+#define MAX_NUM_POINT_LIGHTS 40
+uniform int numPointLights;
+uniform PointLight pointLights[MAX_NUM_POINT_LIGHTS];
 
 struct SpotLight {
 	bool on;
@@ -101,8 +103,10 @@ void main() {
 	//	result += CalcDirLight(dirLights[i], norm, viewDir);
 
 	// Point lights
-	for (int i = 0; i < NUM_POINT_LIGHTS; i++)
-		result += CalcPointLight(pointLights[i], norm, FragPosition, viewDir);
+	for (int i = 0; i < numPointLights; i++) {
+		if (pointLights[i].isActive)
+			result += CalcPointLight(pointLights[i], norm, FragPosition, viewDir);
+	}
 
 	// Spot light (flashlight)
 	result += CalcSpotLight(norm, FragPosition, viewDir);

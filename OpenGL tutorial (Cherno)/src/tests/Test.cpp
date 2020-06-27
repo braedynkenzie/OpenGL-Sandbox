@@ -26,6 +26,14 @@ namespace test
 		// Do any updates that should be made when returning to main menu
 		// Unhide and uncapture mouse cursor when switching between tests
 		glfwSetInputMode(m_MainWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+		// Reset all callbacks
+		// Callback function for mouse cursor movement
+		glfwSetCursorPosCallback(m_MainWindow, nullptr);
+		// Callback function for scrolling zoom
+		glfwSetScrollCallback(m_MainWindow, nullptr);
+		// Callback function for mouse buttons
+		glfwSetMouseButtonCallback(m_MainWindow, nullptr);
 	}
 }
 

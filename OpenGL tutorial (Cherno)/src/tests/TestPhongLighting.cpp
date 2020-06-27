@@ -13,7 +13,8 @@ namespace test
 	void mouse_callbackPhongTest(GLFWwindow* window, double xpos, double ypos);
 	void scroll_callbackPhongTest(GLFWwindow* window, double xOffset, double yOffset);
 	void processInputPhongTest(GLFWwindow* window);
-	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+	void mouse_button_callbackPhongTest(GLFWwindow* window, int button, int action, int mods);
+	void processMovingLights(std::vector<PointLight>& pointLights);
 	void SetupPointLights(Shader* pointLightsShader, Shader* groundShader, const std::vector<PointLight>& pointLights, const glm::vec3& diffuseIntensity, const glm::vec3& ambientIntensity,
 		const glm::vec3& specularIntensity, const glm::mat4& viewMatrix, const glm::mat4& projMatrix, Renderer renderer, VertexArray* VA_PointLight, IndexBuffer* IB_PointLight);
 
@@ -46,11 +47,6 @@ namespace test
 		// Mouse cursor should start in the middle of the window
 		lastCursorX = SCREEN_WIDTH / 2.0f;
 		lastCursorY = SCREEN_HEIGHT / 2.0f;
-
-		// Callback function for mouse cursor movement
-		glfwSetCursorPosCallback(m_MainWindow, mouse_callbackPhongTest);
-		// Callback function for scrolling zoom
-		glfwSetScrollCallback(m_MainWindow, scroll_callbackPhongTest);
 
 		// Create vertices and incdices
 		float groundVertices[] = {
@@ -152,31 +148,30 @@ namespace test
 		// Process WASD keyboard camera movement
 		processInputPhongTest(m_MainWindow);
 
+		// Calculate all point light projectile movements
+		processMovingLights(m_PointLights);
+
 		float* clearColour = test::TestClearColour::GetClearColour();
 		float darknessFactor = 10.0f;
 		GLCall(glClearColor(clearColour[0] / darknessFactor, clearColour[1] / darknessFactor, 
 			clearColour[2] / darknessFactor, clearColour[3] / darknessFactor));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-		// Point light colour
+		// Point light changing colour
 		m_FloatingLightColour.x = sin(glfwGetTime() * 1.0f) / 2.0f + 0.7f;
 		m_FloatingLightColour.y = sin(glfwGetTime() * 0.5f) / 2.0f + 0.7f;
 		m_FloatingLightColour.z = sin(glfwGetTime() * 0.4f) / 2.0f + 0.7f;
-		// Set all point lights' changing colour
-		for (int i = 0; i < m_PointLights.size(); i++)
+		// Set floating point lights' changing colour
+		for (int i = 0; i < 3; i++)
 		{
 			PointLight* pointLight = &m_PointLights[i];
 			pointLight->Colour = glm::vec3(m_FloatingLightColour.x + cos(i - 0.4), m_FloatingLightColour.y + sin(i - 0.4), m_FloatingLightColour.z + sin(i - 0.4));
-			//pointLight->Colour = m_FloatingLightColour;
 		}
 
 		Renderer renderer;
 
 		// Bind shader and set any 'per frame' uniforms
 		m_GroundShader->Bind();
-		// Set the current number of point lights
-		// m_GroundShader->SetInt("numPointLights", m_PointLights.size());
-		//
 		// Create model, view, projection matrices 
 		// Send combined MVP matrix to shader
 		glm::mat4 modelMatrix = glm::mat4(1.0);
@@ -220,6 +215,27 @@ namespace test
 		renderer.Draw(*m_VA_Ground, *m_IB_Ground, *m_GroundShader); 
 	}
 
+	void processMovingLights(std::vector<PointLight>& pointLights)
+	{
+		for (PointLight& pointLight : pointLights)
+		{
+			glm::vec3 newPosition = pointLight.Position;
+			newPosition += pointLight.Direction * pointLight.Speed;
+			pointLight.Position = newPosition;
+
+			if (pointLight.Position.y > -9.5)
+			{
+				pointLight.Direction.y -= 0.02;
+			}
+			else if (pointLight.Position.y < -9.5)
+			{
+				pointLight.Speed *= 0.9;
+				pointLight.Direction.y = 0;
+				//pointLight.Direction.y = -pointLight.Direction.y;
+			}
+		}
+	}
+
 	void SetupPointLights(Shader* pointLightsShader, Shader* groundShader, const std::vector<PointLight>& pointLights, const glm::vec3& diffuseIntensity, const glm::vec3& ambientIntensity,
 		const glm::vec3& specularIntensity, const glm::mat4& viewMatrix, const glm::mat4& projMatrix, Renderer renderer, VertexArray* VA_PointLight, IndexBuffer* IB_PointLight)
 	{
@@ -246,7 +262,8 @@ namespace test
 			// Point light properties in m_GroundShader
 			groundShader->Bind();
 			std::string index = std::to_string(i);
-			groundShader->SetVec3("pointLights[" + index +  "].ambient", floatingLightAmbientColour); // TODO change pointlight indices
+			groundShader->SetBool("pointLights[" + index + "].isActive", true);
+			groundShader->SetVec3("pointLights[" + index + "].ambient", floatingLightAmbientColour);
 			groundShader->SetVec3("pointLights[" + index + "].diffuse", floatingLightDiffuseColour);
 			groundShader->SetVec3("pointLights[" + index + "].specular", specularIntensity);
 			// Point light attenuation properties 
@@ -264,6 +281,7 @@ namespace test
 		// ImGui interface
 		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
 		ImGui::Text("- Use WASD keys to move camera");
+		ImGui::Text("- Left click to add light sources");
 		ImGui::Text("- Use scroll wheel to change FOV");
 		ImGui::Text("- Press '1' and '2' to toggle wireframe mode");
 		ImGui::Text("- Avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -283,8 +301,9 @@ namespace test
 		PointLight floatingLight3 = { m_FloatingLightColour, m_FloatingLightPos + glm::vec3(-6.0, -5.0, -120.0), glm::vec3(0.0), 0.0 };
 		m_PointLights.push_back(floatingLight3);
 
-		// Bind shader program and set uniforms
+		// Bind shader programs and set uniforms
 		m_GroundShader->Bind();
+		m_GroundShader->SetInt("numPointLights", m_PointLights.size());
 		m_Texture = std::make_unique<Texture>("res/textures/dirt_ground_texture.png");
 		m_Texture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
 		m_GroundShader->SetInt("u_Material.diffuse", 0); 
@@ -311,13 +330,17 @@ namespace test
 		glfwSetCursorPosCallback(m_MainWindow, mouse_callbackPhongTest);
 		// Callback function for scrolling zoom
 		glfwSetScrollCallback(m_MainWindow, scroll_callbackPhongTest);
+		// Callback function for mouse buttons
+		glfwSetMouseButtonCallback(m_MainWindow, mouse_button_callbackPhongTest);
 	}
 
 	void TestPhongLighting::NewProjectile()
 	{
-		// TODO
-		PointLight floatingLight4 = { m_FloatingLightColour, m_FloatingLightPos + glm::vec3(-6.0, -5.0, -100.0), glm::vec3(0.0), 0.0 };
-		m_PointLights.push_back(floatingLight4);
+		PointLight pointLight = { m_FloatingLightColour, m_Camera.Position, m_Camera.Front, 1.0 }; // TODO change speed and direction
+		m_PointLights.push_back(pointLight);
+		m_GroundShader->Bind();
+		if (m_PointLights.size() <= 40)
+			m_GroundShader->SetInt("numPointLights", m_PointLights.size());
 	}
 
 	void scroll_callbackPhongTest(GLFWwindow* window, double xOffset, double yOffset)
@@ -351,15 +374,12 @@ namespace test
 		phongCamera->ProcessMouseMovement(xOffset, yOffset);
 	}
 
-	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+	void mouse_button_callbackPhongTest(GLFWwindow* window, int button, int action, int mods)
 	{
 		test::TestPhongLighting* lightingTest = test::TestPhongLighting::GetInstance();
 
 		if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
 			lightingTest->NewProjectile();
-
-		//if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
-		//	lightingTest->NewProjectile();
 	}
 
 	void processInputPhongTest(GLFWwindow* window) {
