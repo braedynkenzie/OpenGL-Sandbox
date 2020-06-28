@@ -14,7 +14,7 @@ namespace test
 	void scroll_callbackPhongTest(GLFWwindow* window, double xOffset, double yOffset);
 	void processInputPhongTest(GLFWwindow* window);
 	void mouse_button_callbackPhongTest(GLFWwindow* window, int button, int action, int mods);
-	void processMovingLights(std::vector<PointLight>& pointLights);
+	void processMovingLights(std::vector<PointLight>& pointLights, float deltaTime);
 	void SetupPointLights(Shader* pointLightsShader, Shader* groundShader, const std::vector<PointLight>& pointLights, const glm::vec3& diffuseIntensity, const glm::vec3& ambientIntensity,
 		const glm::vec3& specularIntensity, const glm::mat4& viewMatrix, const glm::mat4& projMatrix, Renderer renderer, VertexArray* VA_PointLight, IndexBuffer* IB_PointLight);
 
@@ -38,7 +38,7 @@ namespace test
 		m_FloatingLightColour(glm::vec3(1.0, 1.0, 1.0)),
 		m_FloatingLightPos(glm::vec3(2.0f, 2.0f, -40.0f)),
 		m_FloatingLightDiffuseIntensity(glm::vec3(0.9f)), m_FloatingLightAmbientIntensity(glm::vec3(0.4f)), 
-		m_FloatingLightSpecularIntensity(glm::vec3(0.8f)),
+		m_FloatingLightSpecularIntensity(glm::vec3(0.4f)),
 		m_FloatingLightDiffuseColour(),
 		m_FloatingLightAmbientColour()
 	{
@@ -149,7 +149,7 @@ namespace test
 		processInputPhongTest(m_MainWindow);
 
 		// Calculate all point light projectile movements
-		processMovingLights(m_PointLights);
+		processMovingLights(m_PointLights, deltaTime);
 
 		float* clearColour = test::TestClearColour::GetClearColour();
 		float darknessFactor = 10.0f;
@@ -215,23 +215,41 @@ namespace test
 		renderer.Draw(*m_VA_Ground, *m_IB_Ground, *m_GroundShader); 
 	}
 
-	void processMovingLights(std::vector<PointLight>& pointLights)
+	void processMovingLights(std::vector<PointLight>& pointLights, float deltaTime)
 	{
 		for (PointLight& pointLight : pointLights)
 		{
+			// Update positions
 			glm::vec3 newPosition = pointLight.Position;
-			newPosition += pointLight.Direction * pointLight.Speed;
+			newPosition += (pointLight.Direction * pointLight.Speed);
+			//newPosition *= deltaTime; // TODO 
 			pointLight.Position = newPosition;
 
-			if (pointLight.Position.y > -9.5)
+			if (pointLight.Position.y > -9.4)
 			{
-				pointLight.Direction.y -= 0.02;
+				// Projectile is in the air
+				pointLight.Direction.y -= 0.04;
 			}
-			else if (pointLight.Position.y < -9.5)
+			else if (pointLight.Position.y <= -9.4)
 			{
-				pointLight.Speed *= 0.9;
-				pointLight.Direction.y = 0;
-				//pointLight.Direction.y = -pointLight.Direction.y;
+				// Projectile is on the ground
+				pointLight.Speed *= 0.7;
+				// Check y velocity
+				float yVelocity = pointLight.Direction.y * pointLight.Speed;
+				if (yVelocity < -0.4)
+				{
+					// Bouncing
+					pointLight.Direction.y = -0.5 * pointLight.Direction.y;
+					pointLight.Position.y = -9.3;
+				}
+				else
+				{
+					// Sliding along ground
+					pointLight.Direction.y = 0;
+					pointLight.Position.y = -9.4;
+					if (pointLight.Speed < 0.02)
+						pointLight.Speed = 0;
+				}
 			}
 		}
 	}
@@ -339,7 +357,7 @@ namespace test
 		PointLight pointLight = { m_FloatingLightColour, m_Camera.Position, m_Camera.Front, 1.0 }; // TODO change speed and direction
 		m_PointLights.push_back(pointLight);
 		m_GroundShader->Bind();
-		if (m_PointLights.size() <= 40)
+		if (m_PointLights.size() <= 100)
 			m_GroundShader->SetInt("numPointLights", m_PointLights.size());
 	}
 

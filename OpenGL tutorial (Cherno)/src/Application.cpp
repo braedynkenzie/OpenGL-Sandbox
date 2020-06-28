@@ -58,7 +58,7 @@ int main(void)
     glfwMakeContextCurrent(window);
 
     // Clamp framerate 
-    //GLCall(glfwSwapInterval(1));
+    GLCall(glfwSwapInterval(1));
 
     // Use GLEW to initialize all our modern OpenGL declarations
     if (glewInit() != GLEW_OK)
