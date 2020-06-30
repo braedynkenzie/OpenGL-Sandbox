@@ -27,6 +27,7 @@
 #include "tests\TestFPSCamera.h"
 #include "tests\TestPhongLighting.h"
 #include "tests\TestModelLoading.h"
+#include "tests\TestManualFramebuffers.h"
 
 // Function declarations
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -92,12 +93,14 @@ int main(void)
         test::TestFPSCamera* cameraTest = new test::TestFPSCamera(window);
         test::TestPhongLighting* phongLightingTest = new test::TestPhongLighting(window);
         test::TestModelLoading* modelLoadingTest = new test::TestModelLoading(window);
+        test::TestManualFramebuffer* framebufferTest = new test::TestManualFramebuffer(window);
         // Register all test sandboxes
         testMenu->RegisterTest<test::TestClearColour*>("Change background colour", (test::TestClearColour*) clearColourTest);
         testMenu->RegisterTest<test::TestTexture2D*>("Textured cube test", (test::TestTexture2D*) texture2DTest);
         testMenu->RegisterTest<test::TestFPSCamera*>("First person camera (map)", (test::TestFPSCamera*) cameraTest);
         testMenu->RegisterTest<test::TestPhongLighting*>("Phong lighting model sandbox", (test::TestPhongLighting*) phongLightingTest);
         testMenu->RegisterTest<test::TestModelLoading*>("Model loading test", (test::TestModelLoading*) modelLoadingTest);
+        testMenu->RegisterTest<test::TestManualFramebuffer*>("Rear View Framebuffer test", (test::TestManualFramebuffer*) framebufferTest);
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))

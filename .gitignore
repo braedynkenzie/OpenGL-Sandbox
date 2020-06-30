@@ -137,3 +137,7 @@ Dependencies/includes/GLEW/doc/glew.png
 Dependencies/includes/GLEW/doc/new.png
 Dependencies/includes/GLEW/doc/ogl_sm.jpg
 Dependencies/includes/GLEW/doc/travis.png
+OpenGL tutorial (Cherno)/x64/Debug/FrameBuffer.obj
+OpenGL tutorial (Cherno)/x64/Debug/TestManualFramebuffers.obj
+OpenGL tutorial (Cherno)/res/textures/world_map_texture.png
+x64/Release/res/textures/world_map_texture.png

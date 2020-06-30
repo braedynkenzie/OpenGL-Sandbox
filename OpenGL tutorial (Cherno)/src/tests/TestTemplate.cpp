@@ -41,6 +41,8 @@ namespace test
 
 	void TestTemplate::OnImGuiRender()
 	{
+		// ImGui interface
+		ImGui::Text("// TODO UI");
 	}
 
 	void TestTemplate::OnActivated()

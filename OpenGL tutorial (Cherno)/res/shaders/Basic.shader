@@ -18,7 +18,6 @@ void main()
 #shader fragment
 #version 330 core
 
-uniform vec4 u_Color;
 uniform sampler2D u_Texture0;
 uniform sampler2D u_Texture1;
 uniform int u_ActiveTexture;

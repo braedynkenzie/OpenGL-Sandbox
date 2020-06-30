@@ -96,7 +96,7 @@ namespace test
 
 		// Ground Vertex Array setup
 		m_VA_Ground = std::make_unique<VertexArray>();
-		// Init Vertex Buffer and bind to Vertex Array (m_VA)
+		// Init Vertex Buffer and bind to Vertex Array 
 		m_VB_Ground = std::make_unique<VertexBuffer>(groundVertices, 8 * 4 * sizeof(float));
 		// Create and associate the layout (Vertex Attribute Pointer)
 		VertexBufferLayout groundVBLayout;
@@ -104,19 +104,19 @@ namespace test
 		groundVBLayout.Push<float>(2); // Texture coordinates, vec2
 		groundVBLayout.Push<float>(3); // Normals, vec3
 		m_VA_Ground->AddBuffer(*m_VB_Ground, groundVBLayout);
-		// Init index buffer and bind to Vertex Array (m_VA)
+		// Init index buffer and bind to Vertex Array 
 		m_IB_Ground = std::make_unique<IndexBuffer>(groundIndices, 6);
 
 		// Pointlight Vertex Array setup
 		m_VA_PointLight = new VertexArray();
-		// Init Vertex Buffer and bind to Vertex Array (m_VA)
+		// Init Vertex Buffer and bind to Vertex Array 
 		m_VB_PointLight = new VertexBuffer(pointLightVertices, 5 * 8 * sizeof(float));
 		// Create and associate the layout (Vertex Attribute Pointer)
 		VertexBufferLayout pointLightVBLayout;
 		pointLightVBLayout.Push<float>(3); // Vertex position,vec3
 		pointLightVBLayout.Push<float>(2); // Texture coordinates, vec2
 		m_VA_PointLight->AddBuffer(*m_VB_PointLight, pointLightVBLayout);
-		// Init index buffer and bind to Vertex Array (m_VA)
+		// Init index buffer and bind to Vertex Array 
 		m_IB_PointLight = new IndexBuffer(pointLightIndices, 6 * 6);
 
 		// NOTE: Would unbind any buffers/shaders here if necessary
