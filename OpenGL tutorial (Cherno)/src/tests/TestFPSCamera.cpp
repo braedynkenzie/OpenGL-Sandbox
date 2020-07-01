@@ -45,8 +45,8 @@ namespace test
 		};
 
 		unsigned int indices[]{
-			0, 1, 2,
-			3, 1, 0,
+			1, 0, 2,
+			3, 0, 1,
 		};
 
 		m_VA = std::make_unique<VertexArray>();

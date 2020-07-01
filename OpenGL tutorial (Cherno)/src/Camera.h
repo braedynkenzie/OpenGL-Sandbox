@@ -89,13 +89,13 @@ public:
     {
         float velocity = MovementSpeed * deltaTime;
         if (direction == FORWARD)
-            Position += (Up * velocity) + 1.4f * (Front * velocity);
+            Position += 2.0f * (Front * velocity);
         if (direction == BACKWARD)
-            Position -= (Up * velocity) + 1.4f * (Front * velocity);
+            Position -= (Front * velocity);
         if (direction == LEFT)
-            Position -= Right * velocity;
+            Position -= 2.0f * (Right * velocity);
         if (direction == RIGHT)
-            Position += Right * velocity;
+            Position += 2.0f * (Right * velocity);
 
         // Limit y min/max positions
         Position.y = yPos;

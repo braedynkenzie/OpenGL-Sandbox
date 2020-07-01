@@ -1331,6 +1331,7 @@
     <ClInclude Include="src\VertexBufferLayout.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\Learn OpenGL\OpenGL-Hello-World\Learn_OpenGL_Hello_World\metal_border_container_texture.png" />
     <Image Include="res\textures\dirt_ground_texture.png" />
     <Image Include="res\textures\high_res_world_map_texture.png" />
     <Image Include="res\textures\metal_border_container_texture.png" />

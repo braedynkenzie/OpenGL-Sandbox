@@ -30,10 +30,14 @@ namespace test
 		m_VA_Quad(new VertexArray()),
 		m_VB_Quad(new VertexBuffer()),
 		m_IB_Quad(new IndexBuffer()),
+		m_VA_Cube(new VertexArray()),
+		m_VB_Cube(new VertexBuffer()),
+		m_IB_Cube(new IndexBuffer()),
 		m_Shader(new Shader("res/shaders/Basic.shader")),
 		m_QuadShader(new Shader("res/shaders/FramebufferTest.shader")),
-		m_WaterTexture(new Texture("res/textures/shallow_water_texture.png"))
-		//m_WaterTexture(new Texture("res/textures/pool_water_texture.png"))
+		m_WaterTexture(new Texture("res/textures/shallow_water_texture.png")),
+		//m_CubeTexture(new Texture("res/textures/wooden_container_texture.png"))
+		m_CubeTexture(new Texture("res/textures/metal_border_container_texture.png"))
 	{
 		instance = this;
 
@@ -53,25 +57,79 @@ namespace test
 
 		float framebufferQuadVertices[] = {
 			//   positions  --   tex coords     
-				-0.9,  0.5,      0.0,  0.0,
-				-0.5,  0.9,      1.0,  1.0,
-				-0.9,  0.9,      0.0,  1.0,
-				-0.5,  0.5,      1.0,  0.0,
+				-0.9,  0.5,      1.0,  0.0,
+				-0.5,  0.9,      0.0,  1.0,
+				-0.9,  0.9,      1.0,  1.0,
+				-0.5,  0.5,      0.0,  0.0,
 		};
 
 		unsigned int framebufferQuadIndices[]{
 			0, 1, 2,
-			3, 0, 1,
+			3, 1, 0,
 		};
+
+		float cubeVertices[] = {
+			// positions      --  tex coords 
+			   0.5,  0.5, -0.5,    1.0, 1.0, // Cube back
+			  -0.5, -0.5, -0.5,    0.0, 0.0,
+			  -0.5,  0.5, -0.5,    0.0, 1.0,
+			   0.5, -0.5, -0.5,    1.0, 0.0,
+
+			  -0.5, -0.5,  0.5,    0.0, 0.0, // Cube front
+			   0.5,  0.5,  0.5,    1.0, 1.0,
+			  -0.5,  0.5,  0.5,    0.0, 1.0,
+			   0.5, -0.5,  0.5,    1.0, 0.0,
+
+			  -0.5, -0.5, -0.5,    0.0, 0.0, // Cube left
+			  -0.5,  0.5,  0.5,    1.0, 1.0,
+			  -0.5,  0.5, -0.5,    0.0, 1.0,
+			  -0.5, -0.5,  0.5,    1.0, 0.0,
+
+			   0.5, -0.5,  0.5,    0.0, 0.0, // Cube right
+			   0.5,  0.5, -0.5,    1.0, 1.0,
+			   0.5,  0.5,  0.5,    0.0, 1.0,
+			   0.5, -0.5, -0.5,    1.0, 0.0,
+
+			   0.5,  0.5,  0.5,    0.0, 0.0, // Cube top
+			  -0.5,  0.5, -0.5,    1.0, 1.0,
+			  -0.5,  0.5,  0.5,    1.0, 0.0,
+			   0.5,  0.5, -0.5,    0.0, 1.0,
+
+			  -0.5, -0.5,  0.5,    0.0, 0.0, // Cube bottom
+			   0.5, -0.5, -0.5,    1.0, 1.0,
+			   0.5, -0.5,  0.5,    1.0, 0.0,
+			  -0.5, -0.5, -0.5,    0.0, 1.0,
+		};
+
+		unsigned int cubeIndices[]{
+			0, 1, 2,
+			3, 1, 0,
+
+			4, 5, 6,
+			7, 5, 4,
+
+			8, 9, 10,
+			11, 9, 8,
+
+			12, 13, 14,
+			15, 13, 12,
+
+			16, 17, 18,
+			19, 17, 16,
+
+			20, 21, 22,
+			23, 21, 20
+		};
+		
 
 		// Ground Vertex Array setup
 		// Init Vertex Buffer and bind to Vertex Array 
 		m_VB_Ground = new VertexBuffer(groundQuadVertices, 8 * 4 * sizeof(float));
 		// Create and associate the layout (Vertex Attribute Pointer)
 		VertexBufferLayout groundVBLayout;
-		groundVBLayout.Push<float>(3); // Vertex position,vec3
-		groundVBLayout.Push<float>(2); // Texture coordinates, vec2
-		groundVBLayout.Push<float>(3); // Normals, vec3
+		groundVBLayout.Push<float>(3); // Vertex position,		vec3
+		groundVBLayout.Push<float>(2); // Texture coordinates,	vec2
+		groundVBLayout.Push<float>(3); // Normals,				vec3
 		m_VA_Ground->AddBuffer(*m_VB_Ground, groundVBLayout);
 		// Init index buffer and bind to Vertex Array 
 		m_IB_Ground = new IndexBuffer(groundQuadIndices, 6);
@@ -81,11 +139,22 @@ namespace test
 		m_VB_Quad = new VertexBuffer(framebufferQuadVertices, 5 * 4 * sizeof(float));
 		// Create and associate the layout (Vertex Attribute Pointer)
 		VertexBufferLayout framebufferQuadVBLayout;
-		framebufferQuadVBLayout.Push<float>(2); // Vertex position,vec3
+		framebufferQuadVBLayout.Push<float>(2); // Vertex position,		vec2
 		framebufferQuadVBLayout.Push<float>(2); // Texture coordinates, vec2
 		m_VA_Quad->AddBuffer(*m_VB_Quad, framebufferQuadVBLayout);
 		// Init index buffer and bind to Vertex Array 
 		m_IB_Quad = new IndexBuffer(framebufferQuadIndices, 6);
+
+		// Framebuffer quad Vertex Array setup
+		// Init Vertex Buffer and bind to Vertex Array 
+		m_VB_Cube = new VertexBuffer(cubeVertices, 5 * 24 * sizeof(float));
+		// Create and associate the layout (Vertex Attribute Pointer)
+		VertexBufferLayout cubeVBLayout;
+		cubeVBLayout.Push<float>(3); // Vertex position,	 vec3
+		cubeVBLayout.Push<float>(2); // Texture coordinates, vec2
+		m_VA_Cube->AddBuffer(*m_VB_Cube, cubeVBLayout);
+		// Init index buffer and bind to Vertex Array 
+		m_IB_Cube = new IndexBuffer(cubeIndices, 6 * 6);
 
 		// Bind the manually created framebuffer object
 		m_FBO->Bind();
@@ -163,8 +232,8 @@ namespace test
 		// Send combined MVP matrix to shader
 		glm::mat4 modelMatrix = glm::mat4(1.0);
 		glm::mat4 proj = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
-		m_Camera.Yaw   -= 180.0f; // rotate the camera's yaw 180 degrees around
-		m_Camera.Pitch -= 180.0f; // rotate the camera's pitch 180 degrees around
+		float rearViewAngle = 180.0f;
+		m_Camera.Pitch -= rearViewAngle; // rotate the camera's pitch 180 degrees around
 		m_Camera.ProcessMouseMovement(0, 0, false); // call this to make sure it updates its camera vectors, note pitch constraints disabled
 		glm::mat4 view = m_Camera.GetViewMatrix();
 		glm::mat4 MVP_matrix = proj * view * modelMatrix;
@@ -173,39 +242,53 @@ namespace test
 		// Render to the manually created framebuffer object 
 		// Bind it
 		m_FBO->Bind();
-		GLCall(glClearColor(clearColour[0] / darknessFactor, clearColour[1] / darknessFactor,
-			clearColour[2] / darknessFactor, clearColour[3] / darknessFactor));
+		// Clear depth buffer and colour buffer attachments
+		GLCall(glClearColor(clearColour[0] / (darknessFactor * 1.1f), clearColour[1] / (darknessFactor * 1.1f),
+			clearColour[2] / (darknessFactor * 1.1f), clearColour[3] / (darknessFactor * 1.1f)));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)); // not using the stencil buffer
 		glEnable(GL_DEPTH_TEST);
 		m_Shader->Bind();
 		m_WaterTexture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
 		m_Shader->SetInt("u_Texture0", 0);
 		m_Shader->SetInt("u_ActiveTexture", 0);
-		renderer.Draw(*m_VA_Ground, *m_IB_Ground, *m_Shader); // Draws to manual framebuffer
+		// Draw ground to manual framebuffer
+		renderer.Draw(*m_VA_Ground, *m_IB_Ground, *m_Shader); 
+		m_CubeTexture->Bind(1);
+		m_Shader->SetInt("u_Texture1", 1);
+		m_Shader->SetInt("u_ActiveTexture", 1);
+		// Draw cube to manual framebuffer
+		renderer.Draw(*m_VA_Cube, *m_IB_Cube, *m_Shader);
 
 		// Now render the scene to the default framebuffer and use the rendered framebuffer as a texture 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0); // rebind default framebuffer
+		// Rebind default framebuffer
+		m_FBO->Unbind();
+		// Clear depth buffer and colour buffer attachments
 		GLCall(glClearColor(clearColour[0] / darknessFactor, clearColour[1] / darknessFactor,
 			clearColour[2] / darknessFactor, clearColour[3] / darknessFactor));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)); // not using the stencil buffer
 
 		m_QuadShader->Bind();
-		GLCall(glActiveTexture(GL_TEXTURE1));
+		GLCall(glActiveTexture(GL_TEXTURE2));
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_FramebufferTexture));
-		m_QuadShader->SetInt("framebufferTexture", 1);
-		renderer.Draw(*m_VA_Quad, *m_IB_Quad, *m_QuadShader); // Draws the quad to the default framebuffer
+		m_QuadShader->SetInt("framebufferTexture", 2);
+		// Draw the rear-view framebuffer textured quad to the default framebuffer
+		renderer.Draw(*m_VA_Quad, *m_IB_Quad, *m_QuadShader); 
 
-		// Now reset to normal ground texture and draw the ground to the default framebuffer
+		// Now reset to normal ground texture and draw the ground & cube to the default framebuffer
 		m_Shader->Bind();
 		m_Shader->SetInt("u_ActiveTexture", 0);
 		// Rotate the camera's direction back to the front
-		m_Camera.Yaw   += 180.0f; 
-		m_Camera.Pitch += 180.0f; 
+		m_Camera.Pitch += rearViewAngle;
 		m_Camera.ProcessMouseMovement(0, 0, true);
 		view = m_Camera.GetViewMatrix(); 
 		MVP_matrix = proj * view * modelMatrix;
 		m_Shader->SetMatrix4f("u_MVP", MVP_matrix);
+		// Draw the ground to default framebuffer
 		renderer.Draw(*m_VA_Ground, *m_IB_Ground, *m_Shader);
+		m_CubeTexture->Bind(1);
+		m_Shader->SetInt("u_ActiveTexture", 1);
+		// Draw cube to default framebuffer
+		renderer.Draw(*m_VA_Cube, *m_IB_Cube, *m_Shader);
 	}
 
 	void TestManualFramebuffer::OnImGuiRender()
@@ -230,7 +313,8 @@ namespace test
 		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
 		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
 		m_Shader->SetInt("u_Texture0", 0);
-		m_Shader->SetInt("u_ActiveTexture", 0);
+		m_CubeTexture->Bind(1);
+		m_Shader->SetInt("u_Texture1", 1);
 
 		// Reset all callbacks
 		// Callback function for keyboard inputs

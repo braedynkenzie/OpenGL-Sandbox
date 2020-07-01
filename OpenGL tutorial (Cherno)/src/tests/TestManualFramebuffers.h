@@ -30,9 +30,13 @@ namespace test
 		VertexArray* m_VA_Quad;
 		VertexBuffer* m_VB_Quad;
 		IndexBuffer* m_IB_Quad;
+		VertexArray* m_VA_Cube;
+		VertexBuffer* m_VB_Cube;
+		IndexBuffer* m_IB_Cube;
 		Shader* m_Shader;
 		Shader* m_QuadShader;
 		Texture* m_WaterTexture;
+		Texture* m_CubeTexture;
 		unsigned int m_FramebufferTexture;
 
 	public: 

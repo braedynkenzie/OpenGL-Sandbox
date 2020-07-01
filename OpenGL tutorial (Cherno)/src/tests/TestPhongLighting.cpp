@@ -354,11 +354,13 @@ namespace test
 
 	void TestPhongLighting::NewProjectile()
 	{
-		PointLight pointLight = { m_FloatingLightColour, m_Camera.Position, m_Camera.Front, 1.0 }; // TODO change speed and direction
-		m_PointLights.push_back(pointLight);
 		m_GroundShader->Bind();
-		if (m_PointLights.size() <= 100)
+		if (m_PointLights.size() < 100)
+		{
+			PointLight newPointLight = { m_FloatingLightColour, m_Camera.Position, m_Camera.Front, 3.0 }; 
+			m_PointLights.push_back(newPointLight);
 			m_GroundShader->SetInt("numPointLights", m_PointLights.size());
+		}
 	}
 
 	void scroll_callbackPhongTest(GLFWwindow* window, double xOffset, double yOffset)
