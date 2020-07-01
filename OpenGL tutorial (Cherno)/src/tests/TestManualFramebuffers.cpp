@@ -19,9 +19,9 @@ namespace test
 	TestManualFramebuffer::TestManualFramebuffer(GLFWwindow*& mainWindow)
 		: m_MainWindow(mainWindow),
 		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)),
-		m_CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)),
+		m_CameraFront(glm::vec3(0.0f, 0.0f, 1.0f)),
 		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)),
-		m_Camera(Camera(m_CameraPos, 75.0f)),
+		m_Camera(Camera(m_CameraPos, 75.0f, m_CameraUp, 90.0f, 0.0f)),
 		m_FBO(new FrameBuffer()),
 		m_RenderBufferID(-1),
 		m_VA_Ground(new VertexArray()),
@@ -232,7 +232,7 @@ namespace test
 		// Send combined MVP matrix to shader
 		glm::mat4 modelMatrix = glm::mat4(1.0);
 		glm::mat4 proj = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
-		float rearViewAngle = 180.0f;
+		float rearViewAngle = -180.0f;
 		m_Camera.Pitch -= rearViewAngle; // rotate the camera's pitch 180 degrees around
 		m_Camera.ProcessMouseMovement(0, 0, false); // call this to make sure it updates its camera vectors, note pitch constraints disabled
 		glm::mat4 view = m_Camera.GetViewMatrix();
