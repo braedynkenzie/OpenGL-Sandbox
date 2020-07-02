@@ -1,4 +1,4 @@
-#include "TestTemplate.h"
+#include "TestCubemapping.h"
 
 #include "Renderer.h"
 #include <tests\TestClearColour.h>
@@ -7,20 +7,20 @@
 namespace test
 {
 	// Function declarations
-	void mouse_callbackTemplate(GLFWwindow* window, double xpos, double ypos);
-	void scroll_callbackTemplate(GLFWwindow* window, double xOffset, double yOffset);
-	void processInputTemplate(GLFWwindow* window);
-	void mouse_button_callbackTemplate(GLFWwindow* window, int button, int action, int mods);
+	void mouse_callbackCubemapping(GLFWwindow* window, double xpos, double ypos);
+	void scroll_callbackCubemapping(GLFWwindow* window, double xOffset, double yOffset);
+	void processInputCubemapping(GLFWwindow* window);
+	void mouse_button_callbackCubemapping(GLFWwindow* window, int button, int action, int mods);
 
 	// Init static variable
-	TestTemplate* TestTemplate::instance;
+	TestCubemapping* TestCubemapping::instance;
 
-	TestTemplate::TestTemplate(GLFWwindow*& mainWindow)
+	TestCubemapping::TestCubemapping(GLFWwindow*& mainWindow)
 		: m_MainWindow(mainWindow),
 		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)),
 		m_Camera(Camera(m_CameraPos, 75.0f)),
 		m_Shader(new Shader("res/shaders/Basic.shader")),
-		m_CubeTexture(new Texture("res/textures/metal_border_container_texture.png")),
+		m_CubeTexture(new Texture("res/textures/dirt_ground_texture.png")),
 		m_VA_Cube(new VertexArray())
 	{
 		instance = this;
@@ -98,18 +98,18 @@ namespace test
 		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
-	TestTemplate::~TestTemplate()
+	TestCubemapping::~TestCubemapping()
 	{
 	}
 
-	void TestTemplate::OnUpdate(float deltaTime)
+	void TestCubemapping::OnUpdate(float deltaTime)
 	{
 	}
 
-	void TestTemplate::OnRender()
+	void TestCubemapping::OnRender()
 	{
 		float* clearColour = test::TestClearColour::GetClearColour();
-		float darknessFactor = 2.0f;
+		float darknessFactor = 1.0f;
 		GLCall(glClearColor(clearColour[0] / darknessFactor, clearColour[1] / darknessFactor,
 			clearColour[2] / darknessFactor, clearColour[3] / darknessFactor));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
@@ -120,7 +120,7 @@ namespace test
 		lastFrameTime = currentFrameTime;
 
 		// Process keyboard inputs
-		processInputTemplate(m_MainWindow);
+		processInputCubemapping(m_MainWindow);
 
 		Renderer renderer;
 		// Set per-frame uniforms
@@ -136,13 +136,13 @@ namespace test
 		renderer.Draw(*m_VA_Cube, *m_IB_Cube, *m_Shader);
 	}
 
-	void TestTemplate::OnImGuiRender()
+	void TestCubemapping::OnImGuiRender()
 	{
 		// ImGui interface
 		ImGui::Text("// TODO UI");
 	}
 
-	void TestTemplate::OnActivated()
+	void TestCubemapping::OnActivated()
 	{
 		// Hide and capture mouse cursor
 		glfwSetInputMode(m_MainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -156,21 +156,21 @@ namespace test
 		
 		// Reset all callbacks
 		// Callback function for mouse cursor movement
-		glfwSetCursorPosCallback(m_MainWindow, mouse_callbackTemplate);
+		glfwSetCursorPosCallback(m_MainWindow, mouse_callbackCubemapping);
 		// Callback function for scrolling zoom
-		glfwSetScrollCallback(m_MainWindow, scroll_callbackTemplate);
+		glfwSetScrollCallback(m_MainWindow, scroll_callbackCubemapping);
 		// Callback function for mouse buttons
-		glfwSetMouseButtonCallback(m_MainWindow, mouse_button_callbackTemplate);
+		glfwSetMouseButtonCallback(m_MainWindow, mouse_button_callbackCubemapping);
 	}
 
-	void scroll_callbackTemplate(GLFWwindow* window, double xOffset, double yOffset)
+	void scroll_callbackCubemapping(GLFWwindow* window, double xOffset, double yOffset)
 	{
-		test::TestTemplate* templateTest = test::TestTemplate::GetInstance();
-		Camera* templateCamera = templateTest->GetCamera();
-		templateCamera->ProcessMouseScroll(yOffset);
+		test::TestCubemapping* cubemappingTest = test::TestCubemapping::GetInstance();
+		Camera* cubemappingCamera = cubemappingTest->GetCamera();
+		cubemappingCamera->ProcessMouseScroll(yOffset);
 	}
 
-	void mouse_callbackTemplate(GLFWwindow* window, double xpos, double ypos)
+	void mouse_callbackCubemapping(GLFWwindow* window, double xpos, double ypos)
 	{
 		// Fixes first mouse cursor capture by OpenGL window
 		if (firstMouseCapture)
@@ -189,32 +189,32 @@ namespace test
 		lastCursorX = xpos;
 		lastCursorY = ypos;
 
-		test::TestTemplate* templateTest = test::TestTemplate::GetInstance();
-		Camera* templateCamera = templateTest->GetCamera();
-		templateCamera->ProcessMouseMovement(xOffset, yOffset);
+		test::TestCubemapping* cubemappingTest = test::TestCubemapping::GetInstance();
+		Camera* cubemappingCamera = cubemappingTest->GetCamera();
+		cubemappingCamera->ProcessMouseMovement(xOffset, yOffset);
 	}
 
-	void mouse_button_callbackTemplate(GLFWwindow* window, int button, int action, int mods)
+	void mouse_button_callbackCubemapping(GLFWwindow* window, int button, int action, int mods)
 	{
-		// test::TestTemplate* templateTest = test::TestTemplate::GetInstance();
+		// test::TestCubemapping* cubemappingTest = test::TestCubemapping::GetInstance();
 
 		//if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
 		//    ...
 	}
 
-	void processInputTemplate(GLFWwindow* window) {
-		test::TestTemplate* templateTest = test::TestTemplate::GetInstance();
-		Camera* templateCamera = templateTest->GetCamera();
+	void processInputCubemapping(GLFWwindow* window) {
+		test::TestCubemapping* cubemappingTest = test::TestCubemapping::GetInstance();
+		Camera* cubemappingCamera = cubemappingTest->GetCamera();
 
 		// Camera position movement
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			templateCamera->ProcessKeyboard(FORWARD, deltaTime);
+			cubemappingCamera->ProcessKeyboard(FORWARD, deltaTime);
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			templateCamera->ProcessKeyboard(BACKWARD, deltaTime);
+			cubemappingCamera->ProcessKeyboard(BACKWARD, deltaTime);
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			templateCamera->ProcessKeyboard(LEFT, deltaTime);
+			cubemappingCamera->ProcessKeyboard(LEFT, deltaTime);
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			templateCamera->ProcessKeyboard(RIGHT, deltaTime);
+			cubemappingCamera->ProcessKeyboard(RIGHT, deltaTime);
 	}
 }
 

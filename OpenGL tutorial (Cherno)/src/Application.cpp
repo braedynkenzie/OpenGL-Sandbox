@@ -28,6 +28,8 @@
 #include "tests\TestPhongLighting.h"
 #include "tests\TestModelLoading.h"
 #include "tests\TestManualFramebuffers.h"
+#include "tests\TestCubemapping.h"
+#include "tests\TestTemplate.h"
 
 // Function declarations
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -94,6 +96,8 @@ int main(void)
         test::TestPhongLighting* phongLightingTest = new test::TestPhongLighting(window);
         test::TestModelLoading* modelLoadingTest = new test::TestModelLoading(window);
         test::TestManualFramebuffer* framebufferTest = new test::TestManualFramebuffer(window);
+        test::TestCubemapping* cubemappingTest = new test::TestCubemapping(window);
+        test::TestTemplate* templateTest = new test::TestTemplate(window);
         // Register all test sandboxes
         testMenu->RegisterTest<test::TestClearColour*>("Change background colour", (test::TestClearColour*) clearColourTest);
         testMenu->RegisterTest<test::TestTexture2D*>("Textured cube test", (test::TestTexture2D*) texture2DTest);
@@ -101,6 +105,8 @@ int main(void)
         testMenu->RegisterTest<test::TestPhongLighting*>("Phong lighting model sandbox", (test::TestPhongLighting*) phongLightingTest);
         testMenu->RegisterTest<test::TestModelLoading*>("Model loading test", (test::TestModelLoading*) modelLoadingTest);
         testMenu->RegisterTest<test::TestManualFramebuffer*>("Rear View Framebuffer test", (test::TestManualFramebuffer*) framebufferTest);
+        testMenu->RegisterTest<test::TestCubemapping*>("Skybox/Cubemapping test", (test::TestCubemapping*) cubemappingTest);
+        testMenu->RegisterTest<test::TestTemplate*>("Test Template", (test::TestTemplate*) templateTest);
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))

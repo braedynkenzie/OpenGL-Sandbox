@@ -162,6 +162,7 @@
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\tests\Test.cpp" />
     <ClCompile Include="src\tests\TestClearColour.cpp" />
+    <ClCompile Include="src\tests\TestCubemapping.cpp" />
     <ClCompile Include="src\tests\TestFPSCamera.cpp" />
     <ClCompile Include="src\tests\TestManualFramebuffers.cpp" />
     <ClCompile Include="src\tests\TestModelLoading.cpp" />
@@ -1029,6 +1030,7 @@
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\tests\Test.h" />
     <ClInclude Include="src\tests\TestClearColour.h" />
+    <ClInclude Include="src\tests\TestCubemapping.h" />
     <ClInclude Include="src\tests\TestFPSCamera.h" />
     <ClInclude Include="src\tests\TestManualFramebuffers.h" />
     <ClInclude Include="src\tests\TestModelLoading.h" />
@@ -1335,9 +1337,10 @@
     <Image Include="res\textures\dirt_ground_texture.png" />
     <Image Include="res\textures\high_res_world_map_texture.png" />
     <Image Include="res\textures\metal_border_container_texture.png" />
+    <Image Include="res\textures\pool_water_texture.png" />
+    <Image Include="res\textures\shallow_water_texture.png" />
     <Image Include="res\textures\tree_render_texture.png" />
     <Image Include="res\textures\tree_render_texture2.png" />
-    <Image Include="res\textures\world_map_texture.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

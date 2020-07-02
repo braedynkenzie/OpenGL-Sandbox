@@ -145,7 +145,7 @@ namespace test
 		// Init index buffer and bind to Vertex Array 
 		m_IB_Quad = new IndexBuffer(framebufferQuadIndices, 6);
 
-		// Framebuffer quad Vertex Array setup
+		// Cube Vertex Array setup
 		// Init Vertex Buffer and bind to Vertex Array 
 		m_VB_Cube = new VertexBuffer(cubeVertices, 5 * 24 * sizeof(float));
 		// Create and associate the layout (Vertex Attribute Pointer)
