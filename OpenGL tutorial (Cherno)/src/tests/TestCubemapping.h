@@ -21,10 +21,15 @@ namespace test
 		glm::vec3 m_CameraPos;
 		Camera m_Camera;
 		Shader* m_Shader;
+		Shader* m_SkyboxShader;
 		Texture* m_CubeTexture;
+		Texture* m_SkyboxTexture;
 		VertexArray*  m_VA_Cube;
 		VertexBuffer* m_VB_Cube;
 		IndexBuffer*  m_IB_Cube;
+		VertexArray*  m_VA_Skybox;
+		VertexBuffer* m_VB_Skybox;
+		IndexBuffer*  m_IB_Skybox;
 	public: 
 		TestCubemapping(GLFWwindow*& mainWindow);
 		~TestCubemapping();

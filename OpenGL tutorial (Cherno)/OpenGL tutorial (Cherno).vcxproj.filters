@@ -1199,6 +1199,7 @@
     <None Include="res\shaders\Backpack.shader" />
     <None Include="res\shaders\PointLights.shader" />
     <None Include="res\shaders\FramebufferTest.shader" />
+    <None Include="res\shaders\Skybox.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">

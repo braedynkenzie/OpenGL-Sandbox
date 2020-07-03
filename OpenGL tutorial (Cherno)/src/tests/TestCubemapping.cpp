@@ -3,6 +3,7 @@
 #include "Renderer.h"
 #include <tests\TestClearColour.h>
 #include "Globals.h"
+#include <vendor\stb_image\stb_image.h>
 
 namespace test
 {
@@ -20,10 +21,71 @@ namespace test
 		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)),
 		m_Camera(Camera(m_CameraPos, 75.0f)),
 		m_Shader(new Shader("res/shaders/Basic.shader")),
+		m_SkyboxShader(new Shader("res/shaders/Skybox.shader")),
 		m_CubeTexture(new Texture("res/textures/dirt_ground_texture.png")),
-		m_VA_Cube(new VertexArray())
+		m_SkyboxTexture(new Texture(std::vector<std::string>( { "res/textures/example_skybox/right.jpg",
+																"res/textures/example_skybox/left.jpg",
+																"res/textures/example_skybox/top.jpg",
+																"res/textures/example_skybox/bottom.jpg",
+																"res/textures/example_skybox/front.jpg",
+																"res/textures/example_skybox/back.jpg" } ))),
+		m_VA_Cube(new VertexArray()),
+		m_VA_Skybox(new VertexArray())
 	{
 		instance = this;
+
+		float skyboxVertices[] = {
+			//   Positions        
+			   1.0f,  1.0f, -1.0f, 
+			  -1.0f, -1.0f, -1.0f, 
+			  -1.0f,  1.0f, -1.0f, 
+			   1.0f, -1.0f, -1.0f, 
+
+			  -1.0f, -1.0f,  1.0f, 
+			   1.0f,  1.0f,  1.0f, 
+			  -1.0f,  1.0f,  1.0f, 
+			   1.0f, -1.0f,  1.0f, 
+
+			  -1.0f, -1.0f, -1.0f, 
+			  -1.0f,  1.0f,  1.0f, 
+			  -1.0f,  1.0f, -1.0f, 
+			  -1.0f, -1.0f,  1.0f, 
+
+			   1.0f, -1.0f,  1.0f, 
+			   1.0f,  1.0f, -1.0f, 
+			   1.0f,  1.0f,  1.0f, 
+			   1.0f, -1.0f, -1.0f, 
+
+			   1.0f,  1.0f,  1.0f, 
+			  -1.0f,  1.0f, -1.0f, 
+			  -1.0f,  1.0f,  1.0f, 
+			   1.0f,  1.0f, -1.0f, 
+
+			  -1.0f, -1.0f,  1.0f, 
+			   1.0f, -1.0f, -1.0f, 
+			   1.0f, -1.0f,  1.0f, 
+			  -1.0f, -1.0f, -1.0f, 
+		};
+
+		unsigned int skyboxIndices[]{
+			0, 1, 2,
+			3, 1, 0,
+
+			4, 5, 6,
+			7, 5, 4,
+
+			8, 9, 10,
+			11, 9, 8,
+
+			12, 13, 14,
+			15, 13, 12,
+
+			16, 17, 18,
+			19, 17, 16,
+
+			20, 21, 22,
+			23, 21, 20
+		};
 
 		float cubeVertices[] = {
 			// positions      --  tex coords 
@@ -83,11 +145,21 @@ namespace test
 		m_VB_Cube = new VertexBuffer(cubeVertices, 5 * 4 * 6 * sizeof(float));
 		// Create and associate the layout (Vertex Attribute Pointer)
 		VertexBufferLayout cubeVBLayout;
-		cubeVBLayout.Push<float>(3); // Vertex position,	 vec3
+		cubeVBLayout.Push<float>(3); // Vertex positions,	 vec3
 		cubeVBLayout.Push<float>(2); // Texture coordinates, vec2
 		m_VA_Cube->AddBuffer(*m_VB_Cube, cubeVBLayout);
 		// Init index buffer and bind to Vertex Array 
 		m_IB_Cube = new IndexBuffer(cubeIndices, 6 * 6);
+
+		// Skybox Vertex Array setup
+		// Init Vertex Buffer and bind to Vertex Array 
+		m_VB_Skybox = new VertexBuffer(skyboxVertices, 3 * 4 * 6 * sizeof(float));
+		// Create and associate the layout (Vertex Attribute Pointer)
+		VertexBufferLayout skyboxVBLayout;
+		skyboxVBLayout.Push<float>(3); // Vertex positions,  vec3
+		m_VA_Skybox->AddBuffer(*m_VB_Skybox, skyboxVBLayout);
+		// Init index buffer and bind to Vertex Array 
+		m_IB_Skybox = new IndexBuffer(skyboxIndices, 6 * 6);
 
 		// Enable OpenGL z-buffer depth comparisons
 		glEnable(GL_DEPTH_TEST);
@@ -123,6 +195,9 @@ namespace test
 		processInputCubemapping(m_MainWindow);
 
 		Renderer renderer;
+
+		// First, render the scene normally
+		//
 		// Set per-frame uniforms
 		m_Shader->Bind();
 		// Model, View, Projection matrices
@@ -134,6 +209,22 @@ namespace test
 		m_Shader->SetMatrix4f("u_MVP", MVP_matrix);
 		m_Shader->SetInt("u_ActiveTexture", 1);
 		renderer.Draw(*m_VA_Cube, *m_IB_Cube, *m_Shader);
+
+		// Then render the skybox with depth testing at LEQUAL (and set z component to be (w / w) = 1.0 = max depth in vertex shader)
+		glDepthFunc(GL_LEQUAL);
+		m_SkyboxShader->Bind();
+		// Model, View, Projection matrices
+		modelMatrix = glm::mat4(1.0f);
+		viewMatrix = glm::mat4(glm::mat3(m_Camera.GetViewMatrix())); // Gets rid of any translation
+		projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
+		m_SkyboxShader->SetMatrix4f("modelMatrix", modelMatrix);
+		m_SkyboxShader->SetMatrix4f("viewMatrix",  viewMatrix);
+		m_SkyboxShader->SetMatrix4f("projMatrix",  projMatrix);
+		m_SkyboxTexture->BindCubemap(3); // TODO might want to move this to OnActivated
+		m_SkyboxShader->SetInt("u_SkyboxTexture", 3); // TODO double check this is correct / necessary
+		renderer.Draw(*m_VA_Skybox, *m_IB_Skybox, *m_SkyboxShader);
+		glDepthFunc(GL_LESS);
+
 	}
 
 	void TestCubemapping::OnImGuiRender()

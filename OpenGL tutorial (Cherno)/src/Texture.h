@@ -13,12 +13,18 @@ private:
 
 public:
 	Texture(const std::string& filepath);
+	Texture(const std::vector<std::string>& cubemapFilepaths, bool flipOnLoad = false);
 	~Texture();
 
 	void Bind(unsigned int slot = 0) const;
 	void Unbind() const;
 
+	void BindCubemap(unsigned int slot = 0) const;
+	void UnbindCubemap() const;
+
 	inline int GetWidth() const { return m_Width; }
 	inline int GetHeight() const { return m_Height; }
+
+	unsigned int LoadCubemap(std::vector<std::string> texturePaths);
 
 };
