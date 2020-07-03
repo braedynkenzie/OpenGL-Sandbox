@@ -18,11 +18,11 @@ namespace test
 
 	TestCubemapping::TestCubemapping(GLFWwindow*& mainWindow)
 		: m_MainWindow(mainWindow),
-		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)),
-		m_Camera(Camera(m_CameraPos, 75.0f)),
-		m_Shader(new Shader("res/shaders/Basic.shader")),
+		m_CameraPos(glm::vec3(6.0f, 0.0f, -10.0f)),
+		m_Camera(Camera(m_CameraPos, 75.0f, glm::vec3(0.0f, 1.0f, 0.0f), 90.0f)),
+		m_CubeShader(new Shader("res/shaders/EnvMapping.shader")),
 		m_SkyboxShader(new Shader("res/shaders/Skybox.shader")),
-		m_CubeTexture(new Texture("res/textures/dirt_ground_texture.png")),
+		m_CubeTexture(new Texture("res/textures/metal_scratched_texture.png")),
 		m_SkyboxTexture(new Texture(std::vector<std::string>( { "res/textures/example_skybox/right.jpg",
 																"res/textures/example_skybox/left.jpg",
 																"res/textures/example_skybox/top.jpg",
@@ -88,36 +88,36 @@ namespace test
 		};
 
 		float cubeVertices[] = {
-			// positions      --  tex coords 
-			   0.5,  0.5, -0.5,    1.0, 1.0, // Cube back
-			  -0.5, -0.5, -0.5,    0.0, 0.0,
-			  -0.5,  0.5, -0.5,    0.0, 1.0,
-			   0.5, -0.5, -0.5,    1.0, 0.0,
-
-			  -0.5, -0.5,  0.5,    0.0, 0.0, // Cube front
-			   0.5,  0.5,  0.5,    1.0, 1.0,
-			  -0.5,  0.5,  0.5,    0.0, 1.0,
-			   0.5, -0.5,  0.5,    1.0, 0.0,
-
-			  -0.5, -0.5, -0.5,    0.0, 0.0, // Cube left
-			  -0.5,  0.5,  0.5,    1.0, 1.0,
-			  -0.5,  0.5, -0.5,    0.0, 1.0,
-			  -0.5, -0.5,  0.5,    1.0, 0.0,
-
-			   0.5, -0.5,  0.5,    0.0, 0.0, // Cube right
-			   0.5,  0.5, -0.5,    1.0, 1.0,
-			   0.5,  0.5,  0.5,    0.0, 1.0,
-			   0.5, -0.5, -0.5,    1.0, 0.0,
-
-			   0.5,  0.5,  0.5,    0.0, 0.0, // Cube top
-			  -0.5,  0.5, -0.5,    1.0, 1.0,
-			  -0.5,  0.5,  0.5,    1.0, 0.0,
-			   0.5,  0.5, -0.5,    0.0, 1.0,
-
-			  -0.5, -0.5,  0.5,    0.0, 0.0, // Cube bottom
-			   0.5, -0.5, -0.5,    1.0, 1.0,
-			   0.5, -0.5,  0.5,    1.0, 0.0,
-			  -0.5, -0.5, -0.5,    0.0, 1.0,
+			// positions     --   tex coords  --   normals
+			   0.5,  0.5, -0.5,    1.0, 1.0,	0.0, 0.0, -1.0, // Cube back
+			  -0.5, -0.5, -0.5,    0.0, 0.0,	0.0, 0.0, -1.0, 
+			  -0.5,  0.5, -0.5,    0.0, 1.0,	0.0, 0.0, -1.0, 
+			   0.5, -0.5, -0.5,    1.0, 0.0,	0.0, 0.0, -1.0, 
+												 
+			  -0.5, -0.5,  0.5,    0.0, 0.0,	0.0, 0.0, 1.0, // Cube front
+			   0.5,  0.5,  0.5,    1.0, 1.0,	0.0, 0.0, 1.0,
+			  -0.5,  0.5,  0.5,    0.0, 1.0,	0.0, 0.0, 1.0,
+			   0.5, -0.5,  0.5,    1.0, 0.0,	0.0, 0.0, 1.0,
+												
+			  -0.5, -0.5, -0.5,    0.0, 0.0,	-1.0, 0.0, 0.0, // Cube left
+			  -0.5,  0.5,  0.5,    1.0, 1.0,	-1.0, 0.0, 0.0,
+			  -0.5,  0.5, -0.5,    0.0, 1.0,	-1.0, 0.0, 0.0,
+			  -0.5, -0.5,  0.5,    1.0, 0.0,	-1.0, 0.0, 0.0,
+												 
+			   0.5, -0.5,  0.5,    0.0, 0.0,	1.0, 0.0, 0.0, // Cube right
+			   0.5,  0.5, -0.5,    1.0, 1.0,	1.0, 0.0, 0.0,
+			   0.5,  0.5,  0.5,    0.0, 1.0,	1.0, 0.0, 0.0,
+			   0.5, -0.5, -0.5,    1.0, 0.0,	1.0, 0.0, 0.0,
+												 
+			   0.5,  0.5,  0.5,    0.0, 0.0,	0.0, 1.0, 0.0, // Cube top
+			  -0.5,  0.5, -0.5,    1.0, 1.0,	0.0, 1.0, 0.0,
+			  -0.5,  0.5,  0.5,    1.0, 0.0,	0.0, 1.0, 0.0,
+			   0.5,  0.5, -0.5,    0.0, 1.0,	0.0, 1.0, 0.0,
+												
+			  -0.5, -0.5,  0.5,    0.0, 0.0,	0.0, -1.0, 0.0, // Cube bottom
+			   0.5, -0.5, -0.5,    1.0, 1.0,	0.0, -1.0, 0.0,
+			   0.5, -0.5,  0.5,    1.0, 0.0,	0.0, -1.0, 0.0,
+			  -0.5, -0.5, -0.5,    0.0, 1.0,	0.0, -1.0, 0.0,
 		};
 
 		unsigned int cubeIndices[]{
@@ -142,11 +142,12 @@ namespace test
 
 		// Cube Vertex Array setup
 		// Init Vertex Buffer and bind to Vertex Array 
-		m_VB_Cube = new VertexBuffer(cubeVertices, 5 * 4 * 6 * sizeof(float));
+		m_VB_Cube = new VertexBuffer(cubeVertices, 8 * 4 * 6 * sizeof(float));
 		// Create and associate the layout (Vertex Attribute Pointer)
 		VertexBufferLayout cubeVBLayout;
 		cubeVBLayout.Push<float>(3); // Vertex positions,	 vec3
 		cubeVBLayout.Push<float>(2); // Texture coordinates, vec2
+		cubeVBLayout.Push<float>(3); // Vertex normals,		 vec3
 		m_VA_Cube->AddBuffer(*m_VB_Cube, cubeVBLayout);
 		// Init index buffer and bind to Vertex Array 
 		m_IB_Cube = new IndexBuffer(cubeIndices, 6 * 6);
@@ -199,16 +200,18 @@ namespace test
 		// First, render the scene normally
 		//
 		// Set per-frame uniforms
-		m_Shader->Bind();
+		m_CubeShader->Bind();
 		// Model, View, Projection matrices
-		glm::mat4 modelMatrix = glm::mat4(1.0f);
+		glm::mat4 modelMatrix = glm::mat4(2.0f);
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f));
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f));
 		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
 		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
-		glm::mat4 MVP_matrix = projMatrix * viewMatrix * modelMatrix;
-		m_Shader->SetMatrix4f("u_MVP", MVP_matrix);
-		m_Shader->SetInt("u_ActiveTexture", 1);
-		renderer.Draw(*m_VA_Cube, *m_IB_Cube, *m_Shader);
+		m_CubeShader->SetMatrix4f("modelMatrix", modelMatrix);
+		m_CubeShader->SetMatrix4f("viewMatrix",  viewMatrix);
+		m_CubeShader->SetMatrix4f("projMatrix",  projMatrix);
+		m_CubeShader->SetVec3("u_CameraPos",  m_Camera.Position);
+		renderer.Draw(*m_VA_Cube, *m_IB_Cube, *m_CubeShader);
 
 		// Then render the skybox with depth testing at LEQUAL (and set z component to be (w / w) = 1.0 = max depth in vertex shader)
 		glDepthFunc(GL_LEQUAL);
@@ -220,8 +223,6 @@ namespace test
 		m_SkyboxShader->SetMatrix4f("modelMatrix", modelMatrix);
 		m_SkyboxShader->SetMatrix4f("viewMatrix",  viewMatrix);
 		m_SkyboxShader->SetMatrix4f("projMatrix",  projMatrix);
-		m_SkyboxTexture->BindCubemap(3); // TODO might want to move this to OnActivated
-		m_SkyboxShader->SetInt("u_SkyboxTexture", 3); // TODO double check this is correct / necessary
 		renderer.Draw(*m_VA_Skybox, *m_IB_Skybox, *m_SkyboxShader);
 		glDepthFunc(GL_LESS);
 
@@ -230,7 +231,11 @@ namespace test
 	void TestCubemapping::OnImGuiRender()
 	{
 		// ImGui interface
-		ImGui::Text("// TODO UI");
+		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
+		ImGui::Text("- Use WASD keys to move camera");
+		ImGui::Text("- Use scroll wheel to change FOV");
+		ImGui::Text("- Press '1' and '2' to toggle wireframe mode");
+		ImGui::Text("- Avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	}
 
 	void TestCubemapping::OnActivated()
@@ -239,11 +244,18 @@ namespace test
 		glfwSetInputMode(m_MainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 		//  Reset all uniforms
-		m_Shader->Bind();
+		//
+		// Cube environment mapping shader
+		m_CubeShader->Bind();
+		m_CubeShader->SetInt("u_SkyboxTexture", 3);
+		m_CubeShader->SetInt("u_SurfaceTexture", 1);
+		// Skybox shader
+		m_SkyboxShader->Bind();
+		m_SkyboxShader->SetInt("u_SkyboxTexture", 3);
+
 		// Textures
 		m_CubeTexture->Bind(1);
-		m_Shader->SetInt("u_Texture1", 1);
-		m_Shader->SetInt("u_ActiveTexture", 1);
+		m_SkyboxTexture->BindCubemap(3);
 		
 		// Reset all callbacks
 		// Callback function for mouse cursor movement

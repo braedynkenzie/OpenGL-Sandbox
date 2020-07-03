@@ -49,6 +49,23 @@ struct Material {
 };
 uniform Material u_Material;
 
+struct PointLight {
+	bool isActive;
+	vec3 position;
+
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+
+	// Implementing attenuation: f_att = 1.0 / (constant + linear*distance + quadratic*distance^2)
+	float constant;
+	float linear;
+	float quadratic;
+};
+#define MAX_NUM_POINT_LIGHTS 100
+uniform int numPointLights;
+uniform PointLight pointLights[MAX_NUM_POINT_LIGHTS];
+
 struct SpotLight {
 	bool on;
 	vec3 position;
@@ -70,6 +87,7 @@ struct SpotLight {
 uniform SpotLight u_Flashlight;
 
 // Function declarations
+vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(vec3 normal, vec3 fragPos, vec3 viewDir);
 
 void main() {
@@ -85,14 +103,38 @@ void main() {
 	//	result += CalcDirLight(dirLights[i], norm, viewDir);
 
 	// Point lights
-	//for (int i = 0; i < NUM_POINT_LIGHTS; i++)
-	//	result += CalcPointLight(pointLights[i], norm, FragPosition, viewDir);
+	for (int i = 0; i < numPointLights; i++) {
+		if (pointLights[i].isActive)
+			result += CalcPointLight(pointLights[i], norm, FragPosition, viewDir);
+	}
 
 	// Spot light (flashlight)
 	result += CalcSpotLight(norm, FragPosition, viewDir);
 
 	// Combined result
 	FragColour = vec4(result, 1.0);
+}
+
+vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewDir)
+{
+	// Ambient
+	vec3 ambient = pointLight.ambient * vec3(texture(u_Material.diffuse, TexCoords));
+	// Diffuse 
+	vec3 lightDir = normalize(pointLight.position - fragPos);
+	float diff = max(dot(normal, lightDir), 0.0);
+	vec3 diffuse = pointLight.diffuse * diff * vec3(texture(u_Material.diffuse, TexCoords));
+	// Specular 
+	vec3 reflectDir = reflect(-lightDir, normal);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Material.shininess);
+	vec3 specular = pointLight.specular * spec * u_Material.specular;
+	// Attenuation
+	float distance = length(pointLight.position - fragPos);
+	float attenuation = 1.0 / (pointLight.constant + pointLight.linear * distance + pointLight.quadratic * (distance * distance));
+	ambient *= attenuation;
+	diffuse *= attenuation;
+	specular *= attenuation;
+	// Combine 
+	return (ambient + diffuse + specular);
 }
 
 vec3 CalcSpotLight(vec3 norm, vec3 FragPos, vec3 viewDir)

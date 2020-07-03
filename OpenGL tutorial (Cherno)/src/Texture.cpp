@@ -49,9 +49,13 @@ Texture::Texture(const std::vector<std::string>& cubemapFilepaths, bool flipOnLo
 		unsigned char* data = stbi_load(cubemapFilepaths[i].c_str(), &m_Width, &m_Height, &m_BytesPerPixel, 0);
 
 		if (data)
+		{
 			GLCall(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, m_Width, m_Height, 0, GL_RGB, GL_UNSIGNED_BYTE, data));
+		}
 		else
+		{
 			std::cout << "[ERROR] Cubemap texture failed to load at path: " << cubemapFilepaths[i] << std::endl;
+		}
 
 		stbi_image_free(data);
 	}
@@ -88,32 +92,4 @@ void Texture::BindCubemap(unsigned int textureSlot) const
 void Texture::UnbindCubemap() const
 {
 	GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
-}
-
-// Function based on example from https://learnopengl.com/Advanced-OpenGL/Cubemaps
-unsigned int Texture::LoadCubemap(std::vector<std::string> texturePaths)
-{
-	unsigned int textureID;
-	GLCall(glGenTextures(1, &textureID));
-	GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, textureID));
-
-	int width, height, nrChannels;
-	for (unsigned int i = 0; i < texturePaths.size(); i++)
-	{
-		unsigned char* data = stbi_load(texturePaths[i].c_str(), &width, &height, &nrChannels, 0);
-
-		if (data)
-			GLCall(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data));
-		else
-			std::cout << "[ERROR] Cubemap texture failed to load at path: " << texturePaths[i] << std::endl;
-
-		stbi_image_free(data);
-	}
-	GLCall(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-	GLCall(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-	GLCall(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-	GLCall(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-	GLCall(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
-
-	return textureID;
 }

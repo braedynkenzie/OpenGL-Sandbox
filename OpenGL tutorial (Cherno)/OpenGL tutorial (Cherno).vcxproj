@@ -183,6 +183,7 @@
     <None Include="res\shaders\Backpack.shader" />
     <None Include="res\shaders\Basic.shader" />
     <None Include="res\shaders\BasicPhongModel.shader" />
+    <None Include="res\shaders\EnvMapping.shader" />
     <None Include="res\shaders\FramebufferTest.shader" />
     <None Include="res\shaders\PointLights.shader" />
     <None Include="res\shaders\Skybox.shader" />
@@ -1338,6 +1339,7 @@
     <Image Include="res\textures\dirt_ground_texture.png" />
     <Image Include="res\textures\high_res_world_map_texture.png" />
     <Image Include="res\textures\metal_border_container_texture.png" />
+    <Image Include="res\textures\metal_scratched_texture.png" />
     <Image Include="res\textures\pool_water_texture.png" />
     <Image Include="res\textures\shallow_water_texture.png" />
     <Image Include="res\textures\tree_render_texture.png" />

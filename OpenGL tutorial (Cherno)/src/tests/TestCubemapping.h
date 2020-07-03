@@ -20,7 +20,7 @@ namespace test
 		GLFWwindow* m_MainWindow;
 		glm::vec3 m_CameraPos;
 		Camera m_Camera;
-		Shader* m_Shader;
+		Shader* m_CubeShader;
 		Shader* m_SkyboxShader;
 		Texture* m_CubeTexture;
 		Texture* m_SkyboxTexture;

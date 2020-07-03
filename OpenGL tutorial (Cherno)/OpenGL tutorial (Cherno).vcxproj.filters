@@ -1200,6 +1200,7 @@
     <None Include="res\shaders\PointLights.shader" />
     <None Include="res\shaders\FramebufferTest.shader" />
     <None Include="res\shaders\Skybox.shader" />
+    <None Include="res\shaders\EnvMapping.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">
@@ -2159,6 +2160,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\textures\shallow_water_texture.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\metal_scratched_texture.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
