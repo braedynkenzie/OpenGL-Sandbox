@@ -1337,9 +1337,21 @@
   <ItemGroup>
     <Image Include="..\..\..\Learn OpenGL\OpenGL-Hello-World\Learn_OpenGL_Hello_World\metal_border_container_texture.png" />
     <Image Include="res\textures\dirt_ground_texture.png" />
+    <Image Include="res\textures\example_skybox\back.jpg" />
+    <Image Include="res\textures\example_skybox\bottom.jpg" />
+    <Image Include="res\textures\example_skybox\front.jpg" />
+    <Image Include="res\textures\example_skybox\left.jpg" />
+    <Image Include="res\textures\example_skybox\right.jpg" />
+    <Image Include="res\textures\example_skybox\top.jpg" />
     <Image Include="res\textures\high_res_world_map_texture.png" />
     <Image Include="res\textures\metal_border_container_texture.png" />
     <Image Include="res\textures\metal_scratched_texture.png" />
+    <Image Include="res\textures\night_skybox\back.jpg" />
+    <Image Include="res\textures\night_skybox\bottom.jpg" />
+    <Image Include="res\textures\night_skybox\front.jpg" />
+    <Image Include="res\textures\night_skybox\left.jpg" />
+    <Image Include="res\textures\night_skybox\right.jpg" />
+    <Image Include="res\textures\night_skybox\top.jpg" />
     <Image Include="res\textures\pool_water_texture.png" />
     <Image Include="res\textures\shallow_water_texture.png" />
     <Image Include="res\textures\tree_render_texture.png" />

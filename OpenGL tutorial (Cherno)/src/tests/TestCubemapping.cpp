@@ -23,12 +23,6 @@ namespace test
 		m_CubeShader(new Shader("res/shaders/EnvMapping.shader")),
 		m_SkyboxShader(new Shader("res/shaders/Skybox.shader")),
 		m_CubeTexture(new Texture("res/textures/metal_scratched_texture.png")),
-		m_SkyboxTexture(new Texture(std::vector<std::string>( { "res/textures/example_skybox/right.jpg",
-																"res/textures/example_skybox/left.jpg",
-																"res/textures/example_skybox/top.jpg",
-																"res/textures/example_skybox/bottom.jpg",
-																"res/textures/example_skybox/front.jpg",
-																"res/textures/example_skybox/back.jpg" } ))),
 		m_VA_Cube(new VertexArray()),
 		m_VA_Skybox(new VertexArray())
 	{
@@ -254,6 +248,13 @@ namespace test
 		m_SkyboxShader->SetInt("u_SkyboxTexture", 3);
 
 		// Textures
+		// TODO check for memory leak here
+		m_SkyboxTexture = new Texture(std::vector<std::string>({ "res/textures/example_skybox/right.jpg",
+																"res/textures/example_skybox/left.jpg",
+																"res/textures/example_skybox/top.jpg",
+																"res/textures/example_skybox/bottom.jpg",
+																"res/textures/example_skybox/front.jpg",
+																"res/textures/example_skybox/back.jpg" }));
 		m_CubeTexture->Bind(1);
 		m_SkyboxTexture->BindCubemap(3);
 		

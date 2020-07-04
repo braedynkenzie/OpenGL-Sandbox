@@ -57,6 +57,12 @@ namespace test
 		glm::vec3 m_FloatingLightSpecularIntensity;
 		glm::vec3 m_FloatingLightDiffuseColour;
 		glm::vec3 m_FloatingLightAmbientColour;
+		// Skybox data
+		Shader* m_SkyboxShader;
+		Texture* m_SkyboxTexture;
+		VertexArray* m_VA_Skybox;
+		VertexBuffer* m_VB_Skybox;
+		IndexBuffer* m_IB_Skybox;
 
 	public:
 

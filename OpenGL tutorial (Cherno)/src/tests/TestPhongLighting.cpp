@@ -40,13 +40,65 @@ namespace test
 		m_FloatingLightDiffuseIntensity(glm::vec3(0.9f)), m_FloatingLightAmbientIntensity(glm::vec3(0.4f)), 
 		m_FloatingLightSpecularIntensity(glm::vec3(0.4f)),
 		m_FloatingLightDiffuseColour(),
-		m_FloatingLightAmbientColour()
+		m_FloatingLightAmbientColour(),
+		// Skybox data
+		m_SkyboxShader(new Shader("res/shaders/Skybox.shader")),
+		m_VA_Skybox(new VertexArray())
 	{
 		instance = this;
 
-		// Mouse cursor should start in the middle of the window
-		lastCursorX = SCREEN_WIDTH / 2.0f;
-		lastCursorY = SCREEN_HEIGHT / 2.0f;
+		float skyboxVertices[] = {
+			//   Positions        
+			   1.0f,  1.0f, -1.0f,
+			  -1.0f, -1.0f, -1.0f,
+			  -1.0f,  1.0f, -1.0f,
+			   1.0f, -1.0f, -1.0f,
+
+			  -1.0f, -1.0f,  1.0f,
+			   1.0f,  1.0f,  1.0f,
+			  -1.0f,  1.0f,  1.0f,
+			   1.0f, -1.0f,  1.0f,
+
+			  -1.0f, -1.0f, -1.0f,
+			  -1.0f,  1.0f,  1.0f,
+			  -1.0f,  1.0f, -1.0f,
+			  -1.0f, -1.0f,  1.0f,
+
+			   1.0f, -1.0f,  1.0f,
+			   1.0f,  1.0f, -1.0f,
+			   1.0f,  1.0f,  1.0f,
+			   1.0f, -1.0f, -1.0f,
+
+			   1.0f,  1.0f,  1.0f,
+			  -1.0f,  1.0f, -1.0f,
+			  -1.0f,  1.0f,  1.0f,
+			   1.0f,  1.0f, -1.0f,
+
+			  -1.0f, -1.0f,  1.0f,
+			   1.0f, -1.0f, -1.0f,
+			   1.0f, -1.0f,  1.0f,
+			  -1.0f, -1.0f, -1.0f,
+		};
+
+		unsigned int skyboxIndices[]{
+			0, 1, 2,
+			3, 1, 0,
+
+			4, 5, 6,
+			7, 5, 4,
+
+			8, 9, 10,
+			11, 9, 8,
+
+			12, 13, 14,
+			15, 13, 12,
+
+			16, 17, 18,
+			19, 17, 16,
+
+			20, 21, 22,
+			23, 21, 20
+		};
 
 		// Create vertices and incdices
 		float groundVertices[] = {
@@ -93,6 +145,16 @@ namespace test
 			 5, 3, 0, // Bottom left
 			 3, 5, 7, // Bottom right
 		};
+
+		// Skybox Vertex Array setup
+		// Init Vertex Buffer and bind to Vertex Array 
+		m_VB_Skybox = new VertexBuffer(skyboxVertices, 3 * 4 * 6 * sizeof(float));
+		// Create and associate the layout (Vertex Attribute Pointer)
+		VertexBufferLayout skyboxVBLayout;
+		skyboxVBLayout.Push<float>(3); // Vertex positions,  vec3
+		m_VA_Skybox->AddBuffer(*m_VB_Skybox, skyboxVBLayout);
+		// Init index buffer and bind to Vertex Array 
+		m_IB_Skybox = new IndexBuffer(skyboxIndices, 6 * 6);
 
 		// Ground Vertex Array setup
 		m_VA_Ground = std::make_unique<VertexArray>();
@@ -213,6 +275,19 @@ namespace test
 		SetupPointLights(m_PointLightsShader, m_GroundShader, m_PointLights, m_FloatingLightDiffuseIntensity, m_FloatingLightAmbientIntensity, m_FloatingLightSpecularIntensity, viewMatrix, projMatrix, renderer, m_VA_PointLight, m_IB_PointLight);
 		// Render ground
 		renderer.Draw(*m_VA_Ground, *m_IB_Ground, *m_GroundShader); 
+
+		// Then render the skybox with depth testing at LEQUAL (and set z component to be (w / w) = 1.0 = max depth in vertex shader)
+		glDepthFunc(GL_LEQUAL);
+		m_SkyboxShader->Bind();
+		// Model, View, Projection matrices
+		modelMatrix = glm::mat4(1.0f);
+		viewMatrix = glm::mat4(glm::mat3(m_Camera.GetViewMatrix())); // Gets rid of any translation
+		projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
+		m_SkyboxShader->SetMatrix4f("modelMatrix", modelMatrix);
+		m_SkyboxShader->SetMatrix4f("viewMatrix", viewMatrix);
+		m_SkyboxShader->SetMatrix4f("projMatrix", projMatrix);
+		renderer.Draw(*m_VA_Skybox, *m_IB_Skybox, *m_SkyboxShader);
+		glDepthFunc(GL_LESS);
 	}
 
 	void processMovingLights(std::vector<PointLight>& pointLights, float deltaTime)
@@ -340,6 +415,18 @@ namespace test
 		// TODO mipmapping
 		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
 		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+
+		// Skybox shader
+		// TODO check for memory leak here
+		m_SkyboxTexture = new Texture(std::vector<std::string>({ "res/textures/night_skybox_alt/right.jpg",
+																 "res/textures/night_skybox_alt/left.jpg",
+																 "res/textures/night_skybox_alt/top.jpg",
+																 "res/textures/night_skybox_alt/bottom.jpg",
+																 "res/textures/night_skybox_alt/front.jpg",
+																 "res/textures/night_skybox_alt/back.jpg" }));
+		m_SkyboxShader->Bind();
+		m_SkyboxTexture->BindCubemap(4);
+		m_SkyboxShader->SetInt("u_SkyboxTexture", 4);
 
 		// Reset all callbacks
 		// Callback function for keyboard inputs
