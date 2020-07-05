@@ -248,11 +248,11 @@ namespace test
 		m_SkyboxShader->SetInt("u_SkyboxTexture", 3);
 
 		// Textures
-		// TODO check for memory leak here
+		delete m_SkyboxTexture;
 		m_SkyboxTexture = new Texture(std::vector<std::string>({ "res/textures/example_skybox/right.jpg",
 																"res/textures/example_skybox/left.jpg",
 																"res/textures/example_skybox/top.jpg",
-																"res/textures/example_skybox/bottom.jpg",
+																"res/textures/example_skybox/bottom.jpg", 
 																"res/textures/example_skybox/front.jpg",
 																"res/textures/example_skybox/back.jpg" }));
 		m_CubeTexture->Bind(1);

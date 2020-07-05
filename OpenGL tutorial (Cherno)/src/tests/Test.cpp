@@ -34,6 +34,9 @@ namespace test
 		glfwSetScrollCallback(m_MainWindow, nullptr);
 		// Callback function for mouse buttons
 		glfwSetMouseButtonCallback(m_MainWindow, nullptr);
+
+		// Diable face culling
+		GLCall(glDisable(GL_CULL_FACE));
 	}
 }
 

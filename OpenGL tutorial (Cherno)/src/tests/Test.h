@@ -9,6 +9,8 @@
 
 #include "imgui\imgui.h"
 
+#include "Renderer.h"
+
 
 namespace test
 {

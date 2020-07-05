@@ -417,7 +417,7 @@ namespace test
 		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
 
 		// Skybox shader
-		// TODO check for memory leak here
+		delete m_SkyboxTexture;
 		m_SkyboxTexture = new Texture(std::vector<std::string>({ "res/textures/night_skybox_alt/right.jpg",
 																 "res/textures/night_skybox_alt/left.jpg",
 																 "res/textures/night_skybox_alt/top.jpg",
