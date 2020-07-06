@@ -150,7 +150,7 @@ namespace test
 		glm::mat4 proj = glm::perspective(glm::radians(55.0f), (float)m_SCREEN_WIDTH / (float)m_SCREEN_HEIGHT, 0.1f, 10.0f);
 		glm::mat4 MVP_matrix = proj * view * modelMatrix;
 		m_Shader->SetMatrix4f("u_MVP", MVP_matrix);
-		renderer.Draw(*m_VA, *m_IB, *m_Shader);
+		renderer.DrawTriangles(*m_VA, *m_IB, *m_Shader);
 	}
 
 	void TestTexture2D::OnImGuiRender()

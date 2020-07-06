@@ -252,12 +252,12 @@ namespace test
 		m_Shader->SetInt("u_Texture0", 0);
 		m_Shader->SetInt("u_ActiveTexture", 0);
 		// Draw ground to manual framebuffer
-		renderer.Draw(*m_VA_Ground, *m_IB_Ground, *m_Shader); 
+		renderer.DrawTriangles(*m_VA_Ground, *m_IB_Ground, *m_Shader); 
 		m_CubeTexture->Bind(1);
 		m_Shader->SetInt("u_Texture1", 1);
 		m_Shader->SetInt("u_ActiveTexture", 1);
 		// Draw cube to manual framebuffer
-		renderer.Draw(*m_VA_Cube, *m_IB_Cube, *m_Shader);
+		renderer.DrawTriangles(*m_VA_Cube, *m_IB_Cube, *m_Shader);
 
 		// Now render the scene to the default framebuffer and use the rendered framebuffer as a texture 
 		// Rebind default framebuffer
@@ -272,7 +272,7 @@ namespace test
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_FramebufferTexture));
 		m_QuadShader->SetInt("framebufferTexture", 2);
 		// Draw the rear-view framebuffer textured quad to the default framebuffer
-		renderer.Draw(*m_VA_Quad, *m_IB_Quad, *m_QuadShader); 
+		renderer.DrawTriangles(*m_VA_Quad, *m_IB_Quad, *m_QuadShader); 
 
 		// Now reset to normal ground texture and draw the ground & cube to the default framebuffer
 		m_Shader->Bind();
@@ -284,11 +284,11 @@ namespace test
 		MVP_matrix = proj * view * modelMatrix;
 		m_Shader->SetMatrix4f("u_MVP", MVP_matrix);
 		// Draw the ground to default framebuffer
-		renderer.Draw(*m_VA_Ground, *m_IB_Ground, *m_Shader);
+		renderer.DrawTriangles(*m_VA_Ground, *m_IB_Ground, *m_Shader);
 		m_CubeTexture->Bind(1);
 		m_Shader->SetInt("u_ActiveTexture", 1);
 		// Draw cube to default framebuffer
-		renderer.Draw(*m_VA_Cube, *m_IB_Cube, *m_Shader);
+		renderer.DrawTriangles(*m_VA_Cube, *m_IB_Cube, *m_Shader);
 	}
 
 	void TestManualFramebuffer::OnImGuiRender()

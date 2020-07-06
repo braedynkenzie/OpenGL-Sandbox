@@ -22,7 +22,6 @@ namespace test
 		static TestModelLoading* instance;
 		GLFWwindow* m_MainWindow;
 		bool modelLoaded;
-		glm::vec3 m_BackpackPos;
 		Model* m_BackpackModel;
 		std::unique_ptr<VertexArray> m_VA;
 		std::unique_ptr<VertexBuffer> m_VB;

@@ -37,6 +37,9 @@ namespace test
 
 		// Diable face culling
 		GLCall(glDisable(GL_CULL_FACE));
+
+		// Disable gl_PointSize in vertex shaders
+		GLCall(glDisable(GL_PROGRAM_POINT_SIZE));
 	}
 }
 

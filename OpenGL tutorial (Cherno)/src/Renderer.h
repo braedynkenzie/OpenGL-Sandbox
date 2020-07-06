@@ -22,7 +22,8 @@ class Renderer
 private:
 
 public:
-    void Draw(const VertexArray& VA, const IndexBuffer& IB, const Shader& shader) const;
+    void DrawTriangles(const VertexArray& VA, const IndexBuffer& IB, const Shader& shader) const;
+    void DrawPoints(const VertexArray& VA, const IndexBuffer& IB, const Shader& shader) const;
     void Clear() const;
 
 };

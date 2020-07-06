@@ -130,7 +130,7 @@ namespace test
 		glm::mat4 view = m_Camera.GetViewMatrix();
 		glm::mat4 MVP_matrix = proj * view * modelMatrix;
 		m_Shader->SetMatrix4f("u_MVP", MVP_matrix);
-		renderer.Draw(*m_VA, *m_IB, *m_Shader);
+		renderer.DrawTriangles(*m_VA, *m_IB, *m_Shader);
 	}
 
 	void TestFPSCamera::OnImGuiRender()

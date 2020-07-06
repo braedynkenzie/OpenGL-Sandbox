@@ -20,7 +20,6 @@ namespace test
 	TestModelLoading::TestModelLoading(GLFWwindow*& mainWindow)
 		: m_MainWindow(mainWindow),
 		modelLoaded(false),
-		m_BackpackPos(glm::vec3(0.0f, 0.0f, 0.0f)),
 		m_BackpackModel(nullptr),
 		m_Shader(new Shader("res/shaders/Backpack.shader")),
 		m_CameraPos(glm::vec3(0.0f, 0.0f, 4.0f)),
@@ -151,7 +150,7 @@ namespace test
 		m_GroundTexture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
 		m_Shader->SetUniform1i("texture_diffuse0", 0);
 		// Render the ground
-		renderer.Draw(*m_VA, *m_IB, *m_Shader);
+		renderer.DrawTriangles(*m_VA, *m_IB, *m_Shader);
 
 		// Load model's uniforms and render the loaded backpack model
 		m_BackpackModel->Draw(m_Shader);

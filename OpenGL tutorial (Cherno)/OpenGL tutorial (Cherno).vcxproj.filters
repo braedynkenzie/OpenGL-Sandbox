@@ -87,6 +87,9 @@
     <ClCompile Include="src\tests\TestCubemapping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\TestGeometryShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\res\shaders\Basic.shader" />
@@ -1201,6 +1204,7 @@
     <None Include="res\shaders\FramebufferTest.shader" />
     <None Include="res\shaders\Skybox.shader" />
     <None Include="res\shaders\EnvMapping.shader" />
+    <None Include="res\shaders\HelloGeometry.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">
@@ -2134,6 +2138,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\tests\TestCubemapping.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tests\TestGeometryShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

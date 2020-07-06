@@ -274,7 +274,7 @@ namespace test
 		// Set all point light uniforms and render them
 		SetupPointLights(m_PointLightsShader, m_GroundShader, m_PointLights, m_FloatingLightDiffuseIntensity, m_FloatingLightAmbientIntensity, m_FloatingLightSpecularIntensity, viewMatrix, projMatrix, renderer, m_VA_PointLight, m_IB_PointLight);
 		// Render ground
-		renderer.Draw(*m_VA_Ground, *m_IB_Ground, *m_GroundShader); 
+		renderer.DrawTriangles(*m_VA_Ground, *m_IB_Ground, *m_GroundShader); 
 
 		// Then render the skybox with depth testing at LEQUAL (and set z component to be (w / w) = 1.0 = max depth in vertex shader)
 		glDepthFunc(GL_LEQUAL);
@@ -286,7 +286,7 @@ namespace test
 		m_SkyboxShader->SetMatrix4f("modelMatrix", modelMatrix);
 		m_SkyboxShader->SetMatrix4f("viewMatrix", viewMatrix);
 		m_SkyboxShader->SetMatrix4f("projMatrix", projMatrix);
-		renderer.Draw(*m_VA_Skybox, *m_IB_Skybox, *m_SkyboxShader);
+		renderer.DrawTriangles(*m_VA_Skybox, *m_IB_Skybox, *m_SkyboxShader);
 		glDepthFunc(GL_LESS);
 	}
 
@@ -350,7 +350,7 @@ namespace test
 			pointLightsShader->SetVec3("pointLightColour", pointLight.Colour * 0.8f);
 			//
 			// Render call for each pointlight
-			renderer.Draw(*VA_PointLight, *IB_PointLight, *pointLightsShader);
+			renderer.DrawTriangles(*VA_PointLight, *IB_PointLight, *pointLightsShader);
 			
 			// Point light properties in m_GroundShader
 			groundShader->Bind();

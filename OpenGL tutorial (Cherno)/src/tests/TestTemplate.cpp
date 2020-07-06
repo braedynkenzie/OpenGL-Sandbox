@@ -133,7 +133,7 @@ namespace test
 		glm::mat4 MVP_matrix = projMatrix * viewMatrix * modelMatrix;
 		m_Shader->SetMatrix4f("u_MVP", MVP_matrix);
 		m_Shader->SetInt("u_ActiveTexture", 1);
-		renderer.Draw(*m_VA_Cube, *m_IB_Cube, *m_Shader);
+		renderer.DrawTriangles(*m_VA_Cube, *m_IB_Cube, *m_Shader);
 	}
 
 	void TestTemplate::OnImGuiRender()

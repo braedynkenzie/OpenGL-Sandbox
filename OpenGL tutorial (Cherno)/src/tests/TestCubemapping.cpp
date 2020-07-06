@@ -205,7 +205,7 @@ namespace test
 		m_CubeShader->SetMatrix4f("viewMatrix",  viewMatrix);
 		m_CubeShader->SetMatrix4f("projMatrix",  projMatrix);
 		m_CubeShader->SetVec3("u_CameraPos",  m_Camera.Position);
-		renderer.Draw(*m_VA_Cube, *m_IB_Cube, *m_CubeShader);
+		renderer.DrawTriangles(*m_VA_Cube, *m_IB_Cube, *m_CubeShader);
 
 		// Then render the skybox with depth testing at LEQUAL (and set z component to be (w / w) = 1.0 = max depth in vertex shader)
 		glDepthFunc(GL_LEQUAL);
@@ -217,7 +217,7 @@ namespace test
 		m_SkyboxShader->SetMatrix4f("modelMatrix", modelMatrix);
 		m_SkyboxShader->SetMatrix4f("viewMatrix",  viewMatrix);
 		m_SkyboxShader->SetMatrix4f("projMatrix",  projMatrix);
-		renderer.Draw(*m_VA_Skybox, *m_IB_Skybox, *m_SkyboxShader);
+		renderer.DrawTriangles(*m_VA_Skybox, *m_IB_Skybox, *m_SkyboxShader);
 		glDepthFunc(GL_LESS);
 
 	}

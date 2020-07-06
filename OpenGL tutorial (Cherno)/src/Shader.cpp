@@ -10,7 +10,16 @@ Shader::Shader(const std::string& filepath)
 	: m_Filepath(filepath), m_RendererID(0)
 {
     ShaderProgramSource shaderSource = ParseShader(filepath);
-    m_RendererID = CreateShader(shaderSource.VertexSource, shaderSource.FragmentSource);
+    if (shaderSource.GeometrySource == "")
+    {
+        // No geometry shader in file, just use vertex and fragment shaders
+        m_RendererID = CreateShader(shaderSource.VertexSource, shaderSource.FragmentSource);
+    }
+    else
+    {
+        // Geometry shader included
+        m_RendererID = CreateShader(shaderSource.VertexSource, shaderSource.GeometrySource, shaderSource.FragmentSource);
+    }
 
     // Debugging
    /* std::cout << "VERTEX SHADER SOURCE" << std::endl;
@@ -41,6 +50,26 @@ unsigned int Shader::CreateShader(const std::string& vertexShader, const std::st
     return shaderProgram;
 }
 
+unsigned int Shader::CreateShader(const std::string& vertexShader, const std::string& geomShader, const std::string& fragmentShader)
+{
+    GLCall(unsigned int shaderProgram = glCreateProgram());
+    // Compile each shader individually
+    unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
+    unsigned int gs = CompileShader(GL_GEOMETRY_SHADER, geomShader);
+    unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
+    // Link both shaders to shaderProgram
+    GLCall(glAttachShader(shaderProgram, vs));
+    GLCall(glAttachShader(shaderProgram, gs));
+    GLCall(glAttachShader(shaderProgram, fs));
+    GLCall(glLinkProgram(shaderProgram));
+    GLCall(glValidateProgram(shaderProgram));
+    // Delete intermediate values
+    GLCall(glDeleteShader(vs));
+    GLCall(glDeleteShader(gs));
+    GLCall(glDeleteShader(fs));
+    return shaderProgram;
+}
+
 unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
 {
     unsigned int id = glCreateShader(type);
@@ -56,7 +85,12 @@ unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
         GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
         char* message = (char*)alloca(length * sizeof(char)); // dynamic stack allocation
         GLCall(glGetShaderInfoLog(id, length, &length, message));
-        std::cout << "[ERROR]: " << (type == GL_VERTEX_SHADER ? "Vertex " : "Fragment ") << "shader compile failed." << std::endl;
+        if(type == GL_VERTEX_SHADER)
+            std::cout << "[ERROR]: Vertex shader compile failed." << std::endl;
+        else if(type == GL_FRAGMENT_SHADER)
+            std::cout << "[ERROR]: Fragment shader compile failed." << std::endl;
+        else if(type == GL_GEOMETRY_SHADER)
+            std::cout << "[ERROR]: Geometry shader compile failed." << std::endl;
         std::cout << message << std::endl;
         GLCall(glDeleteShader(id));
         return 0;
@@ -67,12 +101,12 @@ unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
 
 ShaderProgramSource Shader::ParseShader(const std::string& filepath)
 {
-    // Read in a single file which contains both the vertex and fragment shader source codes
+    // Read in a single file which contains all shader source codes
     std::ifstream stream(filepath);
-    enum class ShaderType { NONE = -1, VERTEX = 0, FRAGMENT = 1 };
+    enum class ShaderType { NONE = -1, VERTEX = 0, GEOMETRY = 1, FRAGMENT = 2};
     ShaderType currentType = ShaderType::NONE;
     std::string currentLine;
-    std::stringstream stringStream[2];
+    std::stringstream stringStream[3];
     while (getline(stream, currentLine))
     {
         if (currentLine.find("#shader") != std::string::npos)
@@ -82,6 +116,11 @@ ShaderProgramSource Shader::ParseShader(const std::string& filepath)
             {
                 // Set mode to vertex shader
                 currentType = ShaderType::VERTEX;
+            }
+            else if (currentLine.find("geometry") != std::string::npos)
+            {
+                // Set mode to geometry shader
+                currentType = ShaderType::GEOMETRY;
             }
             else if (currentLine.find("fragment") != std::string::npos)
             {
@@ -95,7 +134,7 @@ ShaderProgramSource Shader::ParseShader(const std::string& filepath)
             stringStream[(int)currentType] << currentLine << "\n";
         }
     }
-    return ShaderProgramSource{ stringStream[0].str(), stringStream[1].str() };
+    return ShaderProgramSource{ stringStream[0].str(), stringStream[1].str(), stringStream[2].str()};
 }
 
 void Shader::Bind() const
