@@ -14,7 +14,7 @@
 
 namespace test
 {
-	class TestGeometryShader : public Test
+	class TestGeometryShader : public Test 
 	{
 	private:
 		static TestGeometryShader* instance;

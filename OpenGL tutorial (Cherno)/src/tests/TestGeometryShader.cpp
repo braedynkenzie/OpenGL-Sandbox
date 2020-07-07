@@ -70,7 +70,7 @@ namespace test
 		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0, 0.0, 0.0));
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
 		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
-		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
+		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.01f, 400.0f);
 		m_Shader->SetMatrix4f("model", modelMatrix);
 		m_Shader->SetMatrix4f("view", viewMatrix);
 		m_Shader->SetMatrix4f("proj", projMatrix);

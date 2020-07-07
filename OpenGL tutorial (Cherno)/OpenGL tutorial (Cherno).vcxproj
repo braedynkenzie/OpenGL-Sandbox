@@ -165,6 +165,7 @@
     <ClCompile Include="src\tests\TestCubemapping.cpp" />
     <ClCompile Include="src\tests\TestFPSCamera.cpp" />
     <ClCompile Include="src\tests\TestGeometryShader.cpp" />
+    <ClCompile Include="src\tests\TestInstancedRendering.cpp" />
     <ClCompile Include="src\tests\TestManualFramebuffers.cpp" />
     <ClCompile Include="src\tests\TestModelLoading.cpp" />
     <ClCompile Include="src\tests\TestPhongLighting.cpp" />
@@ -183,6 +184,7 @@
   <ItemGroup>
     <None Include="res\shaders\Backpack.shader" />
     <None Include="res\shaders\Basic.shader" />
+    <None Include="res\shaders\BasicModel.shader" />
     <None Include="res\shaders\BasicPhongModel.shader" />
     <None Include="res\shaders\EnvMapping.shader" />
     <None Include="res\shaders\FramebufferTest.shader" />
@@ -1037,6 +1039,7 @@
     <ClInclude Include="src\tests\TestCubemapping.h" />
     <ClInclude Include="src\tests\TestFPSCamera.h" />
     <ClInclude Include="src\tests\TestGeometryShader.h" />
+    <ClInclude Include="src\tests\TestInstancedRendering.h" />
     <ClInclude Include="src\tests\TestManualFramebuffers.h" />
     <ClInclude Include="src\tests\TestModelLoading.h" />
     <ClInclude Include="src\tests\TestPhongLighting.h" />
@@ -1355,6 +1358,12 @@
     <Image Include="res\textures\night_skybox\left.jpg" />
     <Image Include="res\textures\night_skybox\right.jpg" />
     <Image Include="res\textures\night_skybox\top.jpg" />
+    <Image Include="res\textures\night_skybox_alt\back.jpg" />
+    <Image Include="res\textures\night_skybox_alt\bottom.jpg" />
+    <Image Include="res\textures\night_skybox_alt\front.jpg" />
+    <Image Include="res\textures\night_skybox_alt\left.jpg" />
+    <Image Include="res\textures\night_skybox_alt\right.jpg" />
+    <Image Include="res\textures\night_skybox_alt\top.jpg" />
     <Image Include="res\textures\pool_water_texture.png" />
     <Image Include="res\textures\shallow_water_texture.png" />
     <Image Include="res\textures\tree_render_texture.png" />

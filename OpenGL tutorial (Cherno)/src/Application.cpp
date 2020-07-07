@@ -31,6 +31,7 @@
 #include "tests\TestCubemapping.h"
 #include "tests\TestGeometryShader.h"
 #include "tests\TestTemplate.h"
+#include "tests\TestInstancedRendering.h"
 
 // Function declarations
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -99,6 +100,7 @@ int main(void)
         test::TestManualFramebuffer* framebufferTest = new test::TestManualFramebuffer(window);
         test::TestCubemapping* cubemappingTest = new test::TestCubemapping(window);
         test::TestGeometryShader* geometryShaderTest = new test::TestGeometryShader(window);
+        test::TestInstancedRendering* instancedRenderingTest = new test::TestInstancedRendering(window);
         test::TestTemplate* templateTest = new test::TestTemplate(window);
         // Register all test sandboxes
         testMenu->RegisterTest<test::TestClearColour*>("Change background colour", (test::TestClearColour*) clearColourTest);
@@ -109,6 +111,7 @@ int main(void)
         testMenu->RegisterTest<test::TestManualFramebuffer*>("Rear View Framebuffer test", (test::TestManualFramebuffer*) framebufferTest);
         testMenu->RegisterTest<test::TestCubemapping*>("Skybox/Cubemapping test", (test::TestCubemapping*) cubemappingTest);
         testMenu->RegisterTest<test::TestGeometryShader*>("Manual Geometry Shader test", (test::TestGeometryShader*) geometryShaderTest);
+        testMenu->RegisterTest<test::TestInstancedRendering*>("Instanced Rendering test", (test::TestInstancedRendering*) instancedRenderingTest);
         testMenu->RegisterTest<test::TestTemplate*>("Test Template", (test::TestTemplate*) templateTest);
 
         /* Loop until the user closes the window */

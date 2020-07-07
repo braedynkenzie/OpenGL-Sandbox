@@ -62,8 +62,10 @@ public:
 			if (name == "texture_diffuse")
 				ss << diffuseNum++; // transfer unsigned int to stream
 			else if (name == "texture_specular")
-				continue; // not using specular map for now
+			{
+				continue; // if not using specular map 
 				//ss << specularNum++; // transfer unsigned int to stream
+			}
 			number = ss.str();
 			// shaderProgram.setFloat(("material." + name + number).c_str(), i);
 			shaderProgram->SetInt((name + number).c_str(), i);

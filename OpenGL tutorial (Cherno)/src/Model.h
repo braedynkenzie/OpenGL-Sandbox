@@ -141,7 +141,8 @@ private:
 	vector<ModelTexture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName)
 	{
 		vector<ModelTexture> textures;
-		for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
+		unsigned int textureCount = mat->GetTextureCount(type);
+		for (unsigned int i = 0; i < textureCount; i++)
 		{
 			aiString str;
 			mat->GetTexture(type, i, &str);
