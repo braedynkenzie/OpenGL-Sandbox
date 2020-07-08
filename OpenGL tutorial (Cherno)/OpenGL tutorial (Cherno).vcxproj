@@ -185,6 +185,7 @@
     <None Include="res\shaders\Backpack.shader" />
     <None Include="res\shaders\Basic.shader" />
     <None Include="res\shaders\BasicModel.shader" />
+    <None Include="res\shaders\BasicModelInstanced.shader" />
     <None Include="res\shaders\BasicPhongModel.shader" />
     <None Include="res\shaders\EnvMapping.shader" />
     <None Include="res\shaders\FramebufferTest.shader" />

@@ -18,8 +18,7 @@ void main() {
 	//Normal = normalMatrix * a_Normal;
 	
 	TexCoords = a_TextureCoords;
-
-	gl_Position = proj * view * model * vec4(a_Position, 1.0);
+    gl_Position = proj * view * model * vec4(a_Position, 1.0);
 }
 
 

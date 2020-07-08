@@ -33,11 +33,20 @@ public:
 		loadModel(path);
 	}
 
+	vector<Mesh> GetMeshes() { return meshes; }
+
 	// Draw all the model's meshes
 	void Draw(Shader* shaderProgram)
 	{
 		for (unsigned int i = 0; i < this->meshes.size(); i++)
 			meshes[i].Draw(shaderProgram);
+	}
+
+	// Draw all the model's meshes
+	void DrawInstanced(Shader* shaderProgram, unsigned int instanceCount)
+	{
+		for (unsigned int i = 0; i < this->meshes.size(); i++)
+			meshes[i].DrawInstanced(shaderProgram, instanceCount);
 	}
 
 private:

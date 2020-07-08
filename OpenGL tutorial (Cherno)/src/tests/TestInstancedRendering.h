@@ -28,6 +28,8 @@ namespace test
 		glm::vec3 m_CameraPos;
 		Camera m_Camera;
 		Shader* m_ModelShader;
+		Shader* m_ModelShaderInstanced;
+		bool m_UsingInstancing;
 		// Skybox data
 		Shader* m_SkyboxShader;
 		Texture* m_SkyboxTexture;
@@ -45,6 +47,8 @@ namespace test
 
 		Camera* GetCamera() { return &m_Camera; }
 		static TestInstancedRendering* GetInstance() { return instance; }
+
+		void ToggleInstancedRendering(bool flag) { m_UsingInstancing = flag; }
 
 	};
 }

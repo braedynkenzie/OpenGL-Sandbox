@@ -21,11 +21,13 @@ namespace test
 		m_PlanetModel(nullptr),
 		m_AsteroidModel(nullptr),
 		m_AsteroidTexture(new Texture("res/models/rock/rock.png")),
-		m_AsteroidCount(2000),
+		m_AsteroidCount(50000),
 		m_AsteroidModelMatrices(new glm::mat4[m_AsteroidCount]),
 		m_CameraPos(glm::vec3(-10.0f, 40.0f, 100.0f)),
 		m_Camera(Camera(m_CameraPos, 75.0f)),
 		m_ModelShader(new Shader("res/shaders/BasicModel.shader")),
+		m_ModelShaderInstanced(new Shader("res/shaders/BasicModelInstanced.shader")),
+		m_UsingInstancing(true),
 		// Skybox data
 		m_SkyboxShader(new Shader("res/shaders/Skybox.shader")),
 		m_VA_Skybox(new VertexArray())
@@ -114,10 +116,6 @@ namespace test
 
 	void TestInstancedRendering::OnRender()
 	{
-		float* clearColour = test::TestClearColour::GetClearColour();
-		float darknessFactor = 8.0f;
-		GLCall(glClearColor(clearColour[0] / darknessFactor, clearColour[1] / darknessFactor,
-			clearColour[2] / darknessFactor, clearColour[3] / darknessFactor));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 		// Calculate deltaTime
@@ -134,32 +132,51 @@ namespace test
 
 		// Planet's Model, View, Projection matrices
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
-		//modelMatrix = glm::rotate(modelMatrix, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(10.0f));
+		float planetRotation = sin(glfwGetTime() / 100.0f);
+		modelMatrix = glm::rotate(modelMatrix, planetRotation, glm::vec3(1.0f, 0.0f, 0.0f));
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(20.0f));
 		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
-		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
+		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 300.0f);
 		m_ModelShader->SetMatrix4f("model", modelMatrix);
 		m_ModelShader->SetMatrix4f("view", viewMatrix);
 		m_ModelShader->SetMatrix4f("proj", projMatrix);
-		//m_ModelShader->SetFloat("u_time", glfwGetTime());
 		//
 		// Render the planet
 		m_PlanetModel->Draw(m_ModelShader);
 
-		// Bind the asteroid texture then render all asteroids
-		m_AsteroidTexture->Bind(0);
-		m_ModelShader->SetInt("texture_diffuse0", 0);
-		// Asteroid translations
-		for (int i = 0; i < m_AsteroidCount; i++)
+		if (m_UsingInstancing) 
 		{
-			modelMatrix = m_AsteroidModelMatrices[i];
-			// TODO asteroid movement
-			//modelMatrix = glm::rotate(modelMatrix, (float)(sin(glfwGetTime()) + 1.0f / 2.0f), glm::vec3(1.0f, 0.0, 0.0f));
-			//modelMatrix = glm::rotate(modelMatrix, (float)(cos(glfwGetTime()) + 1.0f / 2.0f), glm::vec3(0.0f, 1.0, 0.0f));
-			//modelMatrix = glm::rotate(modelMatrix, (float)(cos(glfwGetTime()) + 1.0f / 2.0f), glm::vec3(0.0f, 0.0, 1.0f));
-			m_ModelShader->SetMatrix4f("model", modelMatrix);
-			m_AsteroidModel->Draw(m_ModelShader);
+			// Using instanced rendering
+			//
+			m_ModelShaderInstanced->Bind();
+			// Asteroid's View and Projection matrices
+			m_ModelShaderInstanced->SetMatrix4f("view", viewMatrix);
+			m_ModelShaderInstanced->SetMatrix4f("proj", projMatrix);
+			// Bind the asteroid texture then render all asteroids
+			m_AsteroidTexture->Bind(0);
+			m_ModelShaderInstanced->SetInt("texture_diffuse0", 0);
+			m_AsteroidModel->DrawInstanced(m_ModelShader, m_AsteroidCount);
 		}
+		else
+		{
+			// Not using instanced rendering
+			//
+			// Bind the asteroid texture then render all asteroids
+			m_AsteroidTexture->Bind(0);
+			m_ModelShader->SetInt("texture_diffuse0", 0);
+			// Asteroid translations
+			for (int i = 0; i < m_AsteroidCount; i++)
+			{
+				modelMatrix = m_AsteroidModelMatrices[i];
+				// TODO asteroid movement
+				//modelMatrix = glm::rotate(modelMatrix, (float)(sin(glfwGetTime()) + 1.0f / 2.0f), glm::vec3(1.0f, 0.0, 0.0f));
+				//modelMatrix = glm::rotate(modelMatrix, (float)(cos(glfwGetTime()) + 1.0f / 2.0f), glm::vec3(0.0f, 1.0, 0.0f));
+				//modelMatrix = glm::rotate(modelMatrix, (float)(cos(glfwGetTime()) + 1.0f / 2.0f), glm::vec3(0.0f, 0.0, 1.0f));
+				m_ModelShader->SetMatrix4f("model", modelMatrix);
+				m_AsteroidModel->Draw(m_ModelShader);
+			}
+		}
+		
 
 		// Then render the skybox with depth testing at LEQUAL (and set z component to be (w / w) = 1.0 = max depth in vertex shader)
 		glDepthFunc(GL_LEQUAL);
@@ -172,16 +189,6 @@ namespace test
 		m_SkyboxShader->SetMatrix4f("projMatrix", projMatrix);
 		renderer.DrawTriangles(*m_VA_Skybox, *m_IB_Skybox, *m_SkyboxShader);
 		glDepthFunc(GL_LESS);
-	}
-
-	void TestInstancedRendering::OnImGuiRender()
-	{
-		// ImGui interface
-		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
-		ImGui::Text("- Use WASD keys to move camera");
-		ImGui::Text("- Use scroll wheel to change FOV");
-		ImGui::Text("- Press '1' and '2' to toggle wireframe mode");
-		ImGui::Text("- Avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	}
 
 	void TestInstancedRendering::OnActivated()
@@ -199,8 +206,8 @@ namespace test
 
 		// Populate m_AsteroidModelMatrices array
 		srand(glfwGetTime()); // initialize random seed	
-		float radius = 100.0;
-		float offset = 8.5f;
+		float radius = 125.0;
+		float offset = 25.0f;
 		for (unsigned int i = 0; i < m_AsteroidCount; i++)
 		{
 			glm::mat4 model = glm::mat4(1.0f);
@@ -225,6 +232,40 @@ namespace test
 
 			// 4. now add to list of matrices
 			m_AsteroidModelMatrices[i] = model;
+		}
+
+		// Instanced rendering:
+		// Initialize instanced array of model matrices
+		//
+		// Create a buffer to hold all mat4 models
+		unsigned int buffer;
+		glGenBuffers(1, &buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, buffer);
+		// Fill buffer with the data
+		glBufferData(GL_ARRAY_BUFFER, m_AsteroidCount * sizeof(glm::mat4), &m_AsteroidModelMatrices[0], GL_STATIC_DRAW);
+		// For each mesh in the asteroid model, get its Vertex Array and setup attribute pointers
+		std::vector<Mesh> asteroidMeshes = m_AsteroidModel->GetMeshes();
+		for (unsigned int i = 0; i < asteroidMeshes.size(); i++)
+		{
+			unsigned int VAO = asteroidMeshes[i].GetVAO();
+			glBindVertexArray(VAO);
+			std::size_t vec4Size = sizeof(glm::vec4);
+			// Maximum attribute size is vec4, so we must use 4 of them to store each mat4
+			glEnableVertexAttribArray(3);
+			glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)0);
+			glEnableVertexAttribArray(4);
+			glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(1 * vec4Size));
+			glEnableVertexAttribArray(5);
+			glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(2 * vec4Size));
+			glEnableVertexAttribArray(6);
+			glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(3 * vec4Size));
+			// The attrib divisor tells the vertex shader when to update the instance attribute
+			glVertexAttribDivisor(3, 1);
+			glVertexAttribDivisor(4, 1);
+			glVertexAttribDivisor(5, 1);
+			glVertexAttribDivisor(6, 1);
+
+			glBindVertexArray(0);
 		}
 
 		// Hide and capture mouse cursor
@@ -305,6 +346,28 @@ namespace test
 			instancedRenderingCamera->ProcessKeyboard(LEFT, deltaTime);
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 			instancedRenderingCamera->ProcessKeyboard(RIGHT, deltaTime);
+
+		// Toggle on/off instanced rendering mode
+		if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+			instancedRenderingTest->ToggleInstancedRendering(false);
+		if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+			instancedRenderingTest->ToggleInstancedRendering(true);
+	}
+
+	void TestInstancedRendering::OnImGuiRender()
+	{
+		// ImGui interface
+		if (m_UsingInstancing)
+			ImGui::Text("PRESS 3: Turn OFF instanced rendering");
+		else
+			ImGui::Text("PRESS 4: Turn ON instanced rendering");
+		ImGui::Text(" - - - ");
+		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
+		ImGui::Text("- Use WASD keys to move camera");
+		ImGui::Text("- Use scroll wheel to change FOV");
+		ImGui::Text("- Press '1' and '2' to toggle wireframe mode");
+		ImGui::Text("- Avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		
 	}
 }
 
