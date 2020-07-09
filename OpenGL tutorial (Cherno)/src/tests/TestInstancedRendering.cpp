@@ -207,7 +207,7 @@ namespace test
 		// Populate m_AsteroidModelMatrices array
 		srand(glfwGetTime()); // initialize random seed	
 		float radius = 125.0;
-		float offset = 25.0f;
+		float offset = 15.0f;
 		for (unsigned int i = 0; i < m_AsteroidCount; i++)
 		{
 			glm::mat4 model = glm::mat4(1.0f);

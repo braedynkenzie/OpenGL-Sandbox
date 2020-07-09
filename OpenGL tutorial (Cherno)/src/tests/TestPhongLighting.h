@@ -36,7 +36,8 @@ namespace test
 		IndexBuffer* m_IB_PointLight;
 		Shader* m_GroundShader;
 		Shader* m_PointLightsShader;
-		std::unique_ptr<Texture> m_Texture;
+		Texture* m_RockyGroundTexture;
+		Texture* m_WoodenGroundTexture;
 		glm::vec3 m_CameraPos;
 		glm::vec3 m_CameraFront;
 		glm::vec3 m_CameraUp;
@@ -57,6 +58,9 @@ namespace test
 		glm::vec3 m_FloatingLightSpecularIntensity;
 		glm::vec3 m_FloatingLightDiffuseColour;
 		glm::vec3 m_FloatingLightAmbientColour;
+		// Lighting model modes
+		bool m_BlinnPhongEnabled;
+		bool m_WoodenGroundEnabled;
 		// Skybox data
 		Shader* m_SkyboxShader;
 		Texture* m_SkyboxTexture;
@@ -75,6 +79,8 @@ namespace test
 		void OnActivated() override;
 
 		void NewProjectile();
+		void ToggleBlinnPhong(bool flag);
+		void ToggleGroundTexture(bool flag);
 
 		Camera* GetCamera() { return &m_Camera; }
 		static TestPhongLighting* GetInstance() { return instance; }

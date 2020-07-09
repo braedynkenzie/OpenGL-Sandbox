@@ -2234,5 +2234,8 @@
     <Image Include="res\textures\night_skybox_alt\top.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\textures\wooden_floor_texture.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

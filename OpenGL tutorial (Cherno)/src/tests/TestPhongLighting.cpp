@@ -37,10 +37,12 @@ namespace test
 		m_FlashlightAmbientColour(m_FlashlightDiffuseColour * m_FlashlightAmbientIntensity),
 		m_FloatingLightColour(glm::vec3(1.0, 1.0, 1.0)),
 		m_FloatingLightPos(glm::vec3(2.0f, 2.0f, -40.0f)),
-		m_FloatingLightDiffuseIntensity(glm::vec3(0.9f)), m_FloatingLightAmbientIntensity(glm::vec3(0.4f)), 
-		m_FloatingLightSpecularIntensity(glm::vec3(0.4f)),
+		m_FloatingLightDiffuseIntensity(glm::vec3(0.8f)), m_FloatingLightAmbientIntensity(glm::vec3(0.4f)), 
+		m_FloatingLightSpecularIntensity(glm::vec3(0.2f)),
 		m_FloatingLightDiffuseColour(),
 		m_FloatingLightAmbientColour(),
+		m_BlinnPhongEnabled(true),
+		m_WoodenGroundEnabled(false),
 		// Skybox data
 		m_SkyboxShader(new Shader("res/shaders/Skybox.shader")),
 		m_VA_Skybox(new VertexArray())
@@ -248,6 +250,9 @@ namespace test
 		// Update camera's viewing position each frame
 		m_GroundShader->SetVec3f("viewPos", m_Camera.Position.x, m_Camera.Position.y, m_Camera.Position.z);
 
+		// Check/set Blinn-Phong mode
+		m_GroundShader->SetBool("u_BlinnPhongEnabled", m_BlinnPhongEnabled);
+
 		// Flashlight's properties
 		//
 		m_GroundShader->SetBool("u_Flashlight.on", m_IsFlashlightOn);
@@ -255,7 +260,7 @@ namespace test
 		m_GroundShader->SetVec3("u_Flashlight.diffuse", m_FlashlightDiffuseColour);
 		m_GroundShader->SetVec3("u_Flashlight.specular", m_FlashlightSpecularIntensity);
 		// Flashlight attenuation properties
-		m_GroundShader->SetFloat("u_Flashlight.constant", 1.0f);
+		m_GroundShader->SetFloat("u_Flashlight.constant", 0.5f);
 		m_GroundShader->SetFloat("u_Flashlight.linear", 0.06f);
 		m_GroundShader->SetFloat("u_Flashlight.quadratic", 0.005f);
 		// Flashlight position and direction
@@ -372,9 +377,18 @@ namespace test
 	void TestPhongLighting::OnImGuiRender()
 	{
 		// ImGui interface
+		ImGui::Text("LEFT CLICK to add light sources");
+		if (!m_BlinnPhongEnabled)
+			ImGui::Text("PRESS 3: Turn ON Blinn-Phong specular");
+		else
+			ImGui::Text("PRESS 4: Turn OFF Blinn-Phong specular");
+		if (!m_WoodenGroundEnabled)
+			ImGui::Text("PRESS 5: Wooden flooring");
+		else
+			ImGui::Text("PRESS 6: Rockey ground");
+		ImGui::Text(" - - - ");
 		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
 		ImGui::Text("- Use WASD keys to move camera");
-		ImGui::Text("- Left click to add light sources");
 		ImGui::Text("- Use scroll wheel to change FOV");
 		ImGui::Text("- Press '1' and '2' to toggle wireframe mode");
 		ImGui::Text("- Avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -387,7 +401,7 @@ namespace test
 
 		// Clear all pointlights and then add floating light source back
 		m_PointLights.clear();
-		PointLight floatingLight1 = { m_FloatingLightColour, m_FloatingLightPos, glm::vec3(0.0), 0.0 };
+		PointLight floatingLight1 = { m_FloatingLightColour, m_FloatingLightPos + glm::vec3(0.0, 4.0, 0.0), glm::vec3(0.0), 0.0 };
 		m_PointLights.push_back(floatingLight1);
 		PointLight floatingLight2 = { m_FloatingLightColour, m_FloatingLightPos + glm::vec3(4.0, -8.0, -60.0), glm::vec3(0.0), 0.0 };
 		m_PointLights.push_back(floatingLight2);
@@ -397,11 +411,22 @@ namespace test
 		// Bind shader programs and set uniforms
 		m_GroundShader->Bind();
 		m_GroundShader->SetInt("numPointLights", m_PointLights.size());
-		m_Texture = std::make_unique<Texture>("res/textures/dirt_ground_texture.png");
-		m_Texture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
-		m_GroundShader->SetInt("u_Material.diffuse", 0); 
+		m_WoodenGroundTexture = new Texture("res/textures/wooden_floor_texture.png");
+		m_WoodenGroundTexture->BindAndSetRepeating(1);
+		m_RockyGroundTexture = new Texture("res/textures/dirt_ground_texture.png");
+		m_RockyGroundTexture->BindAndSetRepeating(0);
+		if (m_WoodenGroundEnabled)
+		{
+			m_WoodenGroundTexture->Bind(1);
+			m_GroundShader->SetInt("u_MaterialDiffuse", 1); 
+		}
+		else
+		{
+			m_RockyGroundTexture->Bind(0);
+			m_GroundShader->SetInt("u_MaterialDiffuse", 0);
+		}
 		m_GroundShader->SetVec3f("u_Material.specular", 0.5f, 0.5f, 0.5f);
-		m_GroundShader->SetFloat("u_Material.shininess", 16.0f);
+		m_GroundShader->SetFloat("u_Material.shininess", 12.0f);
 		// Reset MVP matrices on activation
 		glm::mat4 modelMatrix = glm::mat4(1.0);
 		modelMatrix = glm::translate(modelMatrix, glm::vec3(50.0, 0.0, 36.0));
@@ -411,10 +436,6 @@ namespace test
 		m_GroundShader->SetMatrix4f("model", modelMatrix);
 		m_GroundShader->SetMatrix4f("view", viewMatrix);
 		m_GroundShader->SetMatrix4f("proj", projMatrix);
-		// Set texture mode to repeat
-		// TODO mipmapping
-		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
-		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
 
 		// Skybox shader
 		delete m_SkyboxTexture;
@@ -444,9 +465,31 @@ namespace test
 		m_GroundShader->Bind();
 		if (m_PointLights.size() < 100)
 		{
-			PointLight newPointLight = { m_FloatingLightColour, m_Camera.Position, m_Camera.Front, 3.0 }; 
+			PointLight newPointLight = { m_FloatingLightColour, m_Camera.Position, m_Camera.Front, 3.0 };
 			m_PointLights.push_back(newPointLight);
 			m_GroundShader->SetInt("numPointLights", m_PointLights.size());
+		}
+	}
+
+	void TestPhongLighting::ToggleBlinnPhong(bool flag)
+	{
+		m_BlinnPhongEnabled = flag;
+	}
+
+	void TestPhongLighting::ToggleGroundTexture(bool woodenGroundTextureFlag)
+	{
+		m_GroundShader->Bind();
+		if (woodenGroundTextureFlag)
+		{
+			m_WoodenGroundTexture->Bind(1); 
+			m_GroundShader->SetInt("u_MaterialDiffuse", 1);
+			m_WoodenGroundEnabled = true;
+		}
+		else
+		{
+			m_RockyGroundTexture->Bind(0);
+			m_GroundShader->SetInt("u_MaterialDiffuse", 0);
+			m_WoodenGroundEnabled = false;
 		}
 	}
 
@@ -502,5 +545,17 @@ namespace test
 			phongCamera->ProcessKeyboardForWalkingView(LEFT, deltaTime, -0.2f);
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 			phongCamera->ProcessKeyboardForWalkingView(RIGHT, deltaTime, -0.2f);
+
+		// Toggle Blinn-Phong specular lighting
+		if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+			lightingTest->ToggleBlinnPhong(true);
+		if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+			lightingTest->ToggleBlinnPhong(false);
+
+		// Toggle ground texture
+		if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+			lightingTest->ToggleGroundTexture(true);
+		if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
+			lightingTest->ToggleGroundTexture(false);
 	}
 }

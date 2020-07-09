@@ -37,17 +37,19 @@ in vec3 FragPosition;
 out vec4 FragColour;
 
 uniform vec3 viewPos;
+uniform bool u_BlinnPhongEnabled;
 
 struct Material {
 	// Ambient not necessary when using a diffuse map
 	// vec3 ambient;
 	// Replace vec3 diffuse with sampler2D type
 	// vec3 diffuse;
-	sampler2D diffuse;
+	//sampler2D diffuse;
 	vec3 specular;
 	float shininess;
 };
 uniform Material u_Material;
+uniform sampler2D u_MaterialDiffuse;
 
 struct PointLight {
 	bool isActive;
@@ -87,7 +89,7 @@ struct SpotLight {
 uniform SpotLight u_Flashlight;
 
 // Function declarations
-vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewDir);
+vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewDir, bool blinnPhongEnabled);
 vec3 CalcSpotLight(vec3 normal, vec3 fragPos, vec3 viewDir);
 
 void main() {
@@ -105,7 +107,7 @@ void main() {
 	// Point lights
 	for (int i = 0; i < numPointLights; i++) {
 		if (pointLights[i].isActive)
-			result += CalcPointLight(pointLights[i], norm, FragPosition, viewDir);
+			result += CalcPointLight(pointLights[i], norm, FragPosition, viewDir, u_BlinnPhongEnabled);
 	}
 
 	// Spot light (flashlight)
@@ -115,18 +117,28 @@ void main() {
 	FragColour = vec4(result, 1.0);
 }
 
-vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewDir)
+vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewDir, bool blinnPhongEnabled)
 {
 	// Ambient
-	vec3 ambient = pointLight.ambient * vec3(texture(u_Material.diffuse, TexCoords));
+	vec3 ambient = pointLight.ambient * vec3(texture(u_MaterialDiffuse, TexCoords));
+	//
 	// Diffuse 
 	vec3 lightDir = normalize(pointLight.position - fragPos);
 	float diff = max(dot(normal, lightDir), 0.0);
-	vec3 diffuse = pointLight.diffuse * diff * vec3(texture(u_Material.diffuse, TexCoords));
-	// Specular 
-	vec3 reflectDir = reflect(-lightDir, normal);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Material.shininess);
+	vec3 diffuse = pointLight.diffuse * diff * vec3(texture(u_MaterialDiffuse, TexCoords));
+	//
+	float spec = 0.0;
+	if (blinnPhongEnabled) {
+		// Blinn-Phong model specular correction
+		vec3 halfwayDir = normalize(lightDir + viewDir);
+		spec = pow(max(dot(normal, halfwayDir), 0.0), u_Material.shininess);
+	} else {
+		// Specular (regular Phong model style)
+		vec3 reflectDir = reflect(-lightDir, normal);
+		spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Material.shininess);
+	}
 	vec3 specular = pointLight.specular * spec * u_Material.specular;
+
 	// Attenuation
 	float distance = length(pointLight.position - fragPos);
 	float attenuation = 1.0 / (pointLight.constant + pointLight.linear * distance + pointLight.quadratic * (distance * distance));
@@ -148,10 +160,10 @@ vec3 CalcSpotLight(vec3 norm, vec3 FragPos, vec3 viewDir)
 	if (u_Flashlight.on) {
 		vec3 flashlightDir = normalize(u_Flashlight.position - FragPos);
 		// flashlight ambient
-		fl_ambient = u_Flashlight.ambient * vec3(texture(u_Material.diffuse, TexCoords));
+		fl_ambient = u_Flashlight.ambient * vec3(texture(u_MaterialDiffuse, TexCoords));
 		// flashlight diffuse 
 		float fl_diff = max(0.0, dot(norm, flashlightDir));
-		fl_diffuse = u_Flashlight.diffuse * fl_diff * vec3(texture(u_Material.diffuse, TexCoords));
+		fl_diffuse = u_Flashlight.diffuse * fl_diff * vec3(texture(u_MaterialDiffuse, TexCoords));
 		// flashlight specular 
 		float fl_shininess = 16;
 		vec3 fl_reflectDir = reflect(-flashlightDir, norm);

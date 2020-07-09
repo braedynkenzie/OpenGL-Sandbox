@@ -1369,6 +1369,7 @@
     <Image Include="res\textures\shallow_water_texture.png" />
     <Image Include="res\textures\tree_render_texture.png" />
     <Image Include="res\textures\tree_render_texture2.png" />
+    <Image Include="res\textures\wooden_floor_texture.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

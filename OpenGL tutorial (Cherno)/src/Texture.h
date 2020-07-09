@@ -25,6 +25,12 @@ public:
 	inline int GetWidth() const { return m_Width; }
 	inline int GetHeight() const { return m_Height; }
 
+	void BindAndSetRepeating(unsigned int textureSlot) const {
+		Bind(textureSlot);
+		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+	}
+
 	unsigned int LoadCubemap(std::vector<std::string> texturePaths);
 
 };
