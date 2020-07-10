@@ -12,7 +12,7 @@ private:
 	int m_Width, m_Height, m_BytesPerPixel;
 
 public:
-	Texture(const std::string& filepath);
+	Texture(const std::string& filepath, const bool requiresGammaCorrection = true);
 	Texture(const std::vector<std::string>& cubemapFilepaths, bool flipOnLoad = false);
 	~Texture();
 

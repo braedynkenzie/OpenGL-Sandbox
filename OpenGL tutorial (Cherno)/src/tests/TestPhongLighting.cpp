@@ -37,12 +37,12 @@ namespace test
 		m_FlashlightAmbientColour(m_FlashlightDiffuseColour * m_FlashlightAmbientIntensity),
 		m_FloatingLightColour(glm::vec3(1.0, 1.0, 1.0)),
 		m_FloatingLightPos(glm::vec3(2.0f, 2.0f, -40.0f)),
-		m_FloatingLightDiffuseIntensity(glm::vec3(0.8f)), m_FloatingLightAmbientIntensity(glm::vec3(0.4f)), 
-		m_FloatingLightSpecularIntensity(glm::vec3(0.2f)),
+		m_FloatingLightDiffuseIntensity(glm::vec3(1.0f)), m_FloatingLightAmbientIntensity(glm::vec3(0.05f)), 
+		m_FloatingLightSpecularIntensity(glm::vec3(0.1f)),
 		m_FloatingLightDiffuseColour(),
 		m_FloatingLightAmbientColour(),
 		m_BlinnPhongEnabled(true),
-		m_WoodenGroundEnabled(false),
+		m_WoodenGroundEnabled(true),
 		// Skybox data
 		m_SkyboxShader(new Shader("res/shaders/Skybox.shader")),
 		m_VA_Skybox(new VertexArray())
@@ -242,7 +242,7 @@ namespace test
 		modelMatrix = glm::translate(modelMatrix, glm::vec3(50.0, 0.0, 36.0));
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
 		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
-		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
+		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 800.0f);
 		m_GroundShader->SetMatrix4f("model", modelMatrix);
 		m_GroundShader->SetMatrix4f("view", viewMatrix);
 		m_GroundShader->SetMatrix4f("proj", projMatrix);
@@ -260,9 +260,9 @@ namespace test
 		m_GroundShader->SetVec3("u_Flashlight.diffuse", m_FlashlightDiffuseColour);
 		m_GroundShader->SetVec3("u_Flashlight.specular", m_FlashlightSpecularIntensity);
 		// Flashlight attenuation properties
-		m_GroundShader->SetFloat("u_Flashlight.constant", 0.5f);
-		m_GroundShader->SetFloat("u_Flashlight.linear", 0.06f);
-		m_GroundShader->SetFloat("u_Flashlight.quadratic", 0.005f);
+		m_GroundShader->SetFloat("u_Flashlight.constant", 1.0f);
+		m_GroundShader->SetFloat("u_Flashlight.linear", 0.02f);
+		m_GroundShader->SetFloat("u_Flashlight.quadratic", 0.01f);
 		// Flashlight position and direction
 		glm::vec3 flashlightPosition = m_Camera.Position;
 		glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0), 2.0f * m_Camera.Right);
@@ -273,7 +273,7 @@ namespace test
 		flashlightDirection = glm::vec3(rotationMatrix * glm::vec4(flashlightDirection, 1.0));
 		m_GroundShader->SetVec3f("u_Flashlight.direction", flashlightDirection.x, flashlightDirection.y, flashlightDirection.z);
 		// Flashlight cutoff angle
-		m_GroundShader->SetFloat("u_Flashlight.cutOff", glm::cos(glm::radians(2.0f)));
+		m_GroundShader->SetFloat("u_Flashlight.cutOff", glm::cos(glm::radians(1.0f)));
 		m_GroundShader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(35.0f)));
 		//
 		// Set all point light uniforms and render them
@@ -287,7 +287,7 @@ namespace test
 		// Model, View, Projection matrices
 		modelMatrix = glm::mat4(1.0f);
 		viewMatrix = glm::mat4(glm::mat3(m_Camera.GetViewMatrix())); // Gets rid of any translation
-		projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
+		projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 800.0f);
 		m_SkyboxShader->SetMatrix4f("modelMatrix", modelMatrix);
 		m_SkyboxShader->SetMatrix4f("viewMatrix", viewMatrix);
 		m_SkyboxShader->SetMatrix4f("projMatrix", projMatrix);
@@ -352,7 +352,7 @@ namespace test
 			pointLightsShader->SetMatrix4f("view", viewMatrix);
 			pointLightsShader->SetMatrix4f("proj", projMatrix);
 			// Light colour uniform
-			pointLightsShader->SetVec3("pointLightColour", pointLight.Colour * 0.8f);
+			pointLightsShader->SetVec3("pointLightColour", pointLight.Colour * 1.2f);
 			//
 			// Render call for each pointlight
 			renderer.DrawTriangles(*VA_PointLight, *IB_PointLight, *pointLightsShader);
@@ -365,7 +365,7 @@ namespace test
 			groundShader->SetVec3("pointLights[" + index + "].diffuse", floatingLightDiffuseColour);
 			groundShader->SetVec3("pointLights[" + index + "].specular", specularIntensity);
 			// Point light attenuation properties 
-			groundShader->SetFloat("pointLights[" + index + "].constant", 1.0f);
+			groundShader->SetFloat("pointLights[" + index + "].constant", 0.2f);
 			groundShader->SetFloat("pointLights[" + index + "].linear", 0.01f);
 			groundShader->SetFloat("pointLights[" + index + "].quadratic", 0.004f);
 			// Point light position
@@ -385,7 +385,7 @@ namespace test
 		if (!m_WoodenGroundEnabled)
 			ImGui::Text("PRESS 5: Wooden flooring");
 		else
-			ImGui::Text("PRESS 6: Rockey ground");
+			ImGui::Text("PRESS 6: Rocky ground");
 		ImGui::Text(" - - - ");
 		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
 		ImGui::Text("- Use WASD keys to move camera");
@@ -411,9 +411,9 @@ namespace test
 		// Bind shader programs and set uniforms
 		m_GroundShader->Bind();
 		m_GroundShader->SetInt("numPointLights", m_PointLights.size());
-		m_WoodenGroundTexture = new Texture("res/textures/wooden_floor_texture.png");
+		m_WoodenGroundTexture = new Texture("res/textures/wooden_floor_texture.png", false);
 		m_WoodenGroundTexture->BindAndSetRepeating(1);
-		m_RockyGroundTexture = new Texture("res/textures/dirt_ground_texture.png");
+		m_RockyGroundTexture = new Texture("res/textures/dirt_ground_texture.png", false);
 		m_RockyGroundTexture->BindAndSetRepeating(0);
 		if (m_WoodenGroundEnabled)
 		{
@@ -432,7 +432,7 @@ namespace test
 		modelMatrix = glm::translate(modelMatrix, glm::vec3(50.0, 0.0, 36.0));
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
 		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
-		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
+		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 800.0f);
 		m_GroundShader->SetMatrix4f("model", modelMatrix);
 		m_GroundShader->SetMatrix4f("view", viewMatrix);
 		m_GroundShader->SetMatrix4f("proj", projMatrix);
@@ -483,12 +483,16 @@ namespace test
 		{
 			m_WoodenGroundTexture->Bind(1); 
 			m_GroundShader->SetInt("u_MaterialDiffuse", 1);
+			m_GroundShader->SetVec3f("u_Material.specular", 0.5f, 0.5f, 0.5f);
+			m_GroundShader->SetFloat("u_Material.shininess", 12.0f);
 			m_WoodenGroundEnabled = true;
 		}
 		else
 		{
 			m_RockyGroundTexture->Bind(0);
 			m_GroundShader->SetInt("u_MaterialDiffuse", 0);
+			m_GroundShader->SetVec3f("u_Material.specular", 0.0f, 0.1f, 0.0f);
+			m_GroundShader->SetFloat("u_Material.shininess", 2.0f);
 			m_WoodenGroundEnabled = false;
 		}
 	}

@@ -113,7 +113,11 @@ void main() {
 	// Spot light (flashlight)
 	result += CalcSpotLight(norm, FragPosition, viewDir);
 
-	// Combined result
+	// Gamma correction
+	float gamma = 2.2;
+	result = pow(result, vec3(1.0 / gamma));
+
+	// Set fragment colour to combined result
 	FragColour = vec4(result, 1.0);
 }
 
@@ -147,6 +151,7 @@ vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewD
 	specular *= attenuation;
 	// Combine 
 	return (ambient + diffuse + specular);
+
 }
 
 vec3 CalcSpotLight(vec3 norm, vec3 FragPos, vec3 viewDir)

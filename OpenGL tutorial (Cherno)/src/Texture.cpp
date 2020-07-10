@@ -3,7 +3,7 @@
 #include "vendor/stb_image/stb_image.h"
 #include <iostream>
 
-Texture::Texture(const std::string& filepath)
+Texture::Texture(const std::string& filepath, const bool requiresGammaCorrection)
 	: m_RendererID(0), m_Filepath(filepath), m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BytesPerPixel(0)
 {
 	// Load texture from image
@@ -24,7 +24,14 @@ Texture::Texture(const std::string& filepath)
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
 	// Send the local image buffer to the GPU
-	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_LocalBuffer));
+	if (requiresGammaCorrection) 
+	{
+		// Requires gamma correction
+		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_LocalBuffer));
+	} else {
+		// Already has gamma correction applied
+		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_LocalBuffer));
+	}
 	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 
 	// Delete local texture buffer now that we've sent it to the GPU

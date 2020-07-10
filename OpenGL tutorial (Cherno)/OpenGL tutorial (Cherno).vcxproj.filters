@@ -93,6 +93,9 @@
     <ClCompile Include="src\tests\TestInstancedRendering.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\TestShadowMapping.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\res\shaders\Basic.shader" />
@@ -1210,6 +1213,7 @@
     <None Include="res\shaders\HelloGeometry.shader" />
     <None Include="res\shaders\BasicModel.shader" />
     <None Include="res\shaders\BasicModelInstanced.shader" />
+    <None Include="res\shaders\BasicShadowMapping.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">
@@ -2149,6 +2153,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\tests\TestInstancedRendering.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tests\TestShadowMapping.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
