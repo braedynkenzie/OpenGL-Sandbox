@@ -193,6 +193,7 @@
     <None Include="res\shaders\FramebufferTest.shader" />
     <None Include="res\shaders\HelloGeometry.shader" />
     <None Include="res\shaders\PointLights.shader" />
+    <None Include="res\shaders\ShadowMapping.shader" />
     <None Include="res\shaders\Skybox.shader" />
     <None Include="src\res\shaders\Basic.shader" />
     <None Include="src\vendor\glm\detail\func_common.inl" />

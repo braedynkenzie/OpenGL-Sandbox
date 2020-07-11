@@ -1,11 +1,16 @@
 #include "Test.h"
+#include <Globals.h>
 
 namespace test
 {
+	// Init static variable
+	TestMenu* TestMenu::instance;
+
 	TestMenu::TestMenu(Test*& activeTestPtr, GLFWwindow* mainWindow)
 		: m_CurrentTest(activeTestPtr),
 		m_MainWindow(mainWindow)
 	{
+		instance = this;
 	}
 
 	void TestMenu::OnImGuiRender()
@@ -40,6 +45,12 @@ namespace test
 
 		// Disable gl_PointSize in vertex shaders
 		GLCall(glDisable(GL_PROGRAM_POINT_SIZE));
+	}
+
+	void TestMenu::SetScreenDimensions(unsigned int width, unsigned int height)
+	{
+		SCREEN_WIDTH = width;
+		SCREEN_HEIGHT = height;
 	}
 }
 

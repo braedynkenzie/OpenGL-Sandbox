@@ -29,6 +29,7 @@ namespace test
 	class TestMenu : public Test
 	{
 	private:
+		static TestMenu* instance;
 		Test*& m_CurrentTest;
 		std::vector<std::pair<std::string, test::Test*>> m_Tests;
 		GLFWwindow* m_MainWindow;
@@ -38,6 +39,9 @@ namespace test
 
 		void OnImGuiRender() override;
 		void OnActivated() override;
+
+		static TestMenu* GetInstance() { return instance; }
+		void SetScreenDimensions(unsigned int width, unsigned int height);
 
 		template<typename T>
 		void RegisterTestLambda(const std::string& testName, GLFWwindow* window)
@@ -52,6 +56,7 @@ namespace test
 			std::cout << "Registering test: " << testName << std::endl;
 			m_Tests.push_back(std::make_pair(testName, test));
 		}
+
 	};
 }
 

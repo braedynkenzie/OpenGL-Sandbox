@@ -33,6 +33,7 @@
 #include "tests\TestTemplate.h"
 #include "tests\TestInstancedRendering.h"
 #include "tests\TestShadowMapping.h"
+#include <Globals.h>
 
 // Function declarations
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -192,5 +193,7 @@ void processInput(GLFWwindow* window)
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+    test::TestMenu* testMenu = test::TestMenu::GetInstance();
+    testMenu->SetScreenDimensions(width, height);
     glViewport(0, 0, width, height);
 }

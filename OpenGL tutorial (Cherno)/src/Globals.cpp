@@ -2,8 +2,8 @@
 #include <GLFW\glfw3.h>
 
 // Initialize all global variables (declared in Globals.h)
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
+unsigned int SCREEN_WIDTH = 960;
+unsigned int SCREEN_HEIGHT = 540;
 
 float deltaTime = 0.0f; 
 float lastFrameTime = 0.0f; 

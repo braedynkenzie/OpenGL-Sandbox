@@ -21,6 +21,7 @@ namespace test
 		glm::vec3 m_CameraPos;
 		Camera m_Camera;
 		Shader* m_Shader;
+		Shader* m_ShadowDepthMapShader;
 		Texture* m_CubeTexture;
 		Texture* m_GroundTexture;
 		VertexArray* m_VA_Cube;
@@ -36,7 +37,17 @@ namespace test
 		glm::vec3 m_FlashlightAmbientIntensity;
 		glm::vec3 m_FlashlightSpecularIntensity;
 		glm::vec3 m_FlashlightDiffuseColour;
-		glm::vec3 m_FlashlightAmbientColour;;
+		glm::vec3 m_FlashlightAmbientColour;
+		// Directional light properties
+		glm::vec3 m_DirLightDirection;
+		glm::vec3 m_DirLightAmbient;
+		glm::vec3 m_DirLightDiffuse;
+		glm::vec3 m_DirLightSpecular;
+		// Shadow map properties
+		const unsigned int SHADOW_MAP_WIDTH;
+		const unsigned int SHADOW_MAP_HEIGHT;
+		unsigned int m_ShadowDepthMap;
+		unsigned int m_DepthMapFBO;
 	public:
 		TestShadowMapping(GLFWwindow*& mainWindow);
 		~TestShadowMapping();
