@@ -37,8 +37,8 @@ namespace test
 		m_DirLightDiffuse(glm::vec3(0.4f, 0.4f, 0.4f)),
 		m_DirLightSpecular(glm::vec3(0.1f, 0.09f, 0.1f)), // sunlight specular highlights
 		// Shadow map properties
-		SHADOW_MAP_WIDTH(1024),
-		SHADOW_MAP_HEIGHT(1024)
+		m_ShadowMapWidth(1024),
+		m_ShadowMapHeight(1024)
 	{
 		instance = this;
 
@@ -170,17 +170,25 @@ namespace test
 
 		Renderer renderer;
 
+		// Flashlight position and direction
+		glm::vec3 flashlightPosition = m_Camera.Position;
+		glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0), 2.0f * m_Camera.Right);
+		flashlightPosition = glm::vec3(translationMatrix * glm::vec4(flashlightPosition, 1.0));
+		glm::vec3 flashlightDirection = m_Camera.Front;
+		glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0), glm::radians(4.0f), glm::vec3(0.0, 1.0, 0.0));
+		flashlightDirection = glm::vec3(rotationMatrix * glm::vec4(flashlightDirection, 1.0));
+
 		// First render to the shadow depth map
 		//
 		// Bind shadow map framebuffer
-		glViewport(0, 0, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+		glViewport(0, 0, m_ShadowMapWidth, m_ShadowMapHeight);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_DepthMapFBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		// Cull front faces while filling the shadow depth buffer to avoid Peter Panning of shadows
 		glCullFace(GL_FRONT);
 		// Configure matrices and shader
 		m_ShadowDepthMapShader->Bind();
-		float near_plane = 0.1f, far_plane = 100.0f;
+		float near_plane = 0.1f, far_plane = 400.0f;
 		glm::mat4 lightModelMatrix = glm::mat4(1.0f);
 		float movementAmount = 8.0f;
 		float cubePositionX = movementAmount * sin(glfwGetTime() / 2.0f);
@@ -188,10 +196,14 @@ namespace test
 		glm::vec3 cubePosition = glm::vec3(cubePositionX, cubePositionY, 0.0f);
 		lightModelMatrix = glm::translate(lightModelMatrix, cubePosition);
 		lightModelMatrix = glm::scale(lightModelMatrix, glm::vec3(4.0));
-		glm::mat4 lightViewMatrix = glm::lookAt(m_DirLightDirection * 10.0f, // Position of eye//m_Camera.Position,	
-												glm::vec3(0.0f, 0.0f, 0.0f),   // Looking at //m_Camera.Front,		
-												glm::vec3(0.0f, 1.0f, 0.0f));  // Up vector//m_Camera.Up);		    
+		glm::mat4 lightViewMatrix = glm::lookAt(m_DirLightDirection * 50.0f, // Position of eye 
+												glm::vec3(0.0f, 0.0f, 0.0f),   // Looking at   	
+												glm::vec3(0.0f, 1.0f, 0.0f));  // Up vector     
+		//glm::mat4 lightViewMatrix = glm::lookAt(flashlightPosition,
+		//										flashlightDirection,		
+		//										m_Camera.Up);	
 		glm::mat4 lightProjectionMatrix = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, near_plane, far_plane);
+		//glm::mat4 lightProjectionMatrix = glm::perspective(glm::radians(120.0f), 0.5f, 0.1f, 400.0f);
 		glm::mat4 lightSpaceMatrix = lightProjectionMatrix * lightViewMatrix;
 		m_ShadowDepthMapShader->SetMatrix4f("lightSpaceMatrix", lightSpaceMatrix);
 		m_ShadowDepthMapShader->SetMatrix4f("lightModel", lightModelMatrix);
@@ -244,13 +256,7 @@ namespace test
 		m_Shader->SetFloat("u_Flashlight.linear", 0.02f);
 		m_Shader->SetFloat("u_Flashlight.quadratic", 0.01f);
 		// Flashlight position and direction
-		glm::vec3 flashlightPosition = m_Camera.Position;
-		glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0), 2.0f * m_Camera.Right);
-		flashlightPosition = glm::vec3(translationMatrix * glm::vec4(flashlightPosition, 1.0));
 		m_Shader->SetVec3f("u_Flashlight.position", flashlightPosition.x, flashlightPosition.y, flashlightPosition.z);
-		glm::vec3 flashlightDirection = m_Camera.Front;
-		glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0), glm::radians(4.0f), glm::vec3(0.0, 1.0, 0.0));
-		flashlightDirection = glm::vec3(rotationMatrix * glm::vec4(flashlightDirection, 1.0));
 		m_Shader->SetVec3f("u_Flashlight.direction", flashlightDirection.x, flashlightDirection.y, flashlightDirection.z);
 		// Flashlight cutoff angle
 		m_Shader->SetFloat("u_Flashlight.cutOff", glm::cos(glm::radians(1.0f)));
@@ -282,7 +288,14 @@ namespace test
 	void TestShadowMapping::OnImGuiRender()
 	{
 		// ImGui interface
-		ImGui::Text("// TODO UI");
+		ImGui::Text("PRESS '3' to decrease shadow map resolution");
+		ImGui::Text("PRESS '4' to increase shadow map resolution");
+		ImGui::Text(" - - - ");
+		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
+		ImGui::Text("- Use WASD keys to move camera");
+		ImGui::Text("- Use scroll wheel to change FOV");
+		ImGui::Text("- Press '1' and '2' to toggle wireframe mode");
+		ImGui::Text("- Avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	}
 
 	void TestShadowMapping::OnActivated()
@@ -307,7 +320,7 @@ namespace test
 		glGenTextures(1, &m_ShadowDepthMap);
 		glBindTexture(GL_TEXTURE_2D, m_ShadowDepthMap);
 		// We only need the depth information when rendering the scene from the light's perspective, so no need for a colour or stencil buffer
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_ShadowMapWidth, m_ShadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -330,6 +343,28 @@ namespace test
 		glfwSetScrollCallback(m_MainWindow, scroll_callbackShadowMapping);
 		// Callback function for mouse buttons
 		glfwSetMouseButtonCallback(m_MainWindow, mouse_button_callbackShadowMapping);
+	}
+
+	void TestShadowMapping::ShadowResolution(const int dir)
+	{
+		if (dir == -1)
+		{
+			// Lower resolution of shadow map
+			m_ShadowMapWidth *= 0.90f;
+			m_ShadowMapHeight *= 0.90f;
+			if (m_ShadowMapWidth < 10) m_ShadowMapWidth = 10;
+			if (m_ShadowMapHeight < 10) m_ShadowMapHeight = 10;
+			OnActivated();
+		}
+		else if (dir == 1)
+		{
+			// Increase resolution of shadow map
+			m_ShadowMapWidth *= 1.1f;
+			m_ShadowMapHeight *= 1.1f;
+			if (m_ShadowMapWidth > 2048) m_ShadowMapWidth = 2048;
+			if (m_ShadowMapHeight > 2048) m_ShadowMapHeight = 2048;
+			OnActivated();
+		}
 	}
 
 	void scroll_callbackShadowMapping(GLFWwindow* window, double xOffset, double yOffset)
@@ -384,6 +419,12 @@ namespace test
 			shadowMappingCamera->ProcessKeyboard(LEFT, deltaTime);
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 			shadowMappingCamera->ProcessKeyboard(RIGHT, deltaTime);
+
+
+		if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+			shadowMapping->ShadowResolution(-1);
+		if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+			shadowMapping->ShadowResolution(1);
 	}
 }
 

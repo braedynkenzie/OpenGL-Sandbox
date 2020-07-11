@@ -44,8 +44,8 @@ namespace test
 		glm::vec3 m_DirLightDiffuse;
 		glm::vec3 m_DirLightSpecular;
 		// Shadow map properties
-		const unsigned int SHADOW_MAP_WIDTH;
-		const unsigned int SHADOW_MAP_HEIGHT;
+		unsigned int m_ShadowMapWidth;
+		unsigned int m_ShadowMapHeight;
 		unsigned int m_ShadowDepthMap;
 		unsigned int m_DepthMapFBO;
 	public:
@@ -56,6 +56,8 @@ namespace test
 		void OnRender() override;
 		void OnImGuiRender() override;
 		void OnActivated() override;
+
+		void ShadowResolution(int dir);
 
 		Camera* GetCamera() { return &m_Camera; }
 		static TestShadowMapping* GetInstance() { return instance; }
