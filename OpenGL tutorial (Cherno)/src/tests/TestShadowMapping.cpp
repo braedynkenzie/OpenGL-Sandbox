@@ -178,7 +178,7 @@ namespace test
 		glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0), glm::radians(4.0f), glm::vec3(0.0, 1.0, 0.0));
 		flashlightDirection = glm::vec3(rotationMatrix * glm::vec4(flashlightDirection, 1.0));
 
-		// First render to the shadow depth map
+		// First render to the orthographic shadow depth map 
 		//
 		// Bind shadow map framebuffer
 		glViewport(0, 0, m_ShadowMapWidth, m_ShadowMapHeight);
@@ -189,38 +189,73 @@ namespace test
 		// Configure matrices and shader
 		m_ShadowDepthMapShader->Bind();
 		float near_plane = 0.1f, far_plane = 400.0f;
-		glm::mat4 lightModelMatrix = glm::mat4(1.0f);
+		glm::mat4 lightModelMatrix1 = glm::mat4(1.0f);
 		float movementAmount = 8.0f;
-		float cubePositionX = movementAmount * sin(glfwGetTime() / 2.0f);
-		float cubePositionY = movementAmount * cos(glfwGetTime() / 1.0f);
-		glm::vec3 cubePosition = glm::vec3(cubePositionX, cubePositionY, 0.0f);
-		lightModelMatrix = glm::translate(lightModelMatrix, cubePosition);
-		lightModelMatrix = glm::scale(lightModelMatrix, glm::vec3(4.0));
-		glm::mat4 lightViewMatrix = glm::lookAt(m_DirLightDirection * 50.0f, // Position of eye 
+		float cube1PositionX = movementAmount * sin(glfwGetTime() / 2.0f);
+		float cube1PositionY = movementAmount * cos(glfwGetTime() / 1.0f);
+		float cube1PositionZ = 0.0f;
+		glm::vec3 cube1Position = glm::vec3(cube1PositionX, cube1PositionY, cube1PositionZ);
+		lightModelMatrix1 = glm::translate(lightModelMatrix1, cube1Position);
+		lightModelMatrix1 = glm::scale(lightModelMatrix1, glm::vec3(4.0));
+		glm::mat4 lightViewMatrixOrthographic = glm::lookAt(m_DirLightDirection * 50.0f, // Position of eye 
 												glm::vec3(0.0f, 0.0f, 0.0f),   // Looking at   	
 												glm::vec3(0.0f, 1.0f, 0.0f));  // Up vector     
-		//glm::mat4 lightViewMatrix = glm::lookAt(flashlightPosition,
-		//										flashlightDirection,		
-		//										m_Camera.Up);	
-		glm::mat4 lightProjectionMatrix = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, near_plane, far_plane);
-		//glm::mat4 lightProjectionMatrix = glm::perspective(glm::radians(120.0f), 0.5f, 0.1f, 400.0f);
-		glm::mat4 lightSpaceMatrix = lightProjectionMatrix * lightViewMatrix;
-		m_ShadowDepthMapShader->SetMatrix4f("lightSpaceMatrix", lightSpaceMatrix);
-		m_ShadowDepthMapShader->SetMatrix4f("lightModel", lightModelMatrix);
+		glm::mat4 lightProjectionMatrixOrthographic = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, near_plane, far_plane);
+		//glm::mat4 lightProjectionMatrixOrthographic = glm::perspective(glm::radians(45.0f), 1.0f, 4.0f, 400.0f);
+		glm::mat4 lightSpaceMatrixOrthographic = lightProjectionMatrixOrthographic * lightViewMatrixOrthographic;
+		m_ShadowDepthMapShader->SetMatrix4f("lightSpaceMatrix", lightSpaceMatrixOrthographic);
+		m_ShadowDepthMapShader->SetMatrix4f("lightModel", lightModelMatrix1);
 		// Create depth map from light's POV by rendering the scene
 		// Draw first cube
 		renderer.DrawTriangles(*m_VA_Cube, *m_IB_Cube, *m_ShadowDepthMapShader);
 		// Change model matrix and draw second cube
 		glm::mat4 lightModelMatrix2 = glm::mat4(1.0f);
-		cubePositionX *= 0.5f;
-		cubePositionY = movementAmount * sin(glfwGetTime() / 2.0f);
-		float cubePositionZ = movementAmount * cos(glfwGetTime() / 1.0f);
-		cubePosition = glm::vec3(cubePositionX, cubePositionY, cubePositionZ);
-		lightModelMatrix2 = glm::translate(lightModelMatrix2, cubePosition);
+		float cube2PositionX = cube1PositionX * 0.5f;
+		float cube2PositionY = movementAmount * sin(glfwGetTime() / 2.0f);
+		float cube2PositionZ = movementAmount * cos(glfwGetTime() / 1.0f);
+		glm::vec3 cube2Position = glm::vec3(cube2PositionX, cube2PositionY, cube2PositionZ);
+		lightModelMatrix2 = glm::translate(lightModelMatrix2, cube2Position);
 		lightModelMatrix2 = glm::scale(lightModelMatrix2, glm::vec3(4.0));
 		m_ShadowDepthMapShader->SetMatrix4f("lightModel", lightModelMatrix2);
 		renderer.DrawTriangles(*m_VA_Cube, *m_IB_Cube, *m_ShadowDepthMapShader);
+		// Then draw the ground
 		renderer.DrawTriangles(*m_VA_Ground, *m_IB_Ground, *m_ShadowDepthMapShader);
+
+		// Then pass the orthographic shadow depth map to the other shader
+		m_Shader->Bind();
+		// Bind shadow depth map texture to shader
+		GLCall(glActiveTexture(GL_TEXTURE3));
+		GLCall(glBindTexture(GL_TEXTURE_2D, m_ShadowDepthMap));
+		m_Shader->SetInt("shadowMapOrthographic", 3);
+		
+		// Next render to the perspective light's shadow depth map
+		//glClear(GL_DEPTH_BUFFER_BIT);
+		//// Do the same first cube transformations as before
+		//m_ShadowDepthMapShader->Bind();
+		//glm::mat4 lightViewMatrixPerspective = glm::lookAt(flashlightPosition,
+		//										flashlightDirection,		
+		//										m_Camera.Up);	
+		//glm::mat4 lightProjectionMatrixPerspective = glm::perspective(glm::radians(45.0f), 1.0f, 4.0f, 400.0f);
+		////glm::mat4 lightProjectionMatrixPerspective = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, near_plane, far_plane);
+		//glm::mat4 lightSpaceMatrixPerspective = lightProjectionMatrixPerspective * lightViewMatrixPerspective;
+		//m_ShadowDepthMapShader->SetMatrix4f("lightSpaceMatrix", lightSpaceMatrixPerspective);
+		//m_ShadowDepthMapShader->SetMatrix4f("lightModel", lightModelMatrix1);
+		//// Create depth map from light's POV by rendering the scene
+		//// Draw first cube with its model matrix
+		//renderer.DrawTriangles(*m_VA_Cube, *m_IB_Cube, *m_ShadowDepthMapShader);
+		//// Draw second cube with its model matrix
+		//m_ShadowDepthMapShader->SetMatrix4f("lightModel", lightModelMatrix2);
+		//renderer.DrawTriangles(*m_VA_Cube, *m_IB_Cube, *m_ShadowDepthMapShader);
+		//// Then draw the ground
+		//renderer.DrawTriangles(*m_VA_Ground, *m_IB_Ground, *m_ShadowDepthMapShader);
+
+		//// Then pass the perspective shadow depth map to the other shader
+		//m_Shader->Bind();
+		//// Bind shadow depth map texture to shader
+		//GLCall(glActiveTexture(GL_TEXTURE4));
+		//GLCall(glBindTexture(GL_TEXTURE_2D, m_ShadowDepthMap));
+		//m_Shader->SetInt("shadowMapPerspective", 4);
+
 
 		// Then return to the default framebuffer and render the scene as normal, using the depth map to create shadows
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -232,18 +267,17 @@ namespace test
 
 		// Set per-frame uniforms
 		m_Shader->Bind();
-		// Create model, view, projection matrices 
-		// Send combined MVP matrix to shader
-		glm::mat4 modelMatrix = lightModelMatrix;
+		// Create model, view, projection matrices
 		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
 		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 800.0f);
-		m_Shader->SetMatrix4f("model", modelMatrix);
+		m_Shader->SetMatrix4f("model", lightModelMatrix1);
 		m_Shader->SetMatrix4f("view", viewMatrix);
 		m_Shader->SetMatrix4f("proj", projMatrix);
 		// Update camera's viewing position each frame
 		m_Shader->SetVec3f("viewPos", m_Camera.Position.x, m_Camera.Position.y, m_Camera.Position.z);
 		// Set lightSpaceMatrix in this shader
-		m_Shader->SetMatrix4f("lightSpaceMatrix", lightSpaceMatrix);
+		m_Shader->SetMatrix4f("lightSpaceMatrixOrthographic", lightSpaceMatrixOrthographic);
+		//m_Shader->SetMatrix4f("lightSpaceMatrixPerspective", lightSpaceMatrixPerspective);
 
 		// Flashlight's properties
 		//
@@ -260,12 +294,7 @@ namespace test
 		m_Shader->SetVec3f("u_Flashlight.direction", flashlightDirection.x, flashlightDirection.y, flashlightDirection.z);
 		// Flashlight cutoff angle
 		m_Shader->SetFloat("u_Flashlight.cutOff", glm::cos(glm::radians(1.0f)));
-		m_Shader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(35.0f)));
-
-		// Bind shadow depth map texture to shader
-		GLCall(glActiveTexture(GL_TEXTURE3));
-		GLCall(glBindTexture(GL_TEXTURE_2D, m_ShadowDepthMap));
-		m_Shader->SetInt("shadowMap", 3);
+		m_Shader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(60.0f)));
 
 		// Render the first cube
 		m_CubeTexture->Bind(1);
@@ -277,7 +306,7 @@ namespace test
 		renderer.DrawTriangles(*m_VA_Cube, *m_IB_Cube, *m_Shader);
 
 		// Set any different uniforms for the ground
-		modelMatrix = glm::mat4(1.0);
+		glm::mat4 modelMatrix = glm::mat4(1.0);
 		m_Shader->SetMatrix4f("model", modelMatrix);
 		// Render the ground
 		m_GroundTexture->BindAndSetRepeating(0);

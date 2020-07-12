@@ -8,13 +8,15 @@ out VS_OUT{
 	vec2 TexCoords;
 	vec3 Normal;
 	vec3 FragPosition;
-	vec4 FragPosLightSpace;
+	vec4 FragPosLightSpaceOrthographic;
+	vec4 FragPosLightSpacePerspective;
 } vs_out;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
-uniform mat4 lightSpaceMatrix; 
+uniform mat4 lightSpaceMatrixOrthographic;
+uniform mat4 lightSpaceMatrixPerspective;
 
 void main() {
 
@@ -26,7 +28,8 @@ void main() {
 	// Pass FragPosition for lighting purposes, which is in world coordinates
 	vs_out.FragPosition = (model * vec4(a_Position, 1.0)).xyz;
 	// Pass FragPosLightSpace for comparing fragment depths in the shadow map
-	vs_out.FragPosLightSpace = lightSpaceMatrix * vec4(vs_out.FragPosition, 1.0);
+	vs_out.FragPosLightSpaceOrthographic = lightSpaceMatrixOrthographic * vec4(vs_out.FragPosition, 1.0);
+	vs_out.FragPosLightSpacePerspective  = lightSpaceMatrixPerspective  * vec4(vs_out.FragPosition, 1.0);
 
 	gl_Position = proj * view * model * vec4(a_Position, 1.0);
 }
@@ -38,7 +41,8 @@ void main() {
 out vec4 FragColour;
 
 uniform vec3 viewPos;
-uniform sampler2D shadowMap;
+uniform sampler2D shadowMapOrthographic;
+uniform sampler2D shadowMapPerspective;
 
 struct Material {
 	// Ambient not necessary when using a diffuse map
@@ -101,14 +105,16 @@ in VS_OUT{
 	vec2 TexCoords;
 	vec3 Normal;
 	vec3 FragPosition;
-	vec4 FragPosLightSpace;
+	vec4 FragPosLightSpaceOrthographic;
+	vec4 FragPosLightSpacePerspective;
 } fs_in;
 
 // Function declarations
 vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewDir, bool blinnPhongEnabled, float shadow);
 vec3 CalcSpotLight(vec3 normal, vec3 fragPos, vec3 viewDir, float shadow);
 vec3 CalcDirLight(DirLight dirLight, vec3 normal, vec3 viewDir, float shadow);
-float ShadowCalculation(DirLight dirLight, vec4 FragPosLightSpace, vec3 normal);
+float ShadowCalculationOrthographic(DirLight dirLight, vec4 FragPosLightSpaceOrthographic, vec3 normal);
+float ShadowCalculationPerspective(vec4 FragPosLightSpacePerspective, vec3 normal);
 
 void main() {
 
@@ -119,19 +125,20 @@ void main() {
 	vec3 result = vec3(0.0f);
 
 	// Shadow mapping calculation
-	float shadow = 1.0 - ShadowCalculation(u_DirLight, fs_in.FragPosLightSpace, norm);
+	float orthographicShadow = 1.0 - ShadowCalculationOrthographic(u_DirLight, fs_in.FragPosLightSpaceOrthographic, norm);
+	float perspectiveShadow  = 1.0 - ShadowCalculationPerspective(fs_in.FragPosLightSpacePerspective, norm);
 
 	// Directional lighting
-	result += CalcDirLight(u_DirLight, norm, viewDir, shadow);
+	result += CalcDirLight(u_DirLight, norm, viewDir, orthographicShadow);
 
 	// Point lights
 	//for (int i = 0; i < numPointLights; i++) {
 	//	if (pointLights[i].isActive)
-	//		result += CalcPointLight(pointLights[i], norm, fs_in.FragPosition, viewDir, true, shadow);
+	//		result += CalcPointLight(pointLights[i], norm, fs_in.FragPosition, viewDir, true, perspectiveShadow);
 	//}
 
 	// Flashlight (spot light)
-	result += CalcSpotLight(norm, fs_in.FragPosition, viewDir, shadow);
+	result += CalcSpotLight(norm, fs_in.FragPosition, viewDir, perspectiveShadow);
 
 	// Gamma correction
 	float gamma = 2.2;
@@ -141,7 +148,7 @@ void main() {
 	FragColour = vec4(result, 1.0);
 }
 
-float ShadowCalculation(DirLight dirLight, vec4 fragPosLightSpace, vec3 normal)
+float ShadowCalculationOrthographic(DirLight dirLight, vec4 fragPosLightSpace, vec3 normal)
 {
 	// Perform perspective division
 	// (not neccesary for orthographic projection)
@@ -149,22 +156,54 @@ float ShadowCalculation(DirLight dirLight, vec4 fragPosLightSpace, vec3 normal)
 	// Depth map is in the range [0,1] and projCoords is in NDC which is [-1,1]
 	projCoords = projCoords * 0.5 + 0.5;
 	// Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-	float closestDepth = texture(shadowMap, projCoords.xy).r;
+	float closestDepth = texture(shadowMapOrthographic, projCoords.xy).r;
 	// Get depth of current fragment from light's perspective
 	float currentDepth = projCoords.z;
 	// Check whether current fragment is in shadow
 	float bias = max(0.05 * (1.0 - dot(normal, dirLight.direction)), 0.005);
-	//float bias = 0.0; // for perspective projection
 	//float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
 	// PCF (Percentage-closer filtering)
 	// Takes average of nearest depth buffer locations for smoother shadow edges
 	float shadow = 0.0;
-	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+	vec2 texelSize = 1.0 / textureSize(shadowMapOrthographic, 0);
 	for (int x = -1; x <= 1; ++x)
 	{
 		for (int y = -1; y <= 1; ++y)
 		{
-			float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+			float pcfDepth = texture(shadowMapOrthographic, projCoords.xy + vec2(x, y) * texelSize).r;
+			shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+		}
+	}
+	shadow /= 9.0;
+
+	if (projCoords.z > 1.0)
+		shadow = 0.0;
+	return shadow;
+}
+
+float ShadowCalculationPerspective(vec4 fragPosLightSpace, vec3 normal)
+{
+	// Perform perspective division
+	// (not neccesary for orthographic projection)
+	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+	// Depth map is in the range [0,1] and projCoords is in NDC which is [-1,1]
+	projCoords = projCoords * 0.5 + 0.5;
+	// Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+	float closestDepth = texture(shadowMapPerspective, projCoords.xy).r;
+	// Get depth of current fragment from light's perspective
+	float currentDepth = projCoords.z;
+	// Check whether current fragment is in shadow
+	float bias = 0.0; // for perspective projection
+	//float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+	// PCF (Percentage-closer filtering)
+	// Takes average of nearest depth buffer locations for smoother shadow edges
+	float shadow = 0.0;
+	vec2 texelSize = 1.0 / textureSize(shadowMapPerspective, 0);
+	for (int x = -1; x <= 1; ++x)
+	{
+		for (int y = -1; y <= 1; ++y)
+		{
+			float pcfDepth = texture(shadowMapPerspective, projCoords.xy + vec2(x, y) * texelSize).r;
 			shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
 		}
 	}
