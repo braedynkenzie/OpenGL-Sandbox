@@ -17,7 +17,7 @@ namespace test
 
 	TestShadowMapping::TestShadowMapping(GLFWwindow*& mainWindow)
 		: m_MainWindow(mainWindow),
-		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)),
+		m_CameraPos(glm::vec3(0.0f, -7.4f, 3.0f)),
 		m_Camera(Camera(m_CameraPos, 75.0f)),
 		m_Shader(new Shader("res/shaders/BasicShadowMapping.shader")),
 		m_ShadowDepthMapShader(new Shader("res/shaders/ShadowMapping.shader")),
@@ -38,7 +38,9 @@ namespace test
 		m_DirLightSpecular(glm::vec3(0.1f, 0.09f, 0.1f)), // sunlight specular highlights
 		// Shadow map properties
 		m_ShadowMapWidth(1024),
-		m_ShadowMapHeight(1024)
+		m_ShadowMapHeight(1024),
+		m_ShadowDepthMap(0),
+		m_DepthMapFBO(0)
 	{
 		instance = this;
 
@@ -155,7 +157,7 @@ namespace test
 	void TestShadowMapping::OnRender()
 	{
 		float* clearColour = test::TestClearColour::GetClearColour();
-		float darknessFactor = 2.0f;
+		float darknessFactor = 0.9f;
 		GLCall(glClearColor(clearColour[0] / darknessFactor, clearColour[1] / darknessFactor,
 			clearColour[2] / darknessFactor, clearColour[3] / darknessFactor));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
@@ -200,8 +202,11 @@ namespace test
 		glm::mat4 lightViewMatrixOrthographic = glm::lookAt(m_DirLightDirection * 50.0f, // Position of eye 
 												glm::vec3(0.0f, 0.0f, 0.0f),   // Looking at   	
 												glm::vec3(0.0f, 1.0f, 0.0f));  // Up vector     
-		glm::mat4 lightProjectionMatrixOrthographic = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, near_plane, far_plane);
-		//glm::mat4 lightProjectionMatrixOrthographic = glm::perspective(glm::radians(45.0f), 1.0f, 4.0f, 400.0f);
+	    glm::mat4 lightProjectionMatrixOrthographic = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, near_plane, far_plane);
+		//glm::mat4 lightViewMatrixOrthographic = glm::lookAt(flashlightPosition,
+		//											flashlightDirection,		
+		//											m_Camera.Up);	
+		//glm::mat4 lightProjectionMatrixOrthographic = glm::perspective(glm::radians(45.0f), 1.0f, 4.0f, 1000.0f);
 		glm::mat4 lightSpaceMatrixOrthographic = lightProjectionMatrixOrthographic * lightViewMatrixOrthographic;
 		m_ShadowDepthMapShader->SetMatrix4f("lightSpaceMatrix", lightSpaceMatrixOrthographic);
 		m_ShadowDepthMapShader->SetMatrix4f("lightModel", lightModelMatrix1);
@@ -294,7 +299,7 @@ namespace test
 		m_Shader->SetVec3f("u_Flashlight.direction", flashlightDirection.x, flashlightDirection.y, flashlightDirection.z);
 		// Flashlight cutoff angle
 		m_Shader->SetFloat("u_Flashlight.cutOff", glm::cos(glm::radians(1.0f)));
-		m_Shader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(60.0f)));
+		m_Shader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(40.0f)));
 
 		// Render the first cube
 		m_CubeTexture->Bind(1);
@@ -440,14 +445,15 @@ namespace test
 		Camera* shadowMappingCamera = shadowMapping->GetCamera();
 
 		// Camera position movement
+		float cameraYPosition = shadowMappingCamera->Position.y;
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			shadowMappingCamera->ProcessKeyboard(FORWARD, deltaTime);
+			shadowMappingCamera->ProcessKeyboardForWalkingView(FORWARD,  deltaTime, cameraYPosition);
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			shadowMappingCamera->ProcessKeyboard(BACKWARD, deltaTime);
+			shadowMappingCamera->ProcessKeyboardForWalkingView(BACKWARD, deltaTime, cameraYPosition);
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			shadowMappingCamera->ProcessKeyboard(LEFT, deltaTime);
+			shadowMappingCamera->ProcessKeyboardForWalkingView(LEFT,	 deltaTime, cameraYPosition);
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			shadowMappingCamera->ProcessKeyboard(RIGHT, deltaTime);
+			shadowMappingCamera->ProcessKeyboardForWalkingView(RIGHT,	 deltaTime, cameraYPosition);
 
 
 		if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
