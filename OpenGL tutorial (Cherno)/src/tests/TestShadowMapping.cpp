@@ -203,14 +203,11 @@ namespace test
 												glm::vec3(0.0f, 0.0f, 0.0f),   // Looking at   	
 												glm::vec3(0.0f, 1.0f, 0.0f));  // Up vector     
 	    glm::mat4 lightProjectionMatrixOrthographic = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, near_plane, far_plane);
-		//glm::mat4 lightViewMatrixOrthographic = glm::lookAt(flashlightPosition,
-		//											flashlightDirection,		
-		//											m_Camera.Up);	
-		//glm::mat4 lightProjectionMatrixOrthographic = glm::perspective(glm::radians(45.0f), 1.0f, 4.0f, 1000.0f);
 		glm::mat4 lightSpaceMatrixOrthographic = lightProjectionMatrixOrthographic * lightViewMatrixOrthographic;
 		m_ShadowDepthMapShader->SetMatrix4f("lightSpaceMatrix", lightSpaceMatrixOrthographic);
 		m_ShadowDepthMapShader->SetMatrix4f("lightModel", lightModelMatrix1);
-		// Create depth map from light's POV by rendering the scene
+
+		// Create depth map from directional light's POV by rendering the scene
 		// Draw first cube
 		renderer.DrawTriangles(*m_VA_Cube, *m_IB_Cube, *m_ShadowDepthMapShader);
 		// Change model matrix and draw second cube
@@ -233,6 +230,7 @@ namespace test
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_ShadowDepthMap));
 		m_Shader->SetInt("shadowMapOrthographic", 3);
 		
+
 		// Next render to the perspective light's shadow depth map
 		//glClear(GL_DEPTH_BUFFER_BIT);
 		//// Do the same first cube transformations as before
@@ -245,7 +243,8 @@ namespace test
 		//glm::mat4 lightSpaceMatrixPerspective = lightProjectionMatrixPerspective * lightViewMatrixPerspective;
 		//m_ShadowDepthMapShader->SetMatrix4f("lightSpaceMatrix", lightSpaceMatrixPerspective);
 		//m_ShadowDepthMapShader->SetMatrix4f("lightModel", lightModelMatrix1);
-		//// Create depth map from light's POV by rendering the scene
+
+		//// Create depth map from slashlight's POV by rendering the scene
 		//// Draw first cube with its model matrix
 		//renderer.DrawTriangles(*m_VA_Cube, *m_IB_Cube, *m_ShadowDepthMapShader);
 		//// Draw second cube with its model matrix
@@ -272,6 +271,8 @@ namespace test
 
 		// Set per-frame uniforms
 		m_Shader->Bind();
+		m_Shader->SetBool("u_UsingOrthographicShadowMapping", true);
+		m_Shader->SetBool("u_UsingPerspectiveShadowMapping", false);
 		// Create model, view, projection matrices
 		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
 		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 800.0f);

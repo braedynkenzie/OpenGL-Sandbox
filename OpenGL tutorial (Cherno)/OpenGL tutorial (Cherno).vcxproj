@@ -169,6 +169,7 @@
     <ClCompile Include="src\tests\TestManualFramebuffers.cpp" />
     <ClCompile Include="src\tests\TestModelLoading.cpp" />
     <ClCompile Include="src\tests\TestPhongLighting.cpp" />
+    <ClCompile Include="src\tests\TestPointShadowMapping.cpp" />
     <ClCompile Include="src\tests\TestShadowMapping.cpp" />
     <ClCompile Include="src\tests\TestTemplate.cpp" />
     <ClCompile Include="src\tests\TestTexture2D.cpp" />
@@ -1047,6 +1048,7 @@
     <ClInclude Include="src\tests\TestManualFramebuffers.h" />
     <ClInclude Include="src\tests\TestModelLoading.h" />
     <ClInclude Include="src\tests\TestPhongLighting.h" />
+    <ClInclude Include="src\tests\TestPointShadowMapping.h" />
     <ClInclude Include="src\tests\TestShadowMapping.h" />
     <ClInclude Include="src\tests\TestTemplate.h" />
     <ClInclude Include="src\tests\TestTexture2D.h" />

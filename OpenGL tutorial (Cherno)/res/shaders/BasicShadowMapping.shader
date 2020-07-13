@@ -43,6 +43,8 @@ out vec4 FragColour;
 uniform vec3 viewPos;
 uniform sampler2D shadowMapOrthographic;
 uniform sampler2D shadowMapPerspective;
+uniform bool u_UsingOrthographicShadowMapping;
+uniform bool u_UsingPerspectiveShadowMapping;
 
 struct Material {
 	// Ambient not necessary when using a diffuse map
@@ -125,20 +127,25 @@ void main() {
 	vec3 result = vec3(0.0f);
 
 	// Shadow mapping calculation
-	float orthographicShadow = 1.0 - ShadowCalculationOrthographic(u_DirLight, fs_in.FragPosLightSpaceOrthographic, norm);
-	float perspectiveShadow  = 1.0 - ShadowCalculationPerspective(fs_in.FragPosLightSpacePerspective, norm);
-
-	// Directional lighting
-	result += CalcDirLight(u_DirLight, norm, viewDir, orthographicShadow);
-
-	// Point lights
-	//for (int i = 0; i < numPointLights; i++) {
-	//	if (pointLights[i].isActive)
-	//		result += CalcPointLight(pointLights[i], norm, fs_in.FragPosition, viewDir, true, perspectiveShadow);
-	//}
-
-	// Flashlight (spot light)
-	result += CalcSpotLight(norm, fs_in.FragPosition, viewDir, perspectiveShadow);
+	float orthographicShadow = 1.0;
+	if (u_UsingOrthographicShadowMapping)
+	{
+		orthographicShadow -= ShadowCalculationOrthographic(u_DirLight, fs_in.FragPosLightSpaceOrthographic, norm);
+		// Directional lighting
+		result += CalcDirLight(u_DirLight, norm, viewDir, orthographicShadow);
+	}
+	float perspectiveShadow = 1.0;
+	if (u_UsingPerspectiveShadowMapping)
+	{
+		perspectiveShadow -= ShadowCalculationPerspective(fs_in.FragPosLightSpacePerspective, norm);
+		// Flashlight (spot light)
+		result += CalcSpotLight(norm, fs_in.FragPosition, viewDir, perspectiveShadow);
+		// Point lights
+		//for (int i = 0; i < numPointLights; i++) {
+		//	if (pointLights[i].isActive)
+		//		result += CalcPointLight(pointLights[i], norm, fs_in.FragPosition, viewDir, true, perspectiveShadow);
+		//}
+	}
 
 	// Gamma correction
 	float gamma = 2.2;
