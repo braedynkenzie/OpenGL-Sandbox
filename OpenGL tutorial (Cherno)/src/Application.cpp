@@ -106,23 +106,23 @@ int main(void)
         test::TestInstancedRendering* instancedRenderingTest = new test::TestInstancedRendering(window);
         test::TestShadowMapping* shadowMappingTest = new test::TestShadowMapping(window);
         test::TestPointShadowMapping* pointShadowMappingTest = new test::TestPointShadowMapping(window);
-        test::TestTemplate* templateTest = new test::TestTemplate(window);
+        //test::TestTemplate* templateTest = new test::TestTemplate(window);
         // Register all test sandboxes
         testMenu->RegisterTest<test::TestClearColour*>("Change background colour", (test::TestClearColour*) clearColourTest);
         testMenu->RegisterTest<test::TestTexture2D*>("Textured cube test", (test::TestTexture2D*) texture2DTest);
         testMenu->RegisterTest<test::TestFPSCamera*>("First person camera (map)", (test::TestFPSCamera*) cameraTest);
-        testMenu->RegisterTest<test::TestPhongLighting*>("Phong lighting model sandbox", (test::TestPhongLighting*) phongLightingTest);
+        testMenu->RegisterTest<test::TestPhongLighting*>("Blinn-Phong lighting model sandbox", (test::TestPhongLighting*) phongLightingTest);
         testMenu->RegisterTest<test::TestModelLoading*>("Model loading test", (test::TestModelLoading*) modelLoadingTest);
         testMenu->RegisterTest<test::TestManualFramebuffer*>("Rear View Framebuffer test", (test::TestManualFramebuffer*) framebufferTest);
         testMenu->RegisterTest<test::TestCubemapping*>("Skybox/Cubemapping test", (test::TestCubemapping*) cubemappingTest);
         testMenu->RegisterTest<test::TestGeometryShader*>("Manual Geometry Shader", (test::TestGeometryShader*) geometryShaderTest);
         testMenu->RegisterTest<test::TestInstancedRendering*>("Instanced Rendering test", (test::TestInstancedRendering*) instancedRenderingTest);
         testMenu->RegisterTest<test::TestShadowMapping*>("Orthographic Shadow Mapping", (test::TestShadowMapping*) shadowMappingTest);
-        testMenu->RegisterTest<test::TestPointShadowMapping*>("Omnidirectional, perspective Shadow Mapping", (test::TestPointShadowMapping*) pointShadowMappingTest);
-        testMenu->RegisterTest<test::TestTemplate*>("Test Template", (test::TestTemplate*) templateTest);
+        testMenu->RegisterTest<test::TestPointShadowMapping*>("Perspective Shadow Mapping", (test::TestPointShadowMapping*) pointShadowMappingTest);
+        //testMenu->RegisterTest<test::TestTemplate*>("Test Template", (test::TestTemplate*) templateTest);
 
         /* Loop until the user closes the window */
-        while (!glfwWindowShouldClose(window))
+        while (!glfwWindowShouldClose(window)) 
         {
             /* User key input processing */
             processInput(window);

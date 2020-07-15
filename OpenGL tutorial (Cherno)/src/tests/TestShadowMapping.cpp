@@ -17,7 +17,7 @@ namespace test
 
 	TestShadowMapping::TestShadowMapping(GLFWwindow*& mainWindow)
 		: m_MainWindow(mainWindow),
-		m_CameraPos(glm::vec3(0.0f, -7.4f, 3.0f)),
+		m_CameraPos(glm::vec3(0.0f, -6.42f, 3.0f)),
 		m_Camera(Camera(m_CameraPos, 75.0f)),
 		m_Shader(new Shader("res/shaders/BasicShadowMapping.shader")),
 		m_ShadowDepthMapShader(new Shader("res/shaders/ShadowMapping.shader")),

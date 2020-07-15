@@ -22,7 +22,10 @@ namespace test
 		Camera m_Camera;
 		Shader* m_Shader;
 		Shader* m_ShadowDepthMapShader;
-		Texture* m_CubeTexture;
+		Texture* m_ContainerTexture;
+		Texture* m_BrickTexture;
+		Texture* m_BrickNormalMap;
+		bool m_UsingNormalMap;
 		Texture* m_GroundTexture;
 		VertexArray* m_VA_Cube;
 		VertexBuffer* m_VB_Cube;
@@ -58,6 +61,7 @@ namespace test
 		void OnActivated() override;
 
 		void ShadowResolution(int dir);
+		void ToggleNormalMapping(bool flag);
 
 		Camera* GetCamera() { return &m_Camera; }
 		static TestPointShadowMapping* GetInstance() { return instance; }

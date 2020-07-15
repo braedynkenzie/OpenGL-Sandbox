@@ -3,13 +3,20 @@
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec2 a_TextureCoords;
 layout(location = 2) in vec3 a_Normal;
+layout(location = 3) in vec3 a_Tangent;
+layout(location = 4) in vec3 a_Bitangent;
 
 out VS_OUT{
 	vec2 TexCoords;
 	vec3 Normal;
-	vec3 FragPosition;
 	vec4 FragPosLightSpaceOrthographic;
 	vec4 FragPosLightSpacePerspective;
+	// Optimization: Do the TBN matrix transformations in the vertex shader since the fragment shader runs more times
+	vec3 TangentLightPos;
+	vec3 TangentViewPos;
+	vec3 TangentFragPos; 
+	//vec3 FragPosition;
+	//mat3 TBN;
 } vs_out;
 
 uniform mat4 model;
@@ -17,19 +24,32 @@ uniform mat4 view;
 uniform mat4 proj;
 uniform mat4 lightSpaceMatrixOrthographic;
 uniform mat4 lightSpaceMatrixPerspective;
+uniform vec3 lightPos;
+uniform vec3 viewPos;
 
 void main() {
 
 	// TODO: should pass this as a uniform to optimize (costly to perform matrix inverse in shaders)
 	mat3 normalMatrix = mat3(transpose(inverse(model)));
-
+	
 	vs_out.Normal = normalMatrix * a_Normal;
 	vs_out.TexCoords = a_TextureCoords;
 	// Pass FragPosition for lighting purposes, which is in world coordinates
-	vs_out.FragPosition = (model * vec4(a_Position, 1.0)).xyz;
+	// vs_out.FragPosition = (model * vec4(a_Position, 1.0)).xyz;
+	
+	// Create Tangent, Bitangent, Normal (TBN) matrix
+	vec3 T = normalize(vec3(model * vec4(a_Tangent, 0.0)));
+	vec3 B = normalize(vec3(model * vec4(a_Bitangent, 0.0)));
+	vec3 N = normalize(vec3(model * vec4(a_Normal, 0.0)));
+	mat3 TBN = transpose(mat3(T, B, N));
+	// Doing these here instead of transforming the normal to tangent space in the fragment shader
+	vs_out.TangentLightPos = TBN * lightPos;
+	vs_out.TangentViewPos = TBN * viewPos;
+	vs_out.TangentFragPos = TBN * vec3(model * vec4(a_Position, 0.0));
+
 	// Pass FragPosLightSpace for comparing fragment depths in the shadow map
-	vs_out.FragPosLightSpaceOrthographic = lightSpaceMatrixOrthographic * vec4(vs_out.FragPosition, 1.0);
-	vs_out.FragPosLightSpacePerspective = lightSpaceMatrixPerspective * vec4(vs_out.FragPosition, 1.0);
+	vs_out.FragPosLightSpaceOrthographic = lightSpaceMatrixOrthographic * vec4((model * vec4(a_Position, 1.0)).xyz, 1.0);
+	vs_out.FragPosLightSpacePerspective = lightSpaceMatrixPerspective * vec4((model * vec4(a_Position, 1.0)).xyz, 1.0);
 
 	gl_Position = proj * view * model * vec4(a_Position, 1.0);
 }
@@ -40,11 +60,15 @@ void main() {
 
 out vec4 FragColour;
 
-uniform vec3 viewPos;
+// Shadow mapping uniforms
 uniform sampler2D shadowMapOrthographic;
 uniform sampler2D shadowMapPerspective;
 uniform bool u_UsingOrthographicShadowMapping;
 uniform bool u_UsingPerspectiveShadowMapping;
+
+// Normal mapping uniforms
+uniform sampler2D normalMap;
+uniform bool u_UsingNormalMap;
 
 struct Material {
 	// Ambient not necessary when using a diffuse map
@@ -106,9 +130,13 @@ uniform DirLight u_DirLight;
 in VS_OUT{
 	vec2 TexCoords;
 	vec3 Normal;
-	vec3 FragPosition;
 	vec4 FragPosLightSpaceOrthographic;
 	vec4 FragPosLightSpacePerspective;
+	vec3 TangentLightPos;
+	vec3 TangentViewPos;
+	vec3 TangentFragPos;
+	//vec3 FragPosition;
+	//mat3 TBN;
 } fs_in;
 
 // Function declarations
@@ -123,8 +151,19 @@ void main() {
 	// Phong lighting (using directional, point lights, spotlights)
 	//
 	vec3 norm = normalize(fs_in.Normal);
-	vec3 viewDir = normalize(viewPos - fs_in.FragPosition);
+	vec3 viewDir = normalize(fs_in.TangentViewPos - fs_in.TangentFragPos);
 	vec3 result = vec3(0.0f);
+
+	if (u_UsingNormalMap)
+	{
+		// Get normal from normal map in range [0,1]
+		norm = texture(normalMap, fs_in.TexCoords).rgb;
+		// Transform normal vector to range [-1,1]
+		norm = normalize(norm * 2.0 - 1.0);
+		// Do TBN transformation to properly orient normal vectors
+		// Note: instead passing vectors in tangent space so that we don't have to do this each fragment shader run
+		//norm = normalize(fs_in.TBN * norm);
+	}
 
 	// Shadow mapping calculation
 	float orthographicShadow = 1.0;
@@ -139,11 +178,11 @@ void main() {
 	{
 		perspectiveShadow -= ShadowCalculationPerspective(fs_in.FragPosLightSpacePerspective, norm);
 		// Flashlight (spot light)
-		result += CalcSpotLight(norm, fs_in.FragPosition, viewDir, perspectiveShadow);
+		result += CalcSpotLight(norm, fs_in.TangentFragPos, viewDir, perspectiveShadow);
 		// Point lights
 		//for (int i = 0; i < numPointLights; i++) {
 		//	if (pointLights[i].isActive)
-		//		result += CalcPointLight(pointLights[i], norm, fs_in.FragPosition, viewDir, true, perspectiveShadow);
+		//		result += CalcPointLight(pointLights[i], norm, fs_in.TangentFragPos, viewDir, true, perspectiveShadow);
 		//}
 	}
 
@@ -200,7 +239,7 @@ float ShadowCalculationPerspective(vec4 fragPosLightSpace, vec3 normal)
 	// Get depth of current fragment from light's perspective
 	float currentDepth = projCoords.z;
 	// Check whether current fragment is in shadow
-	float bias = 0.0; // for perspective projection
+	float bias = 0.0001;
 	//float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
 	// PCF (Percentage-closer filtering)
 	// Takes average of nearest depth buffer locations for smoother shadow edges
@@ -254,8 +293,7 @@ vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewD
 		// Blinn-Phong model specular correction
 		vec3 halfwayDir = normalize(lightDir + viewDir);
 		spec = pow(max(dot(normal, halfwayDir), 0.0), u_Material.shininess);
-	}
-	else {
+	} else {
 		// Specular (regular Phong model style)
 		vec3 reflectDir = reflect(-lightDir, normal);
 		spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Material.shininess);

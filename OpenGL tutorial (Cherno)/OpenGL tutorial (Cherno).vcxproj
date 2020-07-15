@@ -190,6 +190,7 @@
     <None Include="res\shaders\BasicModelInstanced.shader" />
     <None Include="res\shaders\BasicPhongModel.shader" />
     <None Include="res\shaders\BasicShadowMapping.shader" />
+    <None Include="res\shaders\BasicShadowNormalMapping.shader" />
     <None Include="res\shaders\EnvMapping.shader" />
     <None Include="res\shaders\FramebufferTest.shader" />
     <None Include="res\shaders\HelloGeometry.shader" />
@@ -1349,6 +1350,8 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\Learn OpenGL\OpenGL-Hello-World\Learn_OpenGL_Hello_World\metal_border_container_texture.png" />
+    <Image Include="res\textures\brick_normal_map.png" />
+    <Image Include="res\textures\brick_texture.png" />
     <Image Include="res\textures\dirt_ground_texture.png" />
     <Image Include="res\textures\example_skybox\back.jpg" />
     <Image Include="res\textures\example_skybox\bottom.jpg" />

@@ -39,6 +39,10 @@ out vec4 FragColour;
 uniform vec3 viewPos;
 uniform bool u_BlinnPhongEnabled;
 
+uniform bool u_UsingNormalMap;
+uniform sampler2D u_NormalMap;
+uniform mat4 u_NormalMapRotMatrix;
+
 struct Material {
 	// Ambient not necessary when using a diffuse map
 	// vec3 ambient;
@@ -96,7 +100,11 @@ void main() {
 
 	// Phong lighting (using directional, point lights, spotlights)
 	//
-	vec3 norm = normalize(Normal);
+	vec3 norm;
+	if(u_UsingNormalMap)
+		norm = (u_NormalMapRotMatrix * texture(u_NormalMap, TexCoords)).rgb;
+	else
+		norm = normalize(Normal);
 	vec3 viewDir = normalize(viewPos - FragPosition);
 	vec3 result = vec3(0.0f);
 

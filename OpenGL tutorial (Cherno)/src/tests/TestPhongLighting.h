@@ -36,7 +36,8 @@ namespace test
 		IndexBuffer* m_IB_PointLight;
 		Shader* m_GroundShader;
 		Shader* m_PointLightsShader;
-		Texture* m_RockyGroundTexture;
+		Texture* m_BrickGroundTexture;
+		Texture* m_BrickGroundNormalMap;
 		Texture* m_WoodenGroundTexture;
 		glm::vec3 m_CameraPos;
 		glm::vec3 m_CameraFront;

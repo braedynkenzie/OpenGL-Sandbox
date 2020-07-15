@@ -413,17 +413,21 @@ namespace test
 		m_GroundShader->SetInt("numPointLights", m_PointLights.size());
 		m_WoodenGroundTexture = new Texture("res/textures/wooden_floor_texture.png", false);
 		m_WoodenGroundTexture->BindAndSetRepeating(1);
-		m_RockyGroundTexture = new Texture("res/textures/dirt_ground_texture.png", false);
-		m_RockyGroundTexture->BindAndSetRepeating(0);
+		//m_RockyGroundTexture = new Texture("res/textures/dirt_ground_texture.png", false);
+		m_BrickGroundTexture = new Texture("res/textures/brick_texture.png", false);
+		m_BrickGroundNormalMap = new Texture("res/textures/brick_normal_map.png", false);
+		m_BrickGroundTexture->BindAndSetRepeating(0);
 		if (m_WoodenGroundEnabled)
 		{
 			m_WoodenGroundTexture->Bind(1);
 			m_GroundShader->SetInt("u_MaterialDiffuse", 1); 
+			m_GroundShader->SetBool("u_UsingNormalMap", false); 
 		}
 		else
 		{
-			m_RockyGroundTexture->Bind(0);
+			m_BrickGroundTexture->Bind(0);
 			m_GroundShader->SetInt("u_MaterialDiffuse", 0);
+			m_GroundShader->SetBool("u_UsingNormalMap", true);
 		}
 		m_GroundShader->SetVec3f("u_Material.specular", 0.5f, 0.5f, 0.5f);
 		m_GroundShader->SetFloat("u_Material.shininess", 12.0f);
@@ -489,10 +493,16 @@ namespace test
 		}
 		else
 		{
-			m_RockyGroundTexture->Bind(0);
+			m_BrickGroundTexture->Bind(0);
 			m_GroundShader->SetInt("u_MaterialDiffuse", 0);
-			m_GroundShader->SetVec3f("u_Material.specular", 0.0f, 0.1f, 0.0f);
+			m_GroundShader->SetVec3f("u_Material.specular", 0.1f, 0.1f, 0.1f);
 			m_GroundShader->SetFloat("u_Material.shininess", 2.0f);
+			m_BrickGroundNormalMap->Bind(5);
+			m_GroundShader->SetInt("u_NormalMap", 5);
+			m_GroundShader->SetBool("u_UsingNormalMap", true);
+			glm::mat4 normalMapRotMatrix = glm::mat4(1.0f);
+			normalMapRotMatrix = glm::rotate(normalMapRotMatrix, glm::radians(-78.0f), glm::vec3(1.0, 0.0, -0.25));
+			m_GroundShader->SetMatrix4f("u_NormalMapRotMatrix", normalMapRotMatrix);
 			m_WoodenGroundEnabled = false;
 		}
 	}
