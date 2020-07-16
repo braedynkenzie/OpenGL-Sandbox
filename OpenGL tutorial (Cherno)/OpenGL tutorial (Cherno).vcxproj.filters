@@ -99,6 +99,9 @@
     <ClCompile Include="src\tests\TestPointShadowMapping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\TestParallaxNormalMapping.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\res\shaders\Basic.shader" />
@@ -1219,6 +1222,7 @@
     <None Include="res\shaders\BasicShadowMapping.shader" />
     <None Include="res\shaders\ShadowMapping.shader" />
     <None Include="res\shaders\BasicShadowNormalMapping.shader" />
+    <None Include="res\shaders\ParallaxNormalMapping.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">
@@ -2166,6 +2170,9 @@
     <ClInclude Include="src\tests\TestPointShadowMapping.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\tests\TestParallaxNormalMapping.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\tree_render_texture.png">
@@ -2256,6 +2263,15 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\textures\brick_normal_map.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\bricks_texture_parallax.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\bricks_normal_parallax.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\bricks_heightmap_parallax.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

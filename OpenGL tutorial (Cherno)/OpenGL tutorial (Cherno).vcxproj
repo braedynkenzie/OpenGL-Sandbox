@@ -168,6 +168,7 @@
     <ClCompile Include="src\tests\TestInstancedRendering.cpp" />
     <ClCompile Include="src\tests\TestManualFramebuffers.cpp" />
     <ClCompile Include="src\tests\TestModelLoading.cpp" />
+    <ClCompile Include="src\tests\TestParallaxNormalMapping.cpp" />
     <ClCompile Include="src\tests\TestPhongLighting.cpp" />
     <ClCompile Include="src\tests\TestPointShadowMapping.cpp" />
     <ClCompile Include="src\tests\TestShadowMapping.cpp" />
@@ -194,6 +195,7 @@
     <None Include="res\shaders\EnvMapping.shader" />
     <None Include="res\shaders\FramebufferTest.shader" />
     <None Include="res\shaders\HelloGeometry.shader" />
+    <None Include="res\shaders\ParallaxNormalMapping.shader" />
     <None Include="res\shaders\PointLights.shader" />
     <None Include="res\shaders\ShadowMapping.shader" />
     <None Include="res\shaders\Skybox.shader" />
@@ -1048,6 +1050,7 @@
     <ClInclude Include="src\tests\TestInstancedRendering.h" />
     <ClInclude Include="src\tests\TestManualFramebuffers.h" />
     <ClInclude Include="src\tests\TestModelLoading.h" />
+    <ClInclude Include="src\tests\TestParallaxNormalMapping.h" />
     <ClInclude Include="src\tests\TestPhongLighting.h" />
     <ClInclude Include="src\tests\TestPointShadowMapping.h" />
     <ClInclude Include="src\tests\TestShadowMapping.h" />
@@ -1350,7 +1353,10 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\Learn OpenGL\OpenGL-Hello-World\Learn_OpenGL_Hello_World\metal_border_container_texture.png" />
+    <Image Include="res\textures\bricks_heightmap_parallax.png" />
+    <Image Include="res\textures\bricks_texture_parallax.png" />
     <Image Include="res\textures\brick_normal_map.png" />
+    <Image Include="res\textures\bricks_normal_parallax.png" />
     <Image Include="res\textures\brick_texture.png" />
     <Image Include="res\textures\dirt_ground_texture.png" />
     <Image Include="res\textures\example_skybox\back.jpg" />

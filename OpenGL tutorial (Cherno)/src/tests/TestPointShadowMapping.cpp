@@ -13,7 +13,8 @@ namespace test
 	void mouse_button_callbackPointShadowMapping(GLFWwindow* window, int button, int action, int mods);
 
 	// Fill in 'tangent' and 'bitangent' vectors given the edge and deltaUV values
-	void CalculateTangentBitangent(glm::vec3& tangent, glm::vec3& bitangent, glm::vec3& edge1, glm::vec3& edge2, glm::vec2& deltaUV1, glm::vec2& deltaUV2)
+	void CalculateTangentBitangent(glm::vec3& tangent, glm::vec3& bitangent, glm::vec3& edge1, glm::vec3& edge2, glm::vec2& deltaUV1, glm::vec2& deltaUV2);
+		/*
 	{
 		float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
 		tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
@@ -22,7 +23,7 @@ namespace test
 		bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
 		bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
 		bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
-	}
+	}*/
 
 	// Init static variable
 	TestPointShadowMapping* TestPointShadowMapping::instance;

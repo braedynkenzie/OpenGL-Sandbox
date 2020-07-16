@@ -3,11 +3,12 @@
 #include "vendor/stb_image/stb_image.h"
 #include <iostream>
 
-Texture::Texture(const std::string& filepath, const bool requiresGammaCorrection)
+Texture::Texture(const std::string& filepath, const bool requiresGammaCorrection, const bool flipOnLoad)
 	: m_RendererID(0), m_Filepath(filepath), m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BytesPerPixel(0)
 {
+	stbi_set_flip_vertically_on_load(flipOnLoad);
+
 	// Load texture from image
-	stbi_set_flip_vertically_on_load(true);
 	m_LocalBuffer = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_BytesPerPixel, 4);
 
 	// Generate and bind OpenGL texture
@@ -40,7 +41,7 @@ Texture::Texture(const std::string& filepath, const bool requiresGammaCorrection
 }
 
 // Load cubemap texture
-Texture::Texture(const std::vector<std::string>& cubemapFilepaths, bool flipOnLoad)
+Texture::Texture(const std::vector<std::string>& cubemapFilepaths, const bool flipOnLoad)
 	: m_RendererID(0), 
 	m_Filepath(cubemapFilepaths[0]), // TODO, currently just stores the first filepath 
 	m_LocalBuffer(nullptr), 
