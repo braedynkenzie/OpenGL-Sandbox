@@ -24,17 +24,22 @@ namespace test
 		VertexArray* m_VA_Quad;
 		VertexBuffer* m_VB_Quad;
 		IndexBuffer* m_IB_Quad;
-		Texture* m_QuadTexture;
-		Texture* m_QuadNormalMap;
-		Texture* m_QuadHeightMap;
+		Texture* m_QuadTexture0;
+		Texture* m_QuadNormalMap0;
+		Texture* m_QuadHeightMap0;
+		Texture* m_QuadTexture1;
+		Texture* m_QuadNormalMap1;
+		Texture* m_QuadHeightMap1;
 		bool m_UsingParallaxMapping;
 		float m_ParallaxHeightScale;
+		int m_ActiveTextureIndex;
 	public:
 		TestParallaxNormalMapping(GLFWwindow*& mainWindow);
 		~TestParallaxNormalMapping();
 
 		void ToggleParallaxMapping(const bool flag);
 		void ParallaxHeightScaling(int dir);
+		void SwitchTexture(int texIndex);
 
 		void OnUpdate(float deltaTime) override;
 		void OnRender() override;

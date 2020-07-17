@@ -22,11 +22,15 @@ namespace test
 		m_Camera(Camera(m_CameraPos, 75.0f)),
 		m_QuadParallaxShader(new Shader("res/shaders/ParallaxNormalMapping.shader")),
 		m_VA_Quad(new VertexArray()),
-		m_QuadTexture(new Texture("res/textures/bricks_texture_parallax.png", true, false)),
-		m_QuadNormalMap(new Texture("res/textures/bricks_normal_parallax.png", true, false)),
-		m_QuadHeightMap(new Texture("res/textures/bricks_heightmap_parallax.png", true, false)),
+		m_QuadTexture0(new Texture("res/textures/bricks_texture_parallax.png", true, false)),
+		m_QuadNormalMap0(new Texture("res/textures/bricks_normal_parallax.png", true, false)),
+		m_QuadHeightMap0(new Texture("res/textures/bricks_heightmap_parallax.png", true, false)),
+		m_QuadTexture1(new Texture("res/textures/wooden_floor_texture.png", true, false)),
+		m_QuadNormalMap1(new Texture("res/textures/parallax_indents_normal_map.png", true, false)),
+		m_QuadHeightMap1(new Texture("res/textures/parallax_indents_depth_map.png", true, false)),
 		m_UsingParallaxMapping(true),
-		m_ParallaxHeightScale(0.02f)
+		m_ParallaxHeightScale(0.1f),
+		m_ActiveTextureIndex(1)
 	{
 		instance = this;
 
@@ -112,6 +116,36 @@ namespace test
 		}
 	}
 
+	void TestParallaxNormalMapping::SwitchTexture(int texIndex)
+	{
+		m_QuadParallaxShader->Bind();
+		switch (texIndex)
+		{
+			case 0: 
+				m_ActiveTextureIndex = 0;
+				// Update texture uniform
+				m_QuadTexture0->Bind(1);
+				// Update normal map
+				m_QuadNormalMap0->Bind(2);
+				// Update height map
+				m_QuadHeightMap0->Bind(3);
+				break;
+
+			case 1:
+				m_ActiveTextureIndex = 1;
+				// Update texture uniform
+				m_QuadTexture1->Bind(1);
+				// Update normal map
+				m_QuadNormalMap1->Bind(2);
+				// Update height map
+				m_QuadHeightMap1->Bind(3);
+				break;
+
+			default:
+				ASSERT(0); // Should never get here
+		}
+	}
+
 	void TestParallaxNormalMapping::OnUpdate(float deltaTime)
 	{
 	}
@@ -175,16 +209,15 @@ namespace test
 
 		//  Reset all uniforms
 		m_QuadParallaxShader->Bind();
-		// Texture
-		m_QuadTexture->Bind(1);
+		m_QuadParallaxShader->SetBool("u_UsingParallaxMapping", m_UsingParallaxMapping);
+		// Bind all texture maps
+		SwitchTexture(m_ActiveTextureIndex);
+		// Diffuse texture
 		m_QuadParallaxShader->SetInt("diffuseMap", 1);
 		// Normal map
-		m_QuadNormalMap->Bind(2);
 		m_QuadParallaxShader->SetInt("normalMap", 2);
 		// Height map for Parallax texture
-		m_QuadHeightMap->Bind(3);
 		m_QuadParallaxShader->SetInt("depthMap", 3);
-		m_QuadParallaxShader->SetBool("u_UsingParallaxMapping", m_UsingParallaxMapping);
 
 
 		
@@ -259,6 +292,12 @@ namespace test
 			parallaxNormalMappingTest->ParallaxHeightScaling(1);
 		if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
 			parallaxNormalMappingTest->ParallaxHeightScaling(-1);
+		// Toggle between textures
+		if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS)
+			parallaxNormalMappingTest->SwitchTexture(1);
+		if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS)
+			parallaxNormalMappingTest->SwitchTexture(0);
+
 
 		
 	}

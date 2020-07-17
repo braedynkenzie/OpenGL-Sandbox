@@ -88,9 +88,52 @@ void main()
 
 vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir) 
 {
-    float height = texture(depthMap, texCoords).r;
-    vec2 p = viewDir.xy / viewDir.z * (height * height_scale);
-    // Parallax Mapping with Offset Limiting doesn't use the division by the z component
-    // vec2 p = viewDir.xy * (height * height_scale);
-    return texCoords - p;
+    // Regular Parallax Mapping
+    //float height = texture(depthMap, texCoords).r;
+    //vec2 p = viewDir.xy / viewDir.z * (height * height_scale);
+    //// Parallax Mapping with Offset Limiting doesn't use the division by the z component
+    //// vec2 p = viewDir.xy * (height * height_scale);
+    //return texCoords - p;
+
+    // Steep Parallax Mapping
+    // number of depth layers increases with viewing angle
+    const float minLayers = 16.0;
+    const float maxLayers = 64.0;
+    float numLayers = mix(maxLayers, minLayers, max(dot(vec3(0.0, 0.0, 1.0), viewDir), 0.0));
+    // calculate the size of each layer
+    float layerDepth = 1.0 / numLayers;
+    // depth of current layer
+    float currentLayerDepth = 0.0;
+    // the amount to shift the texture coordinates per layer (from vector P)
+    vec2 P = viewDir.xy * height_scale;
+    vec2 deltaTexCoords = P / numLayers;
+
+    // get initial values
+    vec2  currentTexCoords = texCoords;
+    float currentDepthMapValue = texture(depthMap, currentTexCoords).r;
+
+    while (currentLayerDepth < currentDepthMapValue)
+    {
+        // shift texture coordinates along direction of P
+        currentTexCoords -= deltaTexCoords;
+        // get depthmap value at current texture coordinates
+        currentDepthMapValue = texture(depthMap, currentTexCoords).r;
+        // get depth of next layer
+        currentLayerDepth += layerDepth;
+    }
+    //return currentTexCoords; // for basic Steep Parallax Mapping
+
+    // Parallax Occlusion Mapping (linearly interpolated version of Steep Parallax Mapping)
+    // get texture coordinates before collision (reverse operations)
+    vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
+
+    // get depth after and before collision for linear interpolation
+    float afterDepth = currentDepthMapValue - currentLayerDepth;
+    float beforeDepth = texture(depthMap, prevTexCoords).r - currentLayerDepth + layerDepth;
+
+    // interpolation of texture coordinates
+    float weight = afterDepth / (afterDepth - beforeDepth);
+    vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
+
+    return finalTexCoords;
 }

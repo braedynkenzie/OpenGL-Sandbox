@@ -2274,5 +2274,11 @@
     <Image Include="res\textures\bricks_heightmap_parallax.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\textures\parallax_indents_depth_map.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\parallax_indents_normal_map.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -1380,6 +1380,8 @@
     <Image Include="res\textures\night_skybox_alt\left.jpg" />
     <Image Include="res\textures\night_skybox_alt\right.jpg" />
     <Image Include="res\textures\night_skybox_alt\top.jpg" />
+    <Image Include="res\textures\parallax_indents_depth_map.png" />
+    <Image Include="res\textures\parallax_indents_normal_map.png" />
     <Image Include="res\textures\pool_water_texture.png" />
     <Image Include="res\textures\shallow_water_texture.png" />
     <Image Include="res\textures\tree_render_texture.png" />
