@@ -35,6 +35,7 @@
 #include "tests\TestShadowMapping.h"
 #include "tests\TestPointShadowMapping.h"
 #include "tests\TestParallaxNormalMapping.h"
+#include "tests\TestHDRBloom.h"
 #include <Globals.h>
 
 // Function declarations
@@ -108,6 +109,7 @@ int main(void)
         test::TestShadowMapping* shadowMappingTest = new test::TestShadowMapping(window);
         test::TestPointShadowMapping* pointShadowMappingTest = new test::TestPointShadowMapping(window);
         test::TestParallaxNormalMapping* parallaxNormalTest = new test::TestParallaxNormalMapping(window);
+        test::TestHDRBloom* bloomHDRTest = new test::TestHDRBloom(window);
         //test::TestTemplate* templateTest = new test::TestTemplate(window);
         // Register all test sandboxes
         testMenu->RegisterTest<test::TestClearColour*>("Change background colour", (test::TestClearColour*) clearColourTest);
@@ -122,6 +124,7 @@ int main(void)
         testMenu->RegisterTest<test::TestShadowMapping*>("Orthographic Shadow Mapping", (test::TestShadowMapping*) shadowMappingTest);
         testMenu->RegisterTest<test::TestPointShadowMapping*>("Perspective Shadow Mapping", (test::TestPointShadowMapping*) pointShadowMappingTest);
         testMenu->RegisterTest<test::TestParallaxNormalMapping*>("Parallax and Normal Mapping", (test::TestParallaxNormalMapping*) parallaxNormalTest);
+        testMenu->RegisterTest<test::TestHDRBloom*>("HDR and Bloom", (test::TestHDRBloom*) bloomHDRTest);
         //testMenu->RegisterTest<test::TestTemplate*>("Test Template", (test::TestTemplate*) templateTest);
 
         /* Loop until the user closes the window */

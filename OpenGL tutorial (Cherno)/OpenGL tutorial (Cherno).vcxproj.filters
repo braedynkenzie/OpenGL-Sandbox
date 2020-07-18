@@ -102,6 +102,9 @@
     <ClCompile Include="src\tests\TestParallaxNormalMapping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\TestHDRBloom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\res\shaders\Basic.shader" />
@@ -1223,6 +1226,8 @@
     <None Include="res\shaders\ShadowMapping.shader" />
     <None Include="res\shaders\BasicShadowNormalMapping.shader" />
     <None Include="res\shaders\ParallaxNormalMapping.shader" />
+    <None Include="res\shaders\HDRBloom.shader" />
+    <None Include="res\shaders\HDRBloomSetup.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">
@@ -2171,6 +2176,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\tests\TestParallaxNormalMapping.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tests\TestHDRBloom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

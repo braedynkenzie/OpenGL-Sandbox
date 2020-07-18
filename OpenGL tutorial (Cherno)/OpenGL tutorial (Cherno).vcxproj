@@ -165,6 +165,7 @@
     <ClCompile Include="src\tests\TestCubemapping.cpp" />
     <ClCompile Include="src\tests\TestFPSCamera.cpp" />
     <ClCompile Include="src\tests\TestGeometryShader.cpp" />
+    <ClCompile Include="src\tests\TestHDRBloom.cpp" />
     <ClCompile Include="src\tests\TestInstancedRendering.cpp" />
     <ClCompile Include="src\tests\TestManualFramebuffers.cpp" />
     <ClCompile Include="src\tests\TestModelLoading.cpp" />
@@ -194,6 +195,8 @@
     <None Include="res\shaders\BasicShadowNormalMapping.shader" />
     <None Include="res\shaders\EnvMapping.shader" />
     <None Include="res\shaders\FramebufferTest.shader" />
+    <None Include="res\shaders\HDRBloom.shader" />
+    <None Include="res\shaders\HDRBloomSetup.shader" />
     <None Include="res\shaders\HelloGeometry.shader" />
     <None Include="res\shaders\ParallaxNormalMapping.shader" />
     <None Include="res\shaders\PointLights.shader" />
@@ -1047,6 +1050,7 @@
     <ClInclude Include="src\tests\TestCubemapping.h" />
     <ClInclude Include="src\tests\TestFPSCamera.h" />
     <ClInclude Include="src\tests\TestGeometryShader.h" />
+    <ClInclude Include="src\tests\TestHDRBloom.h" />
     <ClInclude Include="src\tests\TestInstancedRendering.h" />
     <ClInclude Include="src\tests\TestManualFramebuffers.h" />
     <ClInclude Include="src\tests\TestModelLoading.h" />
