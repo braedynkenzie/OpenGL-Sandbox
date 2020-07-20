@@ -70,6 +70,11 @@ void main()
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);
     vec3 result = vec3(0.0f);
 
+    // Messing with normals for buffer cube lighting
+    vec3 texColour = vec3(texture(u_Material.diffuse, fs_in.TexCoords));
+    float darkness = 1.0 - ((texColour.r + texColour.g + texColour.b) / 3.0);
+    normal = normalize(normal + (darkness * darkness * darkness * vec3(0.0, 1.0, 0.0)));
+
     // Point lights
     for (int i = 0; i < NUM_POINT_LIGHTS; i++) {
         result += CalcPointLight(pointLights[i], normal, fs_in.FragPos, viewDir);

@@ -21,5 +21,13 @@ uniform sampler2D framebufferTexture;
 
 void main()
 {
-    FragColour = texture(framebufferTexture, v_TexCoords);
+    // Tone mapping is the process of transforming from High Dynamic Range (HDR) [0.0 to any float value] back to Low Dynamic Range (LDR) [0.0, 1.0]
+    const float gamma = 2.2;
+    vec3 hdrColour = texture(framebufferTexture, v_TexCoords).rgb;
+    // Reinhard tone mapping
+    vec3 ldrColour = hdrColour / (hdrColour + vec3(1.0));
+    // Gamma correction already done in other shader
+    // ldrColour = pow(ldrColour, vec3(1.0 / gamma));
+
+    FragColour = vec4(ldrColour, 1.0);
 }

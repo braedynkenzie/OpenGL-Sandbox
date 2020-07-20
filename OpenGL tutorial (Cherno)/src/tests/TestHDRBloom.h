@@ -33,10 +33,20 @@ namespace test
 		VertexBuffer* m_VB_Cube;
 		IndexBuffer* m_IB_Cube;
 		Shader* m_HDRLightingShader;
+		Shader* m_PointlightsShader;
 		Shader* m_QuadShader;
 		Texture* m_GroundTexture;
 		Texture* m_CubeTexture;
-		unsigned int m_FramebufferTexture;
+		unsigned int m_HDRBuffer;
+		glm::vec3 m_PointLightPositions[2];
+		glm::vec3 m_PointLightColours[2];
+		float m_LightIntensity;
+		// Skybox data
+		Shader* m_SkyboxShader;
+		Texture* m_SkyboxTexture;
+		VertexArray* m_VA_Skybox;
+		VertexBuffer* m_VB_Skybox;
+		IndexBuffer* m_IB_Skybox;
 
 	public: 
 		TestHDRBloom(GLFWwindow*& mainWindow);
@@ -46,6 +56,8 @@ namespace test
 		void OnRender() override;
 		void OnImGuiRender() override;
 		void OnActivated() override;
+
+		void LightIntensity(const int dir);
 
 		Camera* GetCamera() { return &m_Camera; }
 		static TestHDRBloom* GetInstance() { return instance; }
