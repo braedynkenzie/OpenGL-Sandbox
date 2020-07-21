@@ -39,6 +39,8 @@ namespace test
 		//m_CubeTexture(new Texture("res/textures/metal_border_container_texture.png"))
 		m_CubeTexture(new Texture("res/textures/brick_texture.png")),
 		m_LightIntensity(1.0f),
+		m_LightExposure(1.0f),
+		m_UsingHDR(true),
 		// Skybox data
 		m_SkyboxShader(new Shader("res/shaders/Skybox.shader")),
 		m_VA_Skybox(new VertexArray())
@@ -375,6 +377,8 @@ namespace test
 		GLCall(glActiveTexture(GL_TEXTURE2));
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_HDRBuffer));
 		m_QuadShader->SetInt("framebufferTexture", 2);
+		m_QuadShader->SetBool("u_UsingHDR", m_UsingHDR);
+		m_QuadShader->SetFloat("u_Exposure", m_LightExposure);
 		// Draw the rear-view framebuffer textured quad to the default framebuffer
 		renderer.DrawTriangles(*m_VA_Quad, *m_IB_Quad, *m_QuadShader); 
 	}
@@ -384,6 +388,10 @@ namespace test
 		// ImGui interface
 		ImGui::Text("PRESS '3' to increase light intensity");
 		ImGui::Text("PRESS '4' to decrease light intensity");
+		ImGui::Text("PRESS '5' to increase exposure");
+		ImGui::Text("PRESS '6' to decrease exposure");
+		ImGui::Text("PRESS '7' to turn off HDR");
+		ImGui::Text("PRESS '8' to turn on HDR");
 		ImGui::Text(" - - - ");
 		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
 		ImGui::Text("- Use WASD keys to move camera");
@@ -447,11 +455,30 @@ namespace test
 			// Increase light intensity
 			m_LightIntensity *= 1.01;
 		}
-		else if(dir == -1)
+		else if (dir == -1)
 		{
 			// Decrease light intensity
 			m_LightIntensity *= 0.99;
 		}
+	}
+
+	void TestHDRBloom::ExposureLevel(const int dir)
+	{
+		if (dir == 1)
+		{
+			// Increase light exposure
+			m_LightExposure *= 1.01;
+		}
+		else if (dir == -1)
+		{
+			// Decrease light exposure
+			m_LightExposure *= 0.99;
+		}
+	}
+
+	void TestHDRBloom::ToggleHDR(bool flag)
+	{
+		m_UsingHDR = flag;
 	}
 
 	void scroll_callbackHDRBloom(GLFWwindow* window, double xOffset, double yOffset)
@@ -511,6 +538,16 @@ namespace test
 			bloomHDRTest->LightIntensity(1);
 		if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
 			bloomHDRTest->LightIntensity(-1);
+		// Change exposure levels
+		if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+			bloomHDRTest->ExposureLevel(1);
+		if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
+			bloomHDRTest->ExposureLevel(-1);
+		// Toggle HDR
+		if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS)
+			bloomHDRTest->ToggleHDR(false);
+		if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS)
+			bloomHDRTest->ToggleHDR(true);
 	}
 }
 

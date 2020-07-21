@@ -18,16 +18,26 @@ out vec4 FragColour;
 in vec2 v_TexCoords;
 
 uniform sampler2D framebufferTexture;
+uniform bool u_UsingHDR;
+uniform float u_Exposure;
 
 void main()
 {
-    // Tone mapping is the process of transforming from High Dynamic Range (HDR) [0.0 to any float value] back to Low Dynamic Range (LDR) [0.0, 1.0]
-    const float gamma = 2.2;
-    vec3 hdrColour = texture(framebufferTexture, v_TexCoords).rgb;
-    // Reinhard tone mapping
-    vec3 ldrColour = hdrColour / (hdrColour + vec3(1.0));
-    // Gamma correction already done in other shader
-    // ldrColour = pow(ldrColour, vec3(1.0 / gamma));
+    if (u_UsingHDR) {
+        // Tone mapping is the process of transforming from High Dynamic Range (HDR) [0.0 to any float value] back to Low Dynamic Range (LDR) [0.0, 1.0]
+        vec3 hdrColour = texture(framebufferTexture, v_TexCoords).rgb;
+        // Reinhard tone mapping
+        // vec3 ldrColour = hdrColour / (hdrColour + vec3(1.0));
+        // Exposure tone mapping
+        vec3 ldrColour = vec3(1.0) - exp(-hdrColour * u_Exposure);
 
-    FragColour = vec4(ldrColour, 1.0);
+        FragColour = vec4(ldrColour, 1.0);
+    }
+    else {
+        // No tone mapping (just upper bounds at 1.0)
+        vec3 ldrColour = texture(framebufferTexture, v_TexCoords).rgb;
+
+        FragColour = vec4(ldrColour, 1.0);
+    }
+    
 }

@@ -41,6 +41,8 @@ namespace test
 		glm::vec3 m_PointLightPositions[2];
 		glm::vec3 m_PointLightColours[2];
 		float m_LightIntensity;
+		float m_LightExposure;
+		bool m_UsingHDR;
 		// Skybox data
 		Shader* m_SkyboxShader;
 		Texture* m_SkyboxTexture;
@@ -58,6 +60,8 @@ namespace test
 		void OnActivated() override;
 
 		void LightIntensity(const int dir);
+		void ExposureLevel(const int dir);
+		void ToggleHDR(bool flag);
 
 		Camera* GetCamera() { return &m_Camera; }
 		static TestHDRBloom* GetInstance() { return instance; }
