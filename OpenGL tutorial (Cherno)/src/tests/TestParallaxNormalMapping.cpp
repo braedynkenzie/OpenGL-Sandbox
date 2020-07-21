@@ -194,6 +194,7 @@ namespace test
 			ImGui::Text("PRESS '4' to turn on Parallax Mapping");
 		ImGui::Text("PRESS '5' to increase height scaling");
 		ImGui::Text("PRESS '6' to decrease height scaling");
+		ImGui::Text("PRESS '7'/'8' to swap texture");
 		ImGui::Text(" - - - ");
 		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
 		ImGui::Text("- Use WASD keys to move camera");

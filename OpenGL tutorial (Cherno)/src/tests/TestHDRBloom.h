@@ -38,11 +38,17 @@ namespace test
 		Texture* m_GroundTexture;
 		Texture* m_CubeTexture;
 		unsigned int m_HDRBuffer;
+		unsigned int m_BloomBuffer;
 		glm::vec3 m_PointLightPositions[2];
 		glm::vec3 m_PointLightColours[2];
 		float m_LightIntensity;
 		float m_LightExposure;
 		bool m_UsingHDR;
+		// Bloom properties
+		unsigned int m_PingpongFramebuffers[2];
+		unsigned int m_PingpongColourBuffers[2];
+		Shader* m_BlurShader;
+		unsigned int m_NumBlurPasses;
 		// Skybox data
 		Shader* m_SkyboxShader;
 		Texture* m_SkyboxTexture;
@@ -61,6 +67,7 @@ namespace test
 
 		void LightIntensity(const int dir);
 		void ExposureLevel(const int dir);
+		void BloomBlurAmount(const int dir);
 		void ToggleHDR(bool flag);
 
 		Camera* GetCamera() { return &m_Camera; }

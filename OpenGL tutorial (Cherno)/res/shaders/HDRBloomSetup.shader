@@ -58,7 +58,8 @@ in VS_OUT{
 
 uniform vec3 viewPos;
 
-out vec4 FragColour;
+layout(location = 0) out vec4 FragColour;
+layout(location = 1) out vec4 BrightColour;
 
 // Function declarations
 vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewDir);
@@ -86,8 +87,13 @@ void main()
 
     // Set fragment colour to combined result
     FragColour = vec4(result, 1.0);
-    
-    //FragColour = texture(u_Material.diffuse, fs_in.TexCoords);
+
+    // check whether fragment output is higher than threshold, if so output as brightness color
+    float brightness = dot(FragColour.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if (brightness > 1.0)
+        BrightColour = vec4(FragColour.rgb, 1.0); // output colour in Bloom buffer
+    else
+        BrightColour = vec4(0.0, 0.0, 0.0, 1.0); // black in Bloom colour buffer
 };
 
 vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewDir)

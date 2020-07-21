@@ -1228,6 +1228,7 @@
     <None Include="res\shaders\ParallaxNormalMapping.shader" />
     <None Include="res\shaders\HDRBloom.shader" />
     <None Include="res\shaders\HDRBloomSetup.shader" />
+    <None Include="res\shaders\GaussianBlur.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">

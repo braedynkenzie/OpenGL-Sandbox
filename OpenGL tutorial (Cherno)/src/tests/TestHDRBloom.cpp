@@ -41,6 +41,9 @@ namespace test
 		m_LightIntensity(1.0f),
 		m_LightExposure(1.0f),
 		m_UsingHDR(true),
+		// Bloom colour buffer blur effect shader
+		m_BlurShader(new Shader("res/shaders/GaussianBlur.shader")),
+		m_NumBlurPasses(20),
 		// Skybox data
 		m_SkyboxShader(new Shader("res/shaders/Skybox.shader")),
 		m_VA_Skybox(new VertexArray())
@@ -231,35 +234,72 @@ namespace test
 		// Init index buffer and bind to Vertex Array 
 		m_IB_Quad = new IndexBuffer(framebufferQuadIndices, 6);
 
-		// Bind the manually created framebuffer object
-		m_ManualFramebuffer->Bind();
-		//
-		// Next, create and attach any framebuffer attachments (colour/depth/stecil buffers and others)
-		// Create an empty 'texture' the same size as the window, to attach to the framebuffer & to render into
-		GLCall(glGenTextures(1, &m_HDRBuffer));
-		GLCall(glBindTexture(GL_TEXTURE_2D, m_HDRBuffer));
-		// Floating point framebuffer attachment with 16 bits per colour component
-		// With a floating point colour buffer, we can now render the scene and colour values won't get clamped between 0.0 and 1.0
-		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL));
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		// Attach empty texture to the active framebuffer
-		GLCall(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_HDRBuffer, 0));
-		//
-		// Renderbuffer objects store all the render data directly into their buffer without any conversions to texture-specific formats, 
-		// making them faster as a writeable storage medium. However, you cannot read from them directly (can with conversions but is slow).
-		// "When we're not sampling from the buffer, a renderbuffer object is generally preferred."
-		GLCall(glGenRenderbuffers(1, &m_RenderBufferID));
-		GLCall(glBindRenderbuffer(GL_RENDERBUFFER, m_RenderBufferID));
-		GLCall(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT));
-		// Attach renderbuffer to the active framebuffer
-		GLCall(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RenderBufferID));
-
-		// Check if Framebuffer is complete before continuing
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		// Framebuffer setup
 		{
-			std::cout << "[ERROR] Framebuffer is not complete!" << std::endl;
-			ASSERT(0);
+			// Bind the manually created framebuffer object
+			m_ManualFramebuffer->Bind();
+			//
+			// Next, create and attach any framebuffer attachments (colour/depth/stecil buffers and others)
+			// Create an empty HDR colour buffer for typical rendering using lighting 
+			GLCall(glGenTextures(1, &m_HDRBuffer));
+			GLCall(glBindTexture(GL_TEXTURE_2D, m_HDRBuffer));
+			// Floating point framebuffer attachment with 16 bits per colour component
+			// With a floating point colour buffer, we can now render the scene and colour values won't get clamped between 0.0 and 1.0
+			GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			// Attach empty HDR colour buffer to the active framebuffer
+			GLCall(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_HDRBuffer, 0));
+			//
+			// Also create a Bloom colour buffer that will just store pixels over a certain brightness level
+			GLCall(glGenTextures(1, &m_BloomBuffer));
+			GLCall(glBindTexture(GL_TEXTURE_2D, m_BloomBuffer));
+			// Floating point framebuffer attachment with 16 bits per colour component
+			// With a floating point colour buffer, we can now render the scene and colour values won't get clamped between 0.0 and 1.0
+			GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			// Attach empty Bloom colour buffer to the active framebuffer
+			GLCall(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_BloomBuffer, 0));
+			//
+			// Tell OpenGL which buffers we are drawing to in the shader (these are the above HDR and Bloom buffers)
+			unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+			glDrawBuffers(2, attachments);
+			//
+			// Renderbuffer objects store all the render data directly into their buffer without any conversions to texture-specific formats, 
+			// making them faster as a writeable storage medium. However, you cannot read from them directly (can with conversions but is slow).
+			// "When we're not sampling from the buffer, a renderbuffer object is generally preferred."
+			GLCall(glGenRenderbuffers(1, &m_RenderBufferID));
+			GLCall(glBindRenderbuffer(GL_RENDERBUFFER, m_RenderBufferID));
+			GLCall(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT));
+			// Attach renderbuffer to the active framebuffer
+			GLCall(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RenderBufferID));
+
+			// Check if Framebuffer is complete before continuing
+			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			{
+				std::cout << "[ERROR] Framebuffer is not complete!" << std::endl;
+				ASSERT(0);
+			}
+
+			// Setup two framebuffers for performing Gaussian blur effect on Bloom buffer output
+			GLCall(glGenFramebuffers(2, m_PingpongFramebuffers));
+			GLCall(glGenTextures(2, m_PingpongColourBuffers));
+			for (unsigned int i = 0; i < 2; i++)
+			{
+				GLCall(glBindFramebuffer(GL_FRAMEBUFFER, m_PingpongFramebuffers[i]));
+				GLCall(glBindTexture(GL_TEXTURE_2D, m_PingpongColourBuffers[i]));
+				GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL));
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				GLCall(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_PingpongColourBuffers[i], 0));
+			}
 		}
 
 		// Return to default framebuffer
@@ -365,6 +405,23 @@ namespace test
 		glDepthFunc(GL_LESS);
 
 
+		// Now that we've filled the HDR and bloom colour buffers, Gaussian blur for the bloom effect
+		bool horizontal = true;
+		bool first_iteration = true;
+		m_BlurShader->Bind();
+		for (unsigned int i = 0; i < m_NumBlurPasses; i++)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, m_PingpongFramebuffers[horizontal]);
+			m_BlurShader->SetBool("horizontal", horizontal);
+			glBindTexture(GL_TEXTURE_2D, first_iteration ? m_BloomBuffer : m_PingpongColourBuffers[!horizontal]);
+			renderer.DrawTriangles(*m_VA_Quad, *m_IB_Quad, *m_BlurShader);
+			horizontal = !horizontal;
+			if (first_iteration)
+				first_iteration = false;
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
 		// Now render the scene to the default framebuffer and use the rendered framebuffer as a texture 
 		// Rebind default framebuffer
 		m_ManualFramebuffer->Unbind();
@@ -374,9 +431,13 @@ namespace test
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)); // not using the stencil buffer
 
 		m_QuadShader->Bind();
+		// Bind both HDR and blurred Bloom colour buffers
 		GLCall(glActiveTexture(GL_TEXTURE2));
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_HDRBuffer));
-		m_QuadShader->SetInt("framebufferTexture", 2);
+		m_QuadShader->SetInt("hdrImageTexture", 2);
+		GLCall(glActiveTexture(GL_TEXTURE3));
+		GLCall(glBindTexture(GL_TEXTURE_2D, m_PingpongColourBuffers[!horizontal]));
+		m_QuadShader->SetInt("bloomImageTexture", 3);
 		m_QuadShader->SetBool("u_UsingHDR", m_UsingHDR);
 		m_QuadShader->SetFloat("u_Exposure", m_LightExposure);
 		// Draw the rear-view framebuffer textured quad to the default framebuffer
@@ -390,8 +451,10 @@ namespace test
 		ImGui::Text("PRESS '4' to decrease light intensity");
 		ImGui::Text("PRESS '5' to increase exposure");
 		ImGui::Text("PRESS '6' to decrease exposure");
-		ImGui::Text("PRESS '7' to turn off HDR");
-		ImGui::Text("PRESS '8' to turn on HDR");
+		ImGui::Text("PRESS '7' to turn off HDR and Bloom");
+		ImGui::Text("PRESS '8' to turn on HDR and Bloom");
+		ImGui::Text("PRESS '9' to increase bloom blur effect");
+		ImGui::Text("PRESS '0' to decrease bloom blur effect");
 		ImGui::Text(" - - - ");
 		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
 		ImGui::Text("- Use WASD keys to move camera");
@@ -476,6 +539,12 @@ namespace test
 		}
 	}
 
+	void TestHDRBloom::BloomBlurAmount(const int dir)
+	{
+		m_NumBlurPasses += dir;
+		if (m_NumBlurPasses < 1) m_NumBlurPasses = 1;
+	}
+
 	void TestHDRBloom::ToggleHDR(bool flag)
 	{
 		m_UsingHDR = flag;
@@ -548,6 +617,11 @@ namespace test
 			bloomHDRTest->ToggleHDR(false);
 		if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS)
 			bloomHDRTest->ToggleHDR(true);
+		// Change bloom blur amount
+		if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS)
+			bloomHDRTest->BloomBlurAmount(1);
+		if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
+			bloomHDRTest->BloomBlurAmount(-1);
 	}
 }
 
