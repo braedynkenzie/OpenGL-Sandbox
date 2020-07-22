@@ -163,6 +163,7 @@
     <ClCompile Include="src\tests\Test.cpp" />
     <ClCompile Include="src\tests\TestClearColour.cpp" />
     <ClCompile Include="src\tests\TestCubemapping.cpp" />
+    <ClCompile Include="src\tests\TestDeferredRendering.cpp" />
     <ClCompile Include="src\tests\TestFPSCamera.cpp" />
     <ClCompile Include="src\tests\TestGeometryShader.cpp" />
     <ClCompile Include="src\tests\TestHDRBloom.cpp" />
@@ -193,9 +194,11 @@
     <None Include="res\shaders\BasicPhongModel.shader" />
     <None Include="res\shaders\BasicShadowMapping.shader" />
     <None Include="res\shaders\BasicShadowNormalMapping.shader" />
+    <None Include="res\shaders\DeferredRenderingQuad.shader" />
     <None Include="res\shaders\EnvMapping.shader" />
     <None Include="res\shaders\FramebufferTest.shader" />
     <None Include="res\shaders\GaussianBlur.shader" />
+    <None Include="res\shaders\GBuffer.shader" />
     <None Include="res\shaders\HDRBloom.shader" />
     <None Include="res\shaders\HDRBloomSetup.shader" />
     <None Include="res\shaders\HelloGeometry.shader" />
@@ -1049,6 +1052,7 @@
     <ClInclude Include="src\tests\Test.h" />
     <ClInclude Include="src\tests\TestClearColour.h" />
     <ClInclude Include="src\tests\TestCubemapping.h" />
+    <ClInclude Include="src\tests\TestDeferredRendering.h" />
     <ClInclude Include="src\tests\TestFPSCamera.h" />
     <ClInclude Include="src\tests\TestGeometryShader.h" />
     <ClInclude Include="src\tests\TestHDRBloom.h" />

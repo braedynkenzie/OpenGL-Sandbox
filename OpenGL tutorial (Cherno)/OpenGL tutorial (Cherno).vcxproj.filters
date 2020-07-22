@@ -105,6 +105,9 @@
     <ClCompile Include="src\tests\TestHDRBloom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\TestDeferredRendering.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\res\shaders\Basic.shader" />
@@ -1229,6 +1232,8 @@
     <None Include="res\shaders\HDRBloom.shader" />
     <None Include="res\shaders\HDRBloomSetup.shader" />
     <None Include="res\shaders\GaussianBlur.shader" />
+    <None Include="res\shaders\GBuffer.shader" />
+    <None Include="res\shaders\DeferredRenderingQuad.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">
@@ -2180,6 +2185,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\tests\TestHDRBloom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tests\TestDeferredRendering.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
