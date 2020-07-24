@@ -155,14 +155,6 @@ namespace test
 		m_VA_Skybox->AddBuffer(*m_VB_Skybox, skyboxVBLayout);
 		// Init index buffer and bind to Vertex Array 
 		m_IB_Skybox = new IndexBuffer(skyboxIndices, 6 * 6);
-
-		// Enable OpenGL z-buffer depth comparisons
-		glEnable(GL_DEPTH_TEST);
-		// Render only those fragments with lower depth values
-		glDepthFunc(GL_LESS);
-
-		GLCall(glEnable(GL_BLEND));
-		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
 	TestCubemapping::~TestCubemapping()
@@ -257,6 +249,15 @@ namespace test
 																"res/textures/example_skybox/back.jpg" }));
 		m_CubeTexture->Bind(1);
 		m_SkyboxTexture->BindCubemap(3);
+
+		// Enable OpenGL z-buffer depth comparisons
+		glEnable(GL_DEPTH_TEST);
+		// Render only those fragments with lower depth values
+		glDepthFunc(GL_LESS);
+		// Enable blending
+		GLCall(glEnable(GL_BLEND));
+		//GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+		GLCall(glBlendFunc(GL_ONE, GL_ZERO));
 		
 		// Reset all callbacks
 		// Callback function for mouse cursor movement

@@ -34,6 +34,7 @@ public:
 	}
 
 	vector<Mesh> GetMeshes() { return meshes; }
+	void SetMeshes(vector<Mesh> newMeshes) { meshes = newMeshes; }
 
 	// Draw all the model's meshes
 	void Draw(Shader* shaderProgram)

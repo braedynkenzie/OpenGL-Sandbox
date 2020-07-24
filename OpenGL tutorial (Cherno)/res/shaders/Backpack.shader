@@ -91,6 +91,9 @@ void main() {
 
 	// Combined result
 	FragColour = vec4(result, 1.0);
+
+	// Testing
+	//FragColour = vec4(result + vec3(0.2), 1.0);
 }
 
 vec3 CalcSpotLight(vec3 norm, vec3 FragPos, vec3 viewDir)

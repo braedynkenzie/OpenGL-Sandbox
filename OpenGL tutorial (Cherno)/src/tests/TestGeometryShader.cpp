@@ -25,14 +25,6 @@ namespace test
 		m_Shader(new Shader("res/shaders/HelloGeometry.shader"))
 	{
 		instance = this;
-
-		// Enable OpenGL z-buffer depth comparisons
-		glEnable(GL_DEPTH_TEST);
-		// Render only those fragments with lower depth values
-		glDepthFunc(GL_LESS);
-
-		GLCall(glEnable(GL_BLEND));
-		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
 	TestGeometryShader::~TestGeometryShader()
@@ -104,20 +96,16 @@ namespace test
 		// Hide and capture mouse cursor
 		glfwSetInputMode(m_MainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-		// Enable face culling
-		//glEnable(GL_CULL_FACE);
-		//glCullFace(GL_FRONT); // cull front faces
-		//glCullFace(GL_BACK); // cull back faces
-		//glFrontFace(GL_CCW); // tell OpenGL that front faces have CCW winding order
-
 		// Enable gl_PointSize in vertex shader
 		//glEnable(GL_PROGRAM_POINT_SIZE);
 
-		//  Reset all uniforms
-		m_Shader->Bind();
-		// Textures
-		//m_CubeTexture->Bind(1);
-		//m_Shader->SetInt("u_SurfaceTexture", 1);
+		// Enable OpenGL z-buffer depth comparisons
+		glEnable(GL_DEPTH_TEST);
+		// Render only those fragments with lower depth values
+		glDepthFunc(GL_LESS);
+		// Enable blending
+		GLCall(glEnable(GL_BLEND));
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 		
 		// Reset all callbacks
 		// Callback function for mouse cursor movement

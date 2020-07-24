@@ -136,14 +136,6 @@ namespace test
 		m_VA_Cube->AddBuffer(*m_VB_Cube, cubeVBLayout);
 		// Init index buffer and bind to Vertex Array 
 		m_IB_Cube = new IndexBuffer(cubeIndices, 6 * 6);
-
-		// Enable OpenGL z-buffer depth comparisons
-		glEnable(GL_DEPTH_TEST);
-		// Render only those fragments with lower depth values
-		glDepthFunc(GL_LESS);
-
-		GLCall(glEnable(GL_BLEND));
-		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
 	TestShadowMapping::~TestShadowMapping()
@@ -194,7 +186,7 @@ namespace test
 		glm::mat4 lightModelMatrix1 = glm::mat4(1.0f);
 		float movementAmount = 8.0f;
 		float cube1PositionX = movementAmount * sin(glfwGetTime() / 2.0f);
-		float cube1PositionY = movementAmount * cos(glfwGetTime() / 1.0f);
+		float cube1PositionY = movementAmount * cos(glfwGetTime() / 1.0f) + 2.0f; // keep from ground to avoid peter panning
 		float cube1PositionZ = 0.0f;
 		glm::vec3 cube1Position = glm::vec3(cube1PositionX, cube1PositionY, cube1PositionZ);
 		lightModelMatrix1 = glm::translate(lightModelMatrix1, cube1Position);
@@ -213,7 +205,7 @@ namespace test
 		// Change model matrix and draw second cube
 		glm::mat4 lightModelMatrix2 = glm::mat4(1.0f);
 		float cube2PositionX = cube1PositionX * 0.5f;
-		float cube2PositionY = movementAmount * sin(glfwGetTime() / 2.0f);
+		float cube2PositionY = movementAmount * sin(glfwGetTime() / 2.0f) + 2.0f; // keep from ground to avoid peter panning
 		float cube2PositionZ = movementAmount * cos(glfwGetTime() / 1.0f);
 		glm::vec3 cube2Position = glm::vec3(cube2PositionX, cube2PositionY, cube2PositionZ);
 		lightModelMatrix2 = glm::translate(lightModelMatrix2, cube2Position);
@@ -229,37 +221,6 @@ namespace test
 		GLCall(glActiveTexture(GL_TEXTURE3));
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_ShadowDepthMap));
 		m_Shader->SetInt("shadowMapOrthographic", 3);
-		
-
-		// Next render to the perspective light's shadow depth map
-		//glClear(GL_DEPTH_BUFFER_BIT);
-		//// Do the same first cube transformations as before
-		//m_ShadowDepthMapShader->Bind();
-		//glm::mat4 lightViewMatrixPerspective = glm::lookAt(flashlightPosition,
-		//										flashlightDirection,		
-		//										m_Camera.Up);	
-		//glm::mat4 lightProjectionMatrixPerspective = glm::perspective(glm::radians(45.0f), 1.0f, 4.0f, 400.0f);
-		////glm::mat4 lightProjectionMatrixPerspective = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, near_plane, far_plane);
-		//glm::mat4 lightSpaceMatrixPerspective = lightProjectionMatrixPerspective * lightViewMatrixPerspective;
-		//m_ShadowDepthMapShader->SetMatrix4f("lightSpaceMatrix", lightSpaceMatrixPerspective);
-		//m_ShadowDepthMapShader->SetMatrix4f("lightModel", lightModelMatrix1);
-
-		//// Create depth map from slashlight's POV by rendering the scene
-		//// Draw first cube with its model matrix
-		//renderer.DrawTriangles(*m_VA_Cube, *m_IB_Cube, *m_ShadowDepthMapShader);
-		//// Draw second cube with its model matrix
-		//m_ShadowDepthMapShader->SetMatrix4f("lightModel", lightModelMatrix2);
-		//renderer.DrawTriangles(*m_VA_Cube, *m_IB_Cube, *m_ShadowDepthMapShader);
-		//// Then draw the ground
-		//renderer.DrawTriangles(*m_VA_Ground, *m_IB_Ground, *m_ShadowDepthMapShader);
-
-		//// Then pass the perspective shadow depth map to the other shader
-		//m_Shader->Bind();
-		//// Bind shadow depth map texture to shader
-		//GLCall(glActiveTexture(GL_TEXTURE4));
-		//GLCall(glBindTexture(GL_TEXTURE_2D, m_ShadowDepthMap));
-		//m_Shader->SetInt("shadowMapPerspective", 4);
-
 
 		// Then return to the default framebuffer and render the scene as normal, using the depth map to create shadows
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -370,6 +331,14 @@ namespace test
 		glReadBuffer(GL_NONE);
 		// Reset to default framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		// Enable OpenGL z-buffer depth comparisons
+		glEnable(GL_DEPTH_TEST);
+		// Render only those fragments with lower depth values
+		glDepthFunc(GL_LESS);
+		// Enable blending
+		GLCall(glEnable(GL_BLEND));
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
 		// Reset all callbacks
 		// Callback function for mouse cursor movement

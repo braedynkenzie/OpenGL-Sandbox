@@ -77,14 +77,6 @@ namespace test
 		m_VB->Unbind();
 		m_IB->Unbind();
 		m_Shader->Unbind();
-
-		// Enable OpenGL z-buffer depth comparisons
-		glEnable(GL_DEPTH_TEST);
-		// Render only those fragments with lower depth values
-		glDepthFunc(GL_LESS);
-
-		GLCall(glEnable(GL_BLEND));
-		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
 	TestModelLoading::~TestModelLoading()
@@ -147,7 +139,7 @@ namespace test
 		m_Shader->SetFloat("u_Flashlight.cutOff", glm::cos(glm::radians(5.0f)));
 		m_Shader->SetFloat("u_Flashlight.outerCutOff", glm::cos(glm::radians(50.0f)));
 		// Bind ground texture
-		m_GroundTexture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
+		m_GroundTexture->BindAndSetRepeating(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
 		m_Shader->SetUniform1i("texture_diffuse0", 0);
 		// Render the ground
 		renderer.DrawTriangles(*m_VA, *m_IB, *m_Shader);
@@ -173,19 +165,14 @@ namespace test
 		{
 			// Flip texture along y axis before loading
 			stbi_set_flip_vertically_on_load(true);
-			m_BackpackModel = new Model((char*)"res/models/backpack/backpack.obj");
+			 m_BackpackModel = new Model((char*)"res/models/backpack/backpack.obj");
 			//m_BackpackModel = new Model((char*)"res/models/nature/BlenderNatureAsset.obj");
+			//m_BackpackModel = new Model((char*)"res/models/Pathfinder crew/pathfinder_crew.obj");
 			modelLoaded = true;
 		}
 
 		// Hide and capture mouse cursor
 		glfwSetInputMode(m_MainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-		// Enable face culling
-		glEnable(GL_CULL_FACE);
-		//glCullFace(GL_FRONT); // cull front faces
-		glCullFace(GL_BACK); // cull back faces
-		glFrontFace(GL_CCW); // tell OpenGL that front faces have CCW winding order
 
 		// Load ground texture
 		m_GroundTexture = std::make_unique<Texture>("res/textures/dirt_ground_texture.png");
@@ -203,10 +190,20 @@ namespace test
 		m_Shader->SetMatrix4f("model", modelMatrix);
 		m_Shader->SetMatrix4f("view", viewMatrix);
 		m_Shader->SetMatrix4f("proj", projMatrix);
-		// Set texture mode to repeat
-		// TODO mipmapping
-		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
-		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+
+		// Enable face culling
+		glEnable(GL_CULL_FACE);
+		//glCullFace(GL_FRONT); // cull front faces
+		glCullFace(GL_BACK); // cull back faces
+		glFrontFace(GL_CCW); // tell OpenGL that front faces have CCW winding order
+
+		// Enable OpenGL z-buffer depth comparisons
+		glEnable(GL_DEPTH_TEST);
+		// Render only those fragments with lower depth values
+		glDepthFunc(GL_LESS);
+		// Enable blending
+		GLCall(glEnable(GL_BLEND));
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
 		// Reset all callbacks
 		// Callback function for keyboard inputs

@@ -24,6 +24,7 @@ public:
 
 	inline int GetWidth() const { return m_Width; }
 	inline int GetHeight() const { return m_Height; }
+	inline unsigned int GetID() const { return m_RendererID; }
 
 	void BindAndSetRepeating(unsigned int textureSlot) const {
 		Bind(textureSlot);

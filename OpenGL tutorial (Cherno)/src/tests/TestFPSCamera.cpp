@@ -80,14 +80,6 @@ namespace test
 		m_VB->Unbind();
 		m_IB->Unbind();
 		m_Shader->Unbind();
-
-		// Enable OpenGL z-buffer depth comparisons
-		glEnable(GL_DEPTH_TEST);
-		// Render only those fragments with lower depth values
-		glDepthFunc(GL_LESS);
-
-		GLCall(glEnable(GL_BLEND));
-		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
 	TestFPSCamera::~TestFPSCamera()
@@ -149,6 +141,15 @@ namespace test
 		m_Texture = std::make_unique<Texture>("res/textures/high_res_world_map_texture.png");
 		m_Texture->Bind(0); // make sure this texture slot is the same as the one set in the next line, which tells the shader where to find the Sampler2D data
 		m_Shader->SetUniform1i("u_Texture0", 0);
+
+		// Enable OpenGL z-buffer depth comparisons
+		glEnable(GL_DEPTH_TEST);
+		// Render only those fragments with lower depth values
+		glDepthFunc(GL_LESS);
+		// Enable blending
+		GLCall(glEnable(GL_BLEND));
+		//GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+		GLCall(glBlendFunc(GL_ONE, GL_ZERO));
 
 		// Reset all callbacks
 		// Callback function for keyboard inputs

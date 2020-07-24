@@ -192,14 +192,6 @@ namespace test
 
 		// Return to default framebuffer
 		m_FBO->Unbind();
-
-		// Enable OpenGL z-buffer depth comparisons
-		glEnable(GL_DEPTH_TEST);
-		// Render only those fragments with lower depth values
-		glDepthFunc(GL_LESS);
-
-		GLCall(glEnable(GL_BLEND));
-		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
 	TestManualFramebuffer::~TestManualFramebuffer()
@@ -315,6 +307,14 @@ namespace test
 		m_Shader->SetInt("u_Texture0", 0);
 		m_CubeTexture->Bind(1);
 		m_Shader->SetInt("u_Texture1", 1);
+
+		// Enable OpenGL z-buffer depth comparisons
+		glEnable(GL_DEPTH_TEST);
+		// Render only those fragments with lower depth values
+		glDepthFunc(GL_LESS);
+		// Enable blending
+		GLCall(glEnable(GL_BLEND));
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
 		// Reset all callbacks
 		// Callback function for keyboard inputs

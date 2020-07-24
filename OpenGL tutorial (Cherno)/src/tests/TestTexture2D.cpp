@@ -106,14 +106,6 @@ namespace test
 		m_VB->Unbind();
 		m_IB->Unbind();
 		m_Shader->Unbind();
-
-		// Enable OpenGL z-buffer depth comparisons
-		glEnable(GL_DEPTH_TEST);
-		// Render only those fragments with lower depth values
-		glDepthFunc(GL_LESS);
-
-		GLCall(glEnable(GL_BLEND));
-		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
 	TestTexture2D::~TestTexture2D()
@@ -187,6 +179,14 @@ namespace test
 			std::string textureName = "u_Texture" + std::to_string(i);
 			m_Shader->SetUniform1i(textureName, i);
 		}
+
+		// Enable OpenGL z-buffer depth comparisons
+		glEnable(GL_DEPTH_TEST);
+		// Render only those fragments with lower depth values
+		glDepthFunc(GL_LESS);
+		// Enable blending
+		GLCall(glEnable(GL_BLEND));
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 }
 

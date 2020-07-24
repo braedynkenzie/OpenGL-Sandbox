@@ -14,16 +14,6 @@ namespace test
 
 	// Fill in 'tangent' and 'bitangent' vectors given the edge and deltaUV values
 	void CalculateTangentBitangent(glm::vec3& tangent, glm::vec3& bitangent, glm::vec3& edge1, glm::vec3& edge2, glm::vec2& deltaUV1, glm::vec2& deltaUV2);
-		/*
-	{
-		float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-		tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-		tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-		tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-		bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-		bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-		bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
-	}*/
 
 	// Init static variable
 	TestPointShadowMapping* TestPointShadowMapping::instance;
@@ -74,229 +64,6 @@ namespace test
 			0, 2, 1,
 			3, 0, 1,
 		};
-
-		//// Back cube face
-		//glm::vec3 back_pos1(0.5, 0.5, -0.5);
-		//glm::vec3 back_pos2(-0.5, -0.5, -0.5);
-		//glm::vec3 back_pos3(-0.5, 0.5, -0.5);
-		//glm::vec3 back_pos4(0.5, -0.5, -0.5);
-		//glm::vec2 back_uv1(1.0, 1.0);
-		//glm::vec2 back_uv2(0.0, 0.0);
-		//glm::vec2 back_uv3(0.0, 1.0);
-		//glm::vec2 back_uv4(1.0, 0.0);
-		//glm::vec3 back_nm(0.0, 0.0, -1.0);
-		//// Calculate tangent/bitangent vectors of both back facing triangles
-		//// Triangle 1
-		//glm::vec3 back_tangent1;
-		//glm::vec3 back_bitangent1;
-		//glm::vec3 back_edge1 =    back_pos2 - back_pos1;
-		//glm::vec3 back_edge2 =    back_pos3 - back_pos1;
-		//glm::vec2 back_deltaUV1 = back_uv2 -  back_uv1;
-		//glm::vec2 back_deltaUV2 = back_uv3 -  back_uv1;
-		//CalculateTangentBitangent(back_tangent1, 
-		//						  back_bitangent1, 
-		//						  back_edge1, 
-		//						  back_edge2, 
-		//						  back_deltaUV1, 
-		//						  back_deltaUV2);
-		//// Triangle 2
-		//glm::vec3 back_tangent2;
-		//glm::vec3 back_bitangent2;
-		//back_edge1 =    back_pos4 - back_pos2;
-		//back_edge2 =    back_pos4 - back_pos1;
-		//back_deltaUV1 = back_uv4 -  back_uv2;
-		//back_deltaUV2 = back_uv4 -  back_uv1;
-		//CalculateTangentBitangent(back_tangent2, 
-		//						  back_bitangent2, 
-		//						  back_edge1, 
-		//						  back_edge2, 
-		//						  back_deltaUV1, 
-		//						  back_deltaUV2);
-		//// Front cube face
-		//glm::vec3 front_pos1(-0.5, -0.5, 0.5);
-		//glm::vec3 front_pos2( 0.5,  0.5, 0.5);
-		//glm::vec3 front_pos3(-0.5,  0.5, 0.5);
-		//glm::vec3 front_pos4( 0.5, -0.5, 0.5);
-		//glm::vec2 front_uv1(0.0, 0.0);
-		//glm::vec2 front_uv2(1.0, 1.0);
-		//glm::vec2 front_uv3(0.0, 1.0);
-		//glm::vec2 front_uv4(1.0, 0.0);
-		//glm::vec3 front_nm(0.0, 0.0, 1.0);
-		//// Calculate tangent/bitangent vectors of both front facing triangles
-		//// Triangle 1
-		//glm::vec3 front_tangent1;
-		//glm::vec3 front_bitangent1;
-		//glm::vec3 front_edge1 = front_pos2 - front_pos1;
-		//glm::vec3 front_edge2 = front_pos3 - front_pos1;
-		//glm::vec2 front_deltaUV1 = front_uv2 - front_uv1;
-		//glm::vec2 front_deltaUV2 = front_uv3 - front_uv1;
-		//CalculateTangentBitangent(front_tangent1, 
-		//						  front_bitangent1, 
-		//						  front_edge1, 
-		//						  front_edge2, 
-		//						  front_deltaUV1, 
-		//						  front_deltaUV2);
-		//// Triangle 2
-		//glm::vec3 front_tangent2;
-		//glm::vec3 front_bitangent2;
-		//front_edge1 = front_pos4 - front_pos2;
-		//front_edge2 = front_pos4 - front_pos1;
-		//front_deltaUV1 = front_uv4 - front_uv2;
-		//front_deltaUV2 = front_uv4 - front_uv1;
-		//CalculateTangentBitangent(front_tangent2, 
-		//						  front_bitangent2, 
-		//						  front_edge1, 
-		//						  front_edge2, 
-		//						  front_deltaUV1, 
-		//						  front_deltaUV2);
-		//// Left cube face
-		//glm::vec3 left_pos1(-0.5, -0.5, -0.5);
-		//glm::vec3 left_pos2(-0.5,  0.5,  0.5);
-		//glm::vec3 left_pos3(-0.5,  0.5, -0.5);
-		//glm::vec3 left_pos4(-0.5, -0.5,  0.5);
-		//glm::vec2 left_uv1(0.0, 0.0);
-		//glm::vec2 left_uv2(1.0, 1.0);
-		//glm::vec2 left_uv3(0.0, 1.0);
-		//glm::vec2 left_uv4(1.0, 0.0);
-		//glm::vec3 left_nm(-1.0, 0.0, 0.0);
-		//// Calculate tangent/bitangent vectors of both left facing triangles
-		//// Triangle 1
-		//glm::vec3 left_tangent1;
-		//glm::vec3 left_bitangent1;
-		//glm::vec3 left_edge1 =    left_pos2 - left_pos1;
-		//glm::vec3 left_edge2 =    left_pos3 - left_pos1;
-		//glm::vec2 left_deltaUV1 = left_uv2 -  left_uv1;
-		//glm::vec2 left_deltaUV2 = left_uv3 -  left_uv1;
-		//CalculateTangentBitangent(left_tangent1, 
-		//						  left_bitangent1, 
-		//						  left_edge1, 
-		//						  left_edge2, 
-		//						  left_deltaUV1, 
-		//						  left_deltaUV2);
-		//// Triangle 2
-		//glm::vec3 left_tangent2;
-		//glm::vec3 left_bitangent2;
-		//left_edge1 =    left_pos4 - left_pos2;
-		//left_edge2 =    left_pos4 - left_pos1;
-		//left_deltaUV1 = left_uv4 -  left_uv2;
-		//left_deltaUV2 = left_uv4 -  left_uv1;
-		//CalculateTangentBitangent(left_tangent2, 
-		//						  left_bitangent2, 
-		//						  left_edge1, 
-		//						  left_edge2, 
-		//						  left_deltaUV1, 
-		//						  left_deltaUV2);
-		//// Right cube face
-		//glm::vec3 right_pos1(0.5, -0.5,  0.5);
-		//glm::vec3 right_pos2(0.5,  0.5, -0.5);
-		//glm::vec3 right_pos3(0.5,  0.5,  0.5);
-		//glm::vec3 right_pos4(0.5, -0.5, -0.5);
-		//glm::vec2 right_uv1(0.0, 0.0);
-		//glm::vec2 right_uv2(1.0, 1.0);
-		//glm::vec2 right_uv3(0.0, 1.0);
-		//glm::vec2 right_uv4(1.0, 0.0);
-		//glm::vec3 right_nm(1.0, 0.0, 0.0);
-		//// Calculate tangent/bitangent vectors of both right facing triangles
-		//// Triangle 1
-		//glm::vec3 right_tangent1;
-		//glm::vec3 right_bitangent1;
-		//glm::vec3 right_edge1 =    right_pos2 - right_pos1;
-		//glm::vec3 right_edge2 =    right_pos3 - right_pos1;
-		//glm::vec2 right_deltaUV1 = right_uv2 -  right_uv1;
-		//glm::vec2 right_deltaUV2 = right_uv3 -  right_uv1;
-		//CalculateTangentBitangent(right_tangent1, 
-		//						  right_bitangent1, 
-		//						  right_edge1, 
-		//						  right_edge2, 
-		//						  right_deltaUV1, 
-		//						  right_deltaUV2);
-		//// Triangle 2
-		//glm::vec3 right_tangent2;
-		//glm::vec3 right_bitangent2;
-		//right_edge1 =    right_pos4 - right_pos2;
-		//right_edge2 =    right_pos4 - right_pos1;
-		//right_deltaUV1 = right_uv4 -  right_uv2;
-		//right_deltaUV2 = right_uv4 -  right_uv1;
-		//CalculateTangentBitangent(right_tangent2, 
-		//						  right_bitangent2, 
-		//						  right_edge1, 
-		//						  right_edge2, 
-		//						  right_deltaUV1, 
-		//						  right_deltaUV2);
-		//// Top cube face
-		//glm::vec3 top_pos1( 0.5,  0.5,  0.5);
-		//glm::vec3 top_pos2(-0.5,  0.5, -0.5);
-		//glm::vec3 top_pos3(-0.5,  0.5,  0.5);
-		//glm::vec3 top_pos4( 0.5,  0.5, -0.5);
-		//glm::vec2 top_uv1(0.0, 0.0);
-		//glm::vec2 top_uv2(1.0, 1.0);
-		//glm::vec2 top_uv3(1.0, 0.0);
-		//glm::vec2 top_uv4(0.0, 1.0);
-		//glm::vec3 top_nm(0.0, 1.0, 0.0);
-		//// Calculate tangent/bitangent vectors of both top facing triangles
-		//// Triangle 1
-		//glm::vec3 top_tangent1;
-		//glm::vec3 top_bitangent1;
-		//glm::vec3 top_edge1 =    top_pos2 - top_pos1;
-		//glm::vec3 top_edge2 =    top_pos3 - top_pos1;
-		//glm::vec2 top_deltaUV1 = top_uv2 -  top_uv1;
-		//glm::vec2 top_deltaUV2 = top_uv3 -  top_uv1;
-		//CalculateTangentBitangent(top_tangent1, 
-		//						  top_bitangent1, 
-		//						  top_edge1, 
-		//						  top_edge2, 
-		//						  top_deltaUV1, 
-		//						  top_deltaUV2);
-		//// Triangle 2
-		//glm::vec3 top_tangent2;
-		//glm::vec3 top_bitangent2;
-		//top_edge1 =    top_pos4 - top_pos2;
-		//top_edge2 =    top_pos4 - top_pos1;
-		//top_deltaUV1 = top_uv4 -  top_uv2;
-		//top_deltaUV2 = top_uv4 -  top_uv1;
-		//CalculateTangentBitangent(top_tangent2, 
-		//						  top_bitangent2, 
-		//						  top_edge1, 
-		//						  top_edge2, 
-		//						  top_deltaUV1, 
-		//						  top_deltaUV2);
-		//// Bottom cube face
-		//glm::vec3 bottom_pos1(-0.5, -0.5,  0.5);
-		//glm::vec3 bottom_pos2( 0.5, -0.5, -0.5);
-		//glm::vec3 bottom_pos3( 0.5, -0.5,  0.5);
-		//glm::vec3 bottom_pos4(-0.5, -0.5, -0.5);
-		//glm::vec2 bottom_uv1(0.0, 0.0);
-		//glm::vec2 bottom_uv2(1.0, 1.0);
-		//glm::vec2 bottom_uv3(1.0, 0.0);
-		//glm::vec2 bottom_uv4(0.0, 1.0);
-		//glm::vec3 bottom_nm(0.0, -1.0, 0.0);
-		//// Calculate tangent/bitangent vectors of both bottom facing triangles
-		//// Triangle 1
-		//glm::vec3 bottom_tangent1;
-		//glm::vec3 bottom_bitangent1;
-		//glm::vec3 bottom_edge1 =    bottom_pos2 - bottom_pos1;
-		//glm::vec3 bottom_edge2 =    bottom_pos3 - bottom_pos1;
-		//glm::vec2 bottom_deltaUV1 = bottom_uv2 -  bottom_uv1;
-		//glm::vec2 bottom_deltaUV2 = bottom_uv3 -  bottom_uv1;
-		//CalculateTangentBitangent(bottom_tangent1, 
-		//						  bottom_bitangent1, 
-		//						  bottom_edge1, 
-		//						  bottom_edge2, 
-		//						  bottom_deltaUV1, 
-		//						  bottom_deltaUV2);
-		//// Triangle 2
-		//glm::vec3 bottom_tangent2;
-		//glm::vec3 bottom_bitangent2;
-		//bottom_edge1 = bottom_pos4 - bottom_pos2;
-		//bottom_edge2 = bottom_pos4 - bottom_pos1;
-		//bottom_deltaUV1 = bottom_uv4 - bottom_uv2;
-		//bottom_deltaUV2 = bottom_uv4 -  bottom_uv1;
-		//CalculateTangentBitangent(bottom_tangent2, 
-		//						  bottom_bitangent2, 
-		//						  bottom_edge1, 
-		//						  bottom_edge2, 
-		//						  bottom_deltaUV1, 
-		//						  bottom_deltaUV2);
 		
 		float cubeVertices[] = {
 			// positions      --  tex coords   --    normals
@@ -330,38 +97,6 @@ namespace test
 			   0.5, -0.5,  0.5,    1.0, 0.0,      0.0, -1.0, 0.0,
 			  -0.5, -0.5, -0.5,    0.0, 1.0,      0.0, -1.0, 0.0,
 		};
-		//float cubeVertices[] = {
-			// positions                              // normal                           // texcoords              // tangent/bitangent                                         
-			/*back_pos1.x, back_pos1.y, back_pos1.z, back_nm.x, back_nm.y, back_nm.z, back_uv1.x, back_uv1.y, back_tangent1.x, back_tangent1.y, back_tangent1.z, back_bitangent1.x, back_bitangent1.y, back_bitangent1.z,
-			back_pos2.x, back_pos2.y, back_pos2.z, back_nm.x, back_nm.y, back_nm.z, back_uv2.x, back_uv2.y, back_tangent1.x, back_tangent1.y, back_tangent1.z, back_bitangent1.x, back_bitangent1.y, back_bitangent1.z,
-			back_pos3.x, back_pos3.y, back_pos3.z, back_nm.x, back_nm.y, back_nm.z, back_uv3.x, back_uv3.y, back_tangent1.x, back_tangent1.y, back_tangent1.z, back_bitangent1.x, back_bitangent1.y, back_bitangent1.z,
-			back_pos4.x, back_pos4.y, back_pos4.z, back_nm.x, back_nm.y, back_nm.z, back_uv4.x, back_uv4.y, back_tangent1.x, back_tangent1.y, back_tangent1.z, back_bitangent1.x, back_bitangent1.y, back_bitangent1.z,
-
-			front_pos1.x, front_pos1.y, front_pos1.z, front_nm.x, front_nm.y, front_nm.z, front_uv1.x, front_uv1.y, front_tangent1.x, front_tangent1.y, front_tangent1.z, front_bitangent1.x, front_bitangent1.y, front_bitangent1.z,
-			front_pos2.x, front_pos2.y, front_pos2.z, front_nm.x, front_nm.y, front_nm.z, front_uv2.x, front_uv2.y, front_tangent1.x, front_tangent1.y, front_tangent1.z, front_bitangent1.x, front_bitangent1.y, front_bitangent1.z,
-			front_pos3.x, front_pos3.y, front_pos3.z, front_nm.x, front_nm.y, front_nm.z, front_uv3.x, front_uv3.y, front_tangent1.x, front_tangent1.y, front_tangent1.z, front_bitangent1.x, front_bitangent1.y, front_bitangent1.z,
-			front_pos4.x, front_pos4.y, front_pos4.z, front_nm.x, front_nm.y, front_nm.z, front_uv4.x, front_uv4.y, front_tangent1.x, front_tangent1.y, front_tangent1.z, front_bitangent1.x, front_bitangent1.y, front_bitangent1.z,
-
-			left_pos1.x, left_pos1.y, left_pos1.z, left_nm.x, left_nm.y, left_nm.z, left_uv1.x, left_uv1.y, left_tangent1.x, left_tangent1.y, left_tangent1.z, left_bitangent1.x, left_bitangent1.y, left_bitangent1.z,
-			left_pos2.x, left_pos2.y, left_pos2.z, left_nm.x, left_nm.y, left_nm.z, left_uv2.x, left_uv2.y, left_tangent1.x, left_tangent1.y, left_tangent1.z, left_bitangent1.x, left_bitangent1.y, left_bitangent1.z,
-			left_pos3.x, left_pos3.y, left_pos3.z, left_nm.x, left_nm.y, left_nm.z, left_uv3.x, left_uv3.y, left_tangent1.x, left_tangent1.y, left_tangent1.z, left_bitangent1.x, left_bitangent1.y, left_bitangent1.z,
-			left_pos4.x, left_pos4.y, left_pos4.z, left_nm.x, left_nm.y, left_nm.z, left_uv4.x, left_uv4.y, left_tangent1.x, left_tangent1.y, left_tangent1.z, left_bitangent1.x, left_bitangent1.y, left_bitangent1.z,
-
-			right_pos1.x, right_pos1.y, right_pos1.z, right_nm.x, right_nm.y, right_nm.z, right_uv1.x, right_uv1.y, right_tangent1.x, right_tangent1.y, right_tangent1.z, right_bitangent1.x, right_bitangent1.y, right_bitangent1.z,
-			right_pos2.x, right_pos2.y, right_pos2.z, right_nm.x, right_nm.y, right_nm.z, right_uv2.x, right_uv2.y, right_tangent1.x, right_tangent1.y, right_tangent1.z, right_bitangent1.x, right_bitangent1.y, right_bitangent1.z,
-			right_pos3.x, right_pos3.y, right_pos3.z, right_nm.x, right_nm.y, right_nm.z, right_uv3.x, right_uv3.y, right_tangent1.x, right_tangent1.y, right_tangent1.z, right_bitangent1.x, right_bitangent1.y, right_bitangent1.z,
-			right_pos4.x, right_pos4.y, right_pos4.z, right_nm.x, right_nm.y, right_nm.z, right_uv4.x, right_uv4.y, right_tangent1.x, right_tangent1.y, right_tangent1.z, right_bitangent1.x, right_bitangent1.y, right_bitangent1.z,
-
-			top_pos1.x, top_pos1.y, top_pos1.z, top_nm.x, top_nm.y, top_nm.z, top_uv1.x, top_uv1.y, top_tangent1.x, top_tangent1.y, top_tangent1.z, top_bitangent1.x, top_bitangent1.y, top_bitangent1.z,
-			top_pos2.x, top_pos2.y, top_pos2.z, top_nm.x, top_nm.y, top_nm.z, top_uv2.x, top_uv2.y, top_tangent1.x, top_tangent1.y, top_tangent1.z, top_bitangent1.x, top_bitangent1.y, top_bitangent1.z,
-			top_pos3.x, top_pos3.y, top_pos3.z, top_nm.x, top_nm.y, top_nm.z, top_uv3.x, top_uv3.y, top_tangent1.x, top_tangent1.y, top_tangent1.z, top_bitangent1.x, top_bitangent1.y, top_bitangent1.z,
-			top_pos4.x, top_pos4.y, top_pos4.z, top_nm.x, top_nm.y, top_nm.z, top_uv4.x, top_uv4.y, top_tangent1.x, top_tangent1.y, top_tangent1.z, top_bitangent1.x, top_bitangent1.y, top_bitangent1.z,
-
-			bottom_pos1.x, bottom_pos1.y, bottom_pos1.z, bottom_nm.x, bottom_nm.y, bottom_nm.z, bottom_uv1.x, bottom_uv1.y, bottom_tangent1.x, bottom_tangent1.y, bottom_tangent1.z, bottom_bitangent1.x, bottom_bitangent1.y, bottom_bitangent1.z,
-			bottom_pos2.x, bottom_pos2.y, bottom_pos2.z, bottom_nm.x, bottom_nm.y, bottom_nm.z, bottom_uv2.x, bottom_uv2.y, bottom_tangent1.x, bottom_tangent1.y, bottom_tangent1.z, bottom_bitangent1.x, bottom_bitangent1.y, bottom_bitangent1.z,
-			bottom_pos3.x, bottom_pos3.y, bottom_pos3.z, bottom_nm.x, bottom_nm.y, bottom_nm.z, bottom_uv3.x, bottom_uv3.y, bottom_tangent1.x, bottom_tangent1.y, bottom_tangent1.z, bottom_bitangent1.x, bottom_bitangent1.y, bottom_bitangent1.z,
-			bottom_pos4.x, bottom_pos4.y, bottom_pos4.z, bottom_nm.x, bottom_nm.y, bottom_nm.z, bottom_uv4.x, bottom_uv4.y, bottom_tangent1.x, bottom_tangent1.y, bottom_tangent1.z, bottom_bitangent1.x, bottom_bitangent1.y, bottom_bitangent1.z*/
-		//};
 
 		unsigned int cubeIndices[]{
 			0, 1, 2,
@@ -410,14 +145,6 @@ namespace test
 		m_VA_Cube->AddBuffer(*m_VB_Cube, cubeVBLayout);
 		// Init index buffer and bind to Vertex Array 
 		m_IB_Cube = new IndexBuffer(cubeIndices, 6 * 6);
-
-		// Enable OpenGL z-buffer depth comparisons
-		glEnable(GL_DEPTH_TEST);
-		// Render only those fragments with lower depth values
-		glDepthFunc(GL_LESS);
-
-		GLCall(glEnable(GL_BLEND));
-		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
 	TestPointShadowMapping::~TestPointShadowMapping()
@@ -634,6 +361,14 @@ namespace test
 		glReadBuffer(GL_NONE);
 		// Reset to default framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		// Enable OpenGL z-buffer depth comparisons
+		glEnable(GL_DEPTH_TEST);
+		// Render only those fragments with lower depth values
+		glDepthFunc(GL_LESS);
+		// Enable blending
+		GLCall(glEnable(GL_BLEND));
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
 		// Reset all callbacks
 		// Callback function for mouse cursor movement

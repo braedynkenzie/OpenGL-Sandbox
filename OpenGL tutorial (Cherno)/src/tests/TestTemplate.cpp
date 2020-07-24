@@ -88,14 +88,6 @@ namespace test
 		m_VA_Cube->AddBuffer(*m_VB_Cube, cubeVBLayout);
 		// Init index buffer and bind to Vertex Array 
 		m_IB_Cube = new IndexBuffer(cubeIndices, 6 * 6);
-
-		// Enable OpenGL z-buffer depth comparisons
-		glEnable(GL_DEPTH_TEST);
-		// Render only those fragments with lower depth values
-		glDepthFunc(GL_LESS);
-
-		GLCall(glEnable(GL_BLEND));
-		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
 	TestTemplate::~TestTemplate()
@@ -139,7 +131,12 @@ namespace test
 	void TestTemplate::OnImGuiRender()
 	{
 		// ImGui interface
-		ImGui::Text("// TODO UI");
+		ImGui::Text(" - - - ");
+		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
+		ImGui::Text("- Use WASD keys to move camera");
+		ImGui::Text("- Use scroll wheel to change FOV");
+		ImGui::Text("- Press '1' and '2' to toggle wireframe mode");
+		ImGui::Text("- Avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	}
 
 	void TestTemplate::OnActivated()
@@ -161,6 +158,14 @@ namespace test
 		glfwSetScrollCallback(m_MainWindow, scroll_callbackTemplate);
 		// Callback function for mouse buttons
 		glfwSetMouseButtonCallback(m_MainWindow, mouse_button_callbackTemplate);
+
+		// Enable OpenGL z-buffer depth comparisons
+		glEnable(GL_DEPTH_TEST);
+		// Render only those fragments with lower depth values
+		glDepthFunc(GL_LESS);
+		// Enable blending
+		GLCall(glEnable(GL_BLEND));
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
 	void scroll_callbackTemplate(GLFWwindow* window, double xOffset, double yOffset)

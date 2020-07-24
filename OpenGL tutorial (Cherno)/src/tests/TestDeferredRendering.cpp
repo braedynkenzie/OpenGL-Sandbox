@@ -25,16 +25,18 @@ namespace test
 		m_GBufferShader(new Shader("res/shaders/GBuffer.shader")),
 		m_QuadShader(new Shader("res/shaders/DeferredRenderingQuad.shader")),
 		m_GroundTexture(new Texture("res/textures/wooden_floor_texture.png")),
-		m_CameraPos(glm::vec3(0.0f, 0.0f, 4.0f)),
+		m_CameraPos(glm::vec3(12.0f, 0.0f, 26.0f)),
 		m_CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)),
 		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)),
 		m_Camera(Camera(m_CameraPos, 60.0f)),
-		m_IsFlashlightOn(true),
-		m_FlashlightColour(glm::vec3(1.0f)), m_fl_diffuseIntensity(glm::vec3(1.0f)),
-		m_fl_ambientIntensity(glm::vec3(0.4f)), m_fl_specularIntensity(glm::vec3(0.2f)),
-		m_fl_diffuseColour( m_FlashlightColour * m_fl_diffuseIntensity), 
-		m_fl_ambientColour(m_fl_diffuseColour * m_fl_ambientIntensity),
-		m_GBuffer(new FrameBuffer())
+		NUM_LIGHTS(32), // need to set the same in shader as well
+		m_NumModelColumns(4),
+		m_NumModelRows(4),
+		m_GBuffer(new FrameBuffer()),
+		m_RenderBufferID(-1),
+		m_PositionGBuffer(-1),
+		m_NormalGBuffer(-1),
+		m_AlbedoSpecGBuffer(-1)
 	{
 		instance = this;
 
@@ -94,15 +96,6 @@ namespace test
 		m_VA_Quad->AddBuffer(*m_VB_Quad, framebufferQuadVBLayout);
 		// Init index buffer and bind to Vertex Array 
 		m_IB_Quad = new IndexBuffer(framebufferQuadIndices, 6);
-
-		// Enable OpenGL z-buffer depth comparisons
-		glEnable(GL_DEPTH_TEST);
-		// Render only those fragments with lower depth values
-		glDepthFunc(GL_LESS);
-
-		GLCall(glEnable(GL_BLEND));
-		//GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-		GLCall(glBlendFunc(GL_ONE, GL_ZERO));
 	}
 
 	TestDeferredRendering::~TestDeferredRendering()
@@ -140,7 +133,6 @@ namespace test
 		// Create model, view, projection matrices 
 		// Send combined MVP matrix to shader
 		glm::mat4 modelMatrix = glm::mat4(1.0);
-		//modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0, 0.0, 0.0));
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
 		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
 		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
@@ -155,8 +147,18 @@ namespace test
 		m_GBufferShader->SetUniform1i("texture_specular0", 1);
 		// Render the ground
 		renderer.DrawTriangles(*m_VA_Ground, *m_IB_Ground, *m_GBufferShader);
-		// Load model's uniforms and render the loaded backpack model
-		m_BackpackModel->Draw(m_GBufferShader);
+		// Load model's uniforms and render the loaded backpack models
+		for(int i = 0; i < m_NumModelColumns; i++)
+		{
+			for (int j = 0; j < m_NumModelRows; j++)
+			{
+				modelMatrix = glm::mat4(1.0f);
+				modelMatrix = glm::translate(modelMatrix, glm::vec3(i * 4.0f, 0.0f, j * 4.0f));
+				m_GBufferShader->SetMatrix4f("model", modelMatrix);
+				m_BackpackModel->Draw(m_GBufferShader);
+			}
+		}
+
 
 		// Now the GBuffer has been filled with all necessary information for lighting 
 
@@ -183,6 +185,16 @@ namespace test
 		GLCall(glActiveTexture(GL_TEXTURE2));
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_AlbedoSpecGBuffer));
 		m_QuadShader->SetInt("gAlbedoSpec", 2);
+		// Set properties for all pointlights
+		const float linear = 1.0;
+		const float quadratic = 1.0;
+		for (unsigned int i = 0; i < m_LightPositions.size(); i++)
+		{
+			m_QuadShader->SetVec3("pointLights[" + std::to_string(i) + "].Position", m_LightPositions[i]);
+			m_QuadShader->SetVec3("pointLights[" + std::to_string(i) + "].Colour", m_LightColours[i]);
+			m_QuadShader->SetFloat("pointLights[" + std::to_string(i) + "].Linear", linear);
+			m_QuadShader->SetFloat("pointLights[" + std::to_string(i) + "].Quadratic", quadratic);
+		}
 		// Draw the completed lighting effects textured quad to the default framebuffer
 		renderer.DrawTriangles(*m_VA_Quad, *m_IB_Quad, *m_QuadShader);
 	}
@@ -190,10 +202,12 @@ namespace test
 	void TestDeferredRendering::OnImGuiRender()
 	{
 		// ImGui interface
+		ImGui::Text("OpenGL Deferred Rendering test");
+		ImGui::Text("Using %i randomly placed light sources", NUM_LIGHTS);
+		ImGui::Text("- - -");
 		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
 		ImGui::Text("- Use WASD keys to move camera");
 		ImGui::Text("- Use scroll wheel to change FOV");
-		ImGui::Text("- Press '1' and '2' to toggle wireframe mode");
 		ImGui::Text("- Avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	}
 
@@ -207,6 +221,21 @@ namespace test
 			stbi_set_flip_vertically_on_load(true);
 			m_BackpackModel = new Model((char*)"res/models/backpack/backpack.obj");
 			modelLoaded = true;
+		}
+
+		srand(glfwGetTime()); // random seed
+		for (unsigned int i = 0; i < NUM_LIGHTS; i++)
+		{
+			// calculate slightly random offsets
+			float xPos = ((rand() % 100) / 100.0) * m_NumModelColumns * 4.0f;
+			float yPos = ((rand() % 100) / 100.0) * 4.0 - 2.0;
+			float zPos = ((rand() % 100) / 100.0) * m_NumModelRows * 4.0f;
+			m_LightPositions.push_back(glm::vec3(xPos, yPos, zPos));
+			// also calculate random color
+			float rColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
+			float gColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
+			float bColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
+			m_LightColours.push_back(glm::vec3(rColor, gColor, bColor));
 		}
 
 		// Setup manual framebuffer (GBuffer)
@@ -272,6 +301,15 @@ namespace test
 		m_GBufferShader->SetMatrix4f("view", viewMatrix);
 		m_GBufferShader->SetMatrix4f("proj", projMatrix);
 
+		// Enable OpenGL z-buffer depth comparisons
+		glEnable(GL_DEPTH_TEST);
+		// Render only those fragments with lower depth values
+		glDepthFunc(GL_LESS);
+		// Enable blending
+		GLCall(glEnable(GL_BLEND));
+		//GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+		GLCall(glBlendFunc(GL_ONE, GL_ZERO));
+
 		// Reset all callbacks
 		// Callback function for keyboard inputs
 		processInputDeferredRendering(m_MainWindow);
@@ -318,12 +356,12 @@ namespace test
 
 		// Camera position movement
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			deferredRendering->ProcessKeyboardForWalkingView(FORWARD, deltaTime, -0.2f);
+			deferredRendering->ProcessKeyboardForWalkingView(FORWARD, deltaTime, 2.0f);
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			deferredRendering->ProcessKeyboardForWalkingView(BACKWARD, deltaTime, -0.2f);
+			deferredRendering->ProcessKeyboardForWalkingView(BACKWARD, deltaTime, 2.0f);
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			deferredRendering->ProcessKeyboardForWalkingView(LEFT, deltaTime, -0.2f);
+			deferredRendering->ProcessKeyboardForWalkingView(LEFT, deltaTime, 2.0f);
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			deferredRendering->ProcessKeyboardForWalkingView(RIGHT, deltaTime, -0.2f);
+			deferredRendering->ProcessKeyboardForWalkingView(RIGHT, deltaTime, 2.0f);
 	}
 }

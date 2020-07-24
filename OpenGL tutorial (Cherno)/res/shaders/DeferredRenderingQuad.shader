@@ -43,29 +43,29 @@ void main()
     float Specular          = albedoSpecSample.a; // fourth component
 
     // Then use to calculate the lighting as usual
-    //vec3 lighting = Diffuse * 0.1; // hard-coded ambient component
-    //vec3 viewDir = normalize(viewPos - FragPos);
-    //for (int i = 0; i < NUM_POINTLIGHTS; ++i)
-    //{
-    //    // diffuse
-    //    vec3 lightDir = normalize(pointLights[i].Position - FragPos);
-    //    vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * pointLights[i].Colour;
-    //    // specular
-    //    vec3 halfwayDir = normalize(lightDir + viewDir);
-    //    float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0);
-    //    vec3 specular = pointLights[i].Colour * spec * Specular;
-    //    // attenuation
-    //    float distance = length(pointLights[i].Position - FragPos);
-    //    float attenuation = 1.0 / (1.0 + pointLights[i].Linear * distance + pointLights[i].Quadratic * distance * distance);
-    //    diffuse *= attenuation;
-    //    specular *= attenuation;
-    //    lighting += diffuse + specular;
-    //}
-    //FragColour = vec4(lighting, 1.0);
+    vec3 lighting = Diffuse * 0.1; // hard-coded ambient component
+    vec3 viewDir = normalize(viewPos - FragPos);
+    for (int i = 0; i < NUM_POINTLIGHTS; ++i)
+    {
+        // diffuse
+        vec3 lightDir = normalize(pointLights[i].Position - FragPos);
+        vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * pointLights[i].Colour;
+        // specular
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+        float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0);
+        vec3 specular = pointLights[i].Colour * spec * Specular;
+        // attenuation
+        float distance = length(pointLights[i].Position - FragPos);
+        float attenuation = 1.0 / (1.0 + pointLights[i].Linear * distance + pointLights[i].Quadratic * distance * distance);
+        diffuse *= attenuation;
+        specular *= attenuation;
+        lighting += diffuse + specular;
+    }
+    FragColour = vec4(lighting, 1.0);
 
 
     // Testing
-    FragColour = vec4(Diffuse, 1.0);
+    //FragColour = vec4(Diffuse, 1.0);
     //FragColour = vec4(vec3(Specular), 1.0);
     //FragColour = vec4(FragPos, 1.0);
     //FragColour = vec4(Diffuse, Specular);

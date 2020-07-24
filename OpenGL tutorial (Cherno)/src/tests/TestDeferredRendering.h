@@ -37,13 +37,12 @@ namespace test
 		glm::vec3 m_CameraFront;
 		glm::vec3 m_CameraUp;
 		Camera m_Camera;
-		bool m_IsFlashlightOn;
-		glm::vec3 m_FlashlightColour;
-		glm::vec3 m_fl_diffuseIntensity;
-		glm::vec3 m_fl_ambientIntensity;
-		glm::vec3 m_fl_specularIntensity;
-		glm::vec3 m_fl_diffuseColour;
-		glm::vec3 m_fl_ambientColour;
+		// Lighting variables
+		const unsigned int NUM_LIGHTS; 
+		const int m_NumModelColumns;
+		const int m_NumModelRows;
+		std::vector<glm::vec3> m_LightPositions;
+		std::vector<glm::vec3> m_LightColours;
 		// Deferred Rendering variables
 		FrameBuffer* m_GBuffer;
 		unsigned int m_RenderBufferID;

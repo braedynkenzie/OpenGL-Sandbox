@@ -84,14 +84,6 @@ namespace test
 		m_VA_Quad->AddBuffer(*m_VB_Quad, quadVBLayout);
 		// Init index buffer and bind to Vertex Array 
 		m_IB_Quad = new IndexBuffer(quadIndices, 6);
-
-		// Enable OpenGL z-buffer depth comparisons
-		glEnable(GL_DEPTH_TEST);
-		// Render only those fragments with lower depth values
-		glDepthFunc(GL_LESS);
-
-		GLCall(glEnable(GL_BLEND));
-		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
 	TestParallaxNormalMapping::~TestParallaxNormalMapping()
@@ -220,7 +212,13 @@ namespace test
 		// Height map for Parallax texture
 		m_QuadParallaxShader->SetInt("depthMap", 3);
 
-
+		// Enable OpenGL z-buffer depth comparisons
+		glEnable(GL_DEPTH_TEST);
+		// Render only those fragments with lower depth values
+		glDepthFunc(GL_LESS);
+		// Enable blending
+		GLCall(glEnable(GL_BLEND));
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 		
 		// Reset all callbacks
 		// Callback function for mouse cursor movement

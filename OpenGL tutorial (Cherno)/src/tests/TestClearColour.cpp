@@ -4,7 +4,7 @@
 
 namespace test
 {
-	float START_CLEAR_COLOUR[4] = { 0.2f, 1.0f, 0.8f, 1.0f };
+	float START_CLEAR_COLOUR[4] = { 0.2f, 0.6f, 0.8f, 1.0f };
 	float TestClearColour::m_ClearColour[4] = { START_CLEAR_COLOUR[0], START_CLEAR_COLOUR[1], START_CLEAR_COLOUR[2], START_CLEAR_COLOUR[3] };
 
 	TestClearColour::TestClearColour(GLFWwindow*& mainWindow)

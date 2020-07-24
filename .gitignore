@@ -155,3 +155,6 @@ OpenGL tutorial (Cherno)/x64/Debug/TestParallaxNormalMapping.obj
 OpenGL tutorial (Cherno)/x64/Release/TestParallaxNormalMapping.obj
 OpenGL tutorial (Cherno)/x64/Debug/TestHDRBloom.obj
 OpenGL tutorial (Cherno)/x64/Debug/TestDeferredRendering.obj
+OpenGL tutorial (Cherno)/x64/Release/TestDeferredRendering.obj
+OpenGL tutorial (Cherno)/x64/Release/TestHDRBloom.obj
+OpenGL tutorial (Cherno)/x64/Release/TestHDRBloom.obj
