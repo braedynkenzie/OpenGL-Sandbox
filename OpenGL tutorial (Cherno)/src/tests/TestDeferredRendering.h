@@ -33,6 +33,7 @@ namespace test
 		Shader* m_GBufferShader;
 		Shader* m_QuadShader;
 		Texture* m_GroundTexture;
+		Texture* m_SecondaryTexture;
 		glm::vec3 m_CameraPos;
 		glm::vec3 m_CameraFront;
 		glm::vec3 m_CameraUp;
@@ -43,6 +44,7 @@ namespace test
 		const int m_NumModelRows;
 		std::vector<glm::vec3> m_LightPositions;
 		std::vector<glm::vec3> m_LightColours;
+		float m_SpacingAmount;
 		// Deferred Rendering variables
 		FrameBuffer* m_GBuffer;
 		unsigned int m_RenderBufferID;

@@ -30,7 +30,7 @@ struct PointLight {
     float Linear;
     float Quadratic;
 };
-const int NUM_POINTLIGHTS = 32;
+const int NUM_POINTLIGHTS = 200;
 uniform PointLight pointLights[NUM_POINTLIGHTS];
 
 void main()

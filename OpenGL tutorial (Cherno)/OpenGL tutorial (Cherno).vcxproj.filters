@@ -108,6 +108,9 @@
     <ClCompile Include="src\tests\TestModelLoading.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\TestSSAmbientOcclusion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\res\shaders\Basic.shader" />
@@ -2188,6 +2191,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\tests\TestDeferredRendering.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tests\TestSSAmbientOcclusion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -37,6 +37,7 @@
 #include "tests\TestParallaxNormalMapping.h"
 #include "tests\TestHDRBloom.h"
 #include "tests\TestDeferredRendering.h"
+#include "tests\TestSSAmbientOcclusion.h"
 #include <Globals.h>
 
 // Function declarations
@@ -112,6 +113,7 @@ int main(void)
         test::TestParallaxNormalMapping* parallaxNormalTest = new test::TestParallaxNormalMapping(window);
         test::TestHDRBloom* bloomHDRTest = new test::TestHDRBloom(window);
         test::TestDeferredRendering* deferredRenderingTest = new test::TestDeferredRendering(window);
+        test::TestSSAO* ssaoTest = new test::TestSSAO(window);
         //test::TestTemplate* templateTest = new test::TestTemplate(window);
         // Register all test sandboxes
         testMenu->RegisterTest<test::TestClearColour*>("Change background colour", (test::TestClearColour*) clearColourTest);
@@ -128,6 +130,7 @@ int main(void)
         testMenu->RegisterTest<test::TestParallaxNormalMapping*>("Parallax and Normal Mapping", (test::TestParallaxNormalMapping*) parallaxNormalTest);
         testMenu->RegisterTest<test::TestHDRBloom*>("HDR and Bloom", (test::TestHDRBloom*) bloomHDRTest);
         testMenu->RegisterTest<test::TestDeferredRendering*>("Deferred Rendering", (test::TestDeferredRendering*) deferredRenderingTest);
+        testMenu->RegisterTest<test::TestSSAO*>("Ambient Occlusion (SSAO)", (test::TestSSAO*) ssaoTest);
         //testMenu->RegisterTest<test::TestTemplate*>("Test Template", (test::TestTemplate*) templateTest);
 
         /* Loop until the user closes the window */

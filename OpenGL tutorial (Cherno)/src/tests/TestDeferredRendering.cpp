@@ -25,13 +25,15 @@ namespace test
 		m_GBufferShader(new Shader("res/shaders/GBuffer.shader")),
 		m_QuadShader(new Shader("res/shaders/DeferredRenderingQuad.shader")),
 		m_GroundTexture(new Texture("res/textures/wooden_floor_texture.png")),
-		m_CameraPos(glm::vec3(12.0f, 0.0f, 26.0f)),
+		m_SecondaryTexture(new Texture("res/textures/metal_scratched_texture.png")),
+		m_CameraPos(glm::vec3(12.0f, 8.0f, 26.0f)),
 		m_CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)),
 		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)),
 		m_Camera(Camera(m_CameraPos, 60.0f)),
-		NUM_LIGHTS(32), // need to set the same in shader as well
-		m_NumModelColumns(4),
-		m_NumModelRows(4),
+		NUM_LIGHTS(200), // need to set the same in shader as well
+		m_NumModelColumns(12),
+		m_NumModelRows(12),
+		m_SpacingAmount(10.0f),
 		m_GBuffer(new FrameBuffer()),
 		m_RenderBufferID(-1),
 		m_PositionGBuffer(-1),
@@ -148,12 +150,18 @@ namespace test
 		// Render the ground
 		renderer.DrawTriangles(*m_VA_Ground, *m_IB_Ground, *m_GBufferShader);
 		// Load model's uniforms and render the loaded backpack models
+		m_SecondaryTexture->BindAndSetRepeating(0); // model's diffuse if not loaded by .obj file
+		m_SecondaryTexture->BindAndSetRepeating(1); // model's spec texture if not loaded by .obj file
 		for(int i = 0; i < m_NumModelColumns; i++)
 		{
 			for (int j = 0; j < m_NumModelRows; j++)
 			{
 				modelMatrix = glm::mat4(1.0f);
-				modelMatrix = glm::translate(modelMatrix, glm::vec3(i * 4.0f, 0.0f, j * 4.0f));
+				modelMatrix = glm::translate(modelMatrix, glm::vec3(i * m_SpacingAmount, 0.0f, j * m_SpacingAmount));
+				modelMatrix = glm::rotate(modelMatrix, 
+					glm::radians((float)(70*i - 40*(j*j))),  // Rotate somewhat randomly 
+					glm::vec3(0.0f, 1.0f, 0.0f));
+				modelMatrix = glm::scale(modelMatrix, glm::vec3(46.0f));
 				m_GBufferShader->SetMatrix4f("model", modelMatrix);
 				m_BackpackModel->Draw(m_GBufferShader);
 			}
@@ -186,14 +194,14 @@ namespace test
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_AlbedoSpecGBuffer));
 		m_QuadShader->SetInt("gAlbedoSpec", 2);
 		// Set properties for all pointlights
-		const float linear = 1.0;
-		const float quadratic = 1.0;
+		const float linearAttenuation = 0.5;
+		const float quadraticAttenuation = 0.4;
 		for (unsigned int i = 0; i < m_LightPositions.size(); i++)
 		{
 			m_QuadShader->SetVec3("pointLights[" + std::to_string(i) + "].Position", m_LightPositions[i]);
 			m_QuadShader->SetVec3("pointLights[" + std::to_string(i) + "].Colour", m_LightColours[i]);
-			m_QuadShader->SetFloat("pointLights[" + std::to_string(i) + "].Linear", linear);
-			m_QuadShader->SetFloat("pointLights[" + std::to_string(i) + "].Quadratic", quadratic);
+			m_QuadShader->SetFloat("pointLights[" + std::to_string(i) + "].Linear", linearAttenuation);
+			m_QuadShader->SetFloat("pointLights[" + std::to_string(i) + "].Quadratic", quadraticAttenuation);
 		}
 		// Draw the completed lighting effects textured quad to the default framebuffer
 		renderer.DrawTriangles(*m_VA_Quad, *m_IB_Quad, *m_QuadShader);
@@ -219,17 +227,21 @@ namespace test
 		{
 			// Flip texture along y axis before loading
 			stbi_set_flip_vertically_on_load(true);
-			m_BackpackModel = new Model((char*)"res/models/backpack/backpack.obj");
+			//m_BackpackModel = new Model((char*)"res/models/backpack/backpack.obj");
+			//m_BackpackModel = new Model((char*)"res/models/donut tutorial/donut_icing.obj");
+			m_BackpackModel = new Model((char*)"res/models/donut tutorial/coffee_cup.obj");
 			modelLoaded = true;
 		}
 
 		srand(glfwGetTime()); // random seed
+		m_LightColours.clear();
+		m_LightPositions.clear();
 		for (unsigned int i = 0; i < NUM_LIGHTS; i++)
 		{
 			// calculate slightly random offsets
-			float xPos = ((rand() % 100) / 100.0) * m_NumModelColumns * 4.0f;
+			float xPos = ((rand() % 100) / 100.0) * m_NumModelColumns * m_SpacingAmount;
 			float yPos = ((rand() % 100) / 100.0) * 4.0 - 2.0;
-			float zPos = ((rand() % 100) / 100.0) * m_NumModelRows * 4.0f;
+			float zPos = ((rand() % 100) / 100.0) * m_NumModelRows * m_SpacingAmount;
 			m_LightPositions.push_back(glm::vec3(xPos, yPos, zPos));
 			// also calculate random color
 			float rColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
@@ -356,12 +368,12 @@ namespace test
 
 		// Camera position movement
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			deferredRendering->ProcessKeyboardForWalkingView(FORWARD, deltaTime, 2.0f);
+			deferredRendering->ProcessKeyboard(FORWARD, deltaTime);
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			deferredRendering->ProcessKeyboardForWalkingView(BACKWARD, deltaTime, 2.0f);
+			deferredRendering->ProcessKeyboard(BACKWARD, deltaTime);
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			deferredRendering->ProcessKeyboardForWalkingView(LEFT, deltaTime, 2.0f);
+			deferredRendering->ProcessKeyboard(LEFT, deltaTime);
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			deferredRendering->ProcessKeyboardForWalkingView(RIGHT, deltaTime, 2.0f);
+			deferredRendering->ProcessKeyboard(RIGHT, deltaTime);
 	}
 }
