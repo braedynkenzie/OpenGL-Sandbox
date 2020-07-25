@@ -21,7 +21,7 @@ namespace test
 	TestDeferredRendering::TestDeferredRendering(GLFWwindow*& mainWindow)
 		: m_MainWindow(mainWindow),
 		modelLoaded(false),
-		m_BackpackModel(nullptr),
+		m_Model(nullptr),
 		m_GBufferShader(new Shader("res/shaders/GBuffer.shader")),
 		m_QuadShader(new Shader("res/shaders/DeferredRenderingQuad.shader")),
 		m_GroundTexture(new Texture("res/textures/wooden_floor_texture.png")),
@@ -157,13 +157,13 @@ namespace test
 			for (int j = 0; j < m_NumModelRows; j++)
 			{
 				modelMatrix = glm::mat4(1.0f);
-				modelMatrix = glm::translate(modelMatrix, glm::vec3(i * m_SpacingAmount, 0.0f, j * m_SpacingAmount));
+				modelMatrix = glm::translate(modelMatrix, glm::vec3(i * m_SpacingAmount, -5.22f, j * m_SpacingAmount));
 				modelMatrix = glm::rotate(modelMatrix, 
 					glm::radians((float)(70*i - 40*(j*j))),  // Rotate somewhat randomly 
 					glm::vec3(0.0f, 1.0f, 0.0f));
 				modelMatrix = glm::scale(modelMatrix, glm::vec3(46.0f));
 				m_GBufferShader->SetMatrix4f("model", modelMatrix);
-				m_BackpackModel->Draw(m_GBufferShader);
+				m_Model->Draw(m_GBufferShader);
 			}
 		}
 
@@ -227,9 +227,9 @@ namespace test
 		{
 			// Flip texture along y axis before loading
 			stbi_set_flip_vertically_on_load(true);
-			//m_BackpackModel = new Model((char*)"res/models/backpack/backpack.obj");
-			//m_BackpackModel = new Model((char*)"res/models/donut tutorial/donut_icing.obj");
-			m_BackpackModel = new Model((char*)"res/models/donut tutorial/coffee_cup.obj");
+			//m_Model = new Model((char*)"res/models/backpack/backpack.obj");
+			//m_Model = new Model((char*)"res/models/donut tutorial/donut_icing.obj");
+			m_Model = new Model((char*)"res/models/donut tutorial/coffee_cup.obj");
 			modelLoaded = true;
 		}
 

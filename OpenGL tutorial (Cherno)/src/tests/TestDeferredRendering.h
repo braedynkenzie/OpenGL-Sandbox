@@ -23,7 +23,7 @@ namespace test
 		static TestDeferredRendering* instance;
 		GLFWwindow* m_MainWindow;
 		bool modelLoaded;
-		Model* m_BackpackModel;
+		Model* m_Model;
 		VertexArray* m_VA_Ground;
 		VertexBuffer* m_VB_Ground;
 		IndexBuffer* m_IB_Ground;

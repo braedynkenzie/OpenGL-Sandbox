@@ -1237,6 +1237,8 @@
     <None Include="res\shaders\GaussianBlur.shader" />
     <None Include="res\shaders\GBuffer.shader" />
     <None Include="res\shaders\DeferredRenderingQuad.shader" />
+    <None Include="res\shaders\GBufferSSAO.shader" />
+    <None Include="res\shaders\SSAOQuad.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">
