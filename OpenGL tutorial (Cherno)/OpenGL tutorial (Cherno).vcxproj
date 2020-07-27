@@ -208,6 +208,8 @@
     <None Include="res\shaders\PointLights.shader" />
     <None Include="res\shaders\ShadowMapping.shader" />
     <None Include="res\shaders\Skybox.shader" />
+    <None Include="res\shaders\SSAO.shader" />
+    <None Include="res\shaders\SSAOBlur.shader" />
     <None Include="res\shaders\SSAOQuad.shader" />
     <None Include="src\res\shaders\Basic.shader" />
     <None Include="src\vendor\glm\detail\func_common.inl" />

@@ -28,7 +28,9 @@ namespace test
 		VertexArray* m_VA_Quad;
 		VertexBuffer* m_VB_Quad;
 		IndexBuffer* m_IB_Quad;
-		Shader* m_GBufferShader;
+		Shader* m_GeometryPassShader;
+		Shader* m_SSAOShader;
+		Shader* m_BlurShader;
 		Shader* m_QuadShader;
 		Texture* m_GroundTexture;
 		Texture* m_SecondaryTexture;
@@ -43,8 +45,13 @@ namespace test
 		unsigned int m_NormalGBuffer;
 		unsigned int m_AlbedoSpecGBuffer;
 		// Screen-space Ambient Occlusion variables
+		FrameBuffer* m_SSAOFramebuffer;
+		FrameBuffer* m_SSAOBlurFramebuffer;
+		unsigned int m_SSAOColourBuffer;
+		unsigned int m_SSAOBlurColourBuffer;
 		unsigned int m_MaxSamples;
-		unsigned int m_NoiseTexture;
+		unsigned int m_NoiseTextureID;
+		std::vector<glm::vec3> m_SSAOKernel;
 
 	public:
 		TestSSAO(GLFWwindow*& mainWindow);

@@ -13,6 +13,7 @@ namespace test
 	void scroll_callbackSSAO(GLFWwindow* window, double xOffset, double yOffset);
 	void processInputSSAO(GLFWwindow* window);
 	void mouse_button_callbackSSAO(GLFWwindow* window, int button, int action, int mods);
+	float lerp(float a, float b, float f);
 
 	// Init static variable
 	TestSSAO* TestSSAO::instance;
@@ -21,11 +22,13 @@ namespace test
 		: m_MainWindow(mainWindow),
 		modelLoaded(false),
 		m_Model(nullptr),
-		m_GBufferShader(new Shader("res/shaders/GBufferSSAO.shader")),
+		m_GeometryPassShader(new Shader("res/shaders/GBufferSSAO.shader")),
+		m_SSAOShader(new Shader("res/shaders/SSAO.shader")),
+		m_BlurShader(new Shader("res/shaders/SSAOBlur.shader")),
 		m_QuadShader(new Shader("res/shaders/SSAOQuad.shader")),
 		m_GroundTexture(new Texture("res/textures/wooden_floor_texture.png")),
 		m_SecondaryTexture(new Texture("res/textures/metal_scratched_texture.png")),
-		m_CameraPos(glm::vec3(0.0f, 0.0f, 5.0f)),
+		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)),
 		m_CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)),
 		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)),
 		m_Camera(Camera(m_CameraPos, 60.0f)),
@@ -36,18 +39,23 @@ namespace test
 		m_NormalGBuffer(-1),
 		m_AlbedoSpecGBuffer(-1),
 		// Ambient Occlusion variables
+		m_SSAOFramebuffer(new FrameBuffer()),
+		m_SSAOBlurFramebuffer(new FrameBuffer()),
+		m_SSAOColourBuffer(-1),
+		m_SSAOBlurColourBuffer(-1),
 		m_MaxSamples(64),
-		m_NoiseTexture(-1)
+		m_NoiseTextureID(-1),
+		m_SSAOKernel(std::vector<glm::vec3>())
 	{
 		instance = this;
 
 		// Create vertice positions
 		float groundVertices[] = {
 			//       positions         --     normals    --    tex coords    
-				 -800.0, -5.0, -800.0,    0.0, 1.0, 0.0,	    0.0, 100.0,
-				  800.0, -5.0,  800.0,    0.0, 1.0, 0.0,	  100.0,   0.0,
-				 -800.0, -5.0,  800.0,    0.0, 1.0, 0.0,	    0.0,   0.0,
-				  800.0, -5.0, -800.0,    0.0, 1.0, 0.0,	  100.0, 100.0,
+				 -5.0, -5.0, -5.0,    0.0, 1.0, 0.0,	    0.0, 1.0,
+				  5.0, -5.0,  5.0,    0.0, 1.0, 0.0,	    1.0, 0.0,
+				 -5.0, -5.0,  5.0,    0.0, 1.0, 0.0,	    0.0, 0.0,
+				  5.0, -5.0, -5.0,    0.0, 1.0, 0.0,	    1.0, 1.0,
 		};
 
 		unsigned int groundIndices[]{
@@ -115,6 +123,8 @@ namespace test
 		float* clearColour = test::TestClearColour::GetClearColour();
 		float darknessFactor = 2.0f;
 
+		// Step 1. Geometry pass: Render geometry/colour data into GBuffer
+		// -----------------------------------------------------------------
 		// Bind manually created framebuffer with the special attachment components that we want to write to
 		m_GBufferSSAO->Bind();
 		GLCall(glClearColor(clearColour[0] / darknessFactor,
@@ -122,9 +132,8 @@ namespace test
 							clearColour[2] / darknessFactor,
 							clearColour[3] / darknessFactor));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-
 		// Bind shader and set any 'per frame' uniforms
-		m_GBufferShader->Bind();
+		m_GeometryPassShader->Bind();
 		//
 		// Create model, view, projection matrices 
 		// Send combined MVP matrix to shader
@@ -132,47 +141,111 @@ namespace test
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
 		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
 		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
-		m_GBufferShader->SetMatrix4f("model", modelMatrix);
-		m_GBufferShader->SetMatrix4f("view", viewMatrix);
-		m_GBufferShader->SetMatrix4f("proj", projMatrix);
+		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
+		m_GeometryPassShader->SetMatrix4f("view", viewMatrix);
+		m_GeometryPassShader->SetMatrix4f("proj", projMatrix);
 		// Bind ground diffuse texture
 		m_GroundTexture->BindAndSetRepeating(0);
-		m_GBufferShader->SetUniform1i("texture_diffuse0", 0);
+		m_GeometryPassShader->SetUniform1i("texture_diffuse0", 0);
 		// Bind ground specular texture
 		m_GroundTexture->BindAndSetRepeating(1); // hack for now -- just using the same texture here
-		m_GBufferShader->SetUniform1i("texture_specular0", 1);
-		// Render the ground
-		renderer.DrawTriangles(*m_VA_Ground, *m_IB_Ground, *m_GBufferShader);
+		m_GeometryPassShader->SetUniform1i("texture_specular0", 1);
+		// Render the ground and side walls
+		for (int i = 0; i < 4; i++)
+		{
+			modelMatrix = glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
+			renderer.DrawTriangles(*m_VA_Ground, *m_IB_Ground, *m_GeometryPassShader);
+		}
+		// Render the back wall
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
+		renderer.DrawTriangles(*m_VA_Ground, *m_IB_Ground, *m_GeometryPassShader);
+		// Render the front wall
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
+		renderer.DrawTriangles(*m_VA_Ground, *m_IB_Ground, *m_GeometryPassShader);
+		// Reset model matrix
+		modelMatrix = glm::mat4(1.0);
+		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
 		// Load model's uniforms and render the loaded backpack models
-		m_Model->Draw(m_GBufferShader);
-
+		m_Model->Draw(m_GeometryPassShader);
 		// At this point, the GBuffer has been filled with all necessary information for SSAO (Screen-Space Ambient Occlusion)
 
-
-		// Next render the scene to the default framebuffer and use the rendered framebuffer as a texture
-		// Rebind default framebuffer
-		m_GBufferSSAO->Unbind();
+		// Step 2. Generate SSAO texture using GBuffer data
+		// ------------------------------------------------
+		// Next render the scene to the SSAO framebuffer 
+		m_SSAOFramebuffer->Bind();
 		// Clear depth buffer and colour buffer attachments
 		GLCall(glClearColor(clearColour[0] / darknessFactor,
 							clearColour[1] / darknessFactor,
 							clearColour[2] / darknessFactor,
 							clearColour[3] / darknessFactor));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)); // not using the stencil buffer
-
-		// Next take its four buffers (world position, normal, albedo, specular) and run a single lighting fragment shader for all lights in the scene
-		m_QuadShader->Bind();
-		m_QuadShader->SetVec3("viewPos", m_Camera.Position);
+		// Take the filled gBuffers (world position, normal, albedo, specular) and run a single SSAO fragment shader 
+		m_SSAOShader->Bind();
+		m_SSAOShader->SetVec3("viewPos", m_Camera.Position);
 		// Bind all three GBuffer attachments to the sampler2D uniforms
 		GLCall(glActiveTexture(GL_TEXTURE0));
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_PositionGBuffer));
-		m_QuadShader->SetInt("gPosition", 0);
+		m_SSAOShader->SetInt("gPosition", 0);
 		GLCall(glActiveTexture(GL_TEXTURE1));
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_NormalGBuffer));
-		m_QuadShader->SetInt("gNormal", 1);
+		m_SSAOShader->SetInt("gNormal", 1);
 		GLCall(glActiveTexture(GL_TEXTURE2));
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_AlbedoSpecGBuffer));
+		m_SSAOShader->SetInt("gAlbedoSpec", 2);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, m_NoiseTextureID);
+		m_SSAOShader->SetInt("texNoise", 3);		
+		// Pass SSAO kernel and noise (random rotation) textures to the SSAO shader
+		for (unsigned int i = 0; i < 64; ++i)
+			m_SSAOShader->SetVec3("samples[" + std::to_string(i) + "]", m_SSAOKernel[i]);
+		m_SSAOShader->SetMatrix4f("projMatrix", projMatrix);
+		m_SSAOShader->SetInt("u_Screen_Width", SCREEN_WIDTH);
+		m_SSAOShader->SetInt("u_Screen_Height", SCREEN_HEIGHT);
+		// Draw the completed AO effects to the m_SSAOColourBuffer attached to the current framebuffer
+		renderer.DrawTriangles(*m_VA_Quad, *m_IB_Quad, *m_SSAOShader); 
+		m_SSAOFramebuffer->Unbind();
+		// At this point, the m_SSAOColourBuffer should be filled with the noisy ambient occlusion
+
+		// Step 3. Blur the created SSAO texture to remove noise
+		// ------------------------------------------------
+		/*glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOBlurFramebuffer);
+		glClear(GL_COLOR_BUFFER_BIT);
+		m_BlurShader->Bind();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
+		renderQuad();
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
+		// At this point, the m_SSAOBlurColourBuffer should have the ambient occlusion texture which we can use in the final lighting step
+
+		// Step 4. Lighting pass: Deferred Blinn-Phong lighting using the SSAO texture from m_SSAOBlurColourBuffer
+		// ---------------------------------------------------------------------------
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		m_QuadShader->Bind();
+		// send light relevant uniforms
+		//glm::vec3 lightPosView = glm::vec3(m_Camera.GetViewMatrix() * glm::vec4(lightPos, 1.0));
+		//m_QuadShader->SetVec3("light.Position", lightPosView);
+		//m_QuadShader->SetVec3("light.Color", lightColour);
+		// Update attenuation parameters
+		//const float linear = 0.09;
+		//const float quadratic = 0.032;
+		//m_QuadShader->SetFloat("light.Linear", linear);
+		//m_QuadShader->SetFloat("light.Quadratic", quadratic);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, m_PositionGBuffer);
+		m_QuadShader->SetInt("gPosition", 0);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, m_NormalGBuffer);
+		m_QuadShader->SetInt("gNormal", 1);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, m_AlbedoSpecGBuffer);
 		m_QuadShader->SetInt("gAlbedoSpec", 2);
-		// Draw the completed lighting effects textured quad to the default framebuffer
+		glActiveTexture(GL_TEXTURE3); // add extra SSAO texture to lighting pass
+		//glBindTexture(GL_TEXTURE_2D, m_SSAOBlurColourBuffer);
+		glBindTexture(GL_TEXTURE_2D, m_SSAOColourBuffer); // testing
+		m_QuadShader->SetInt("ssaoTexture", 3);
 		renderer.DrawTriangles(*m_VA_Quad, *m_IB_Quad, *m_QuadShader);
 	}
 
@@ -200,7 +273,10 @@ namespace test
 			modelLoaded = true;
 		}
 
-		// Setup manual framebuffer (GBuffer)
+		// Setup manual framebuffers (geometry GBuffer and SSAO framebuffers)
+		// ------------------------------------------------------------------
+
+		// Geometry framebuffer
 		m_GBufferSSAO->Bind();
 		// Position 'colour' buffer
 		glGenTextures(1, &m_PositionGBuffer);
@@ -237,7 +313,6 @@ namespace test
 		GLCall(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT));
 		// Attach renderbuffer to the active framebuffer
 		GLCall(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RenderBufferID));
-
 		// Check if Framebuffer is complete before continuing
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		{
@@ -245,10 +320,49 @@ namespace test
 			ASSERT(0);
 		}
 
+		// SSAO framebuffer
+		m_SSAOFramebuffer->Bind();
+		glGenTextures(1, &m_SSAOColourBuffer);
+		glBindTexture(GL_TEXTURE_2D, m_SSAOColourBuffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RED, GL_FLOAT, NULL); // just a single float per pixel
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL); // Testing
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_SSAOColourBuffer, 0);
+		// Tell OpenGL to use the above colour attachment for rendering 
+		/*unsigned int ssaoBufferAttachments[1] = { GL_COLOR_ATTACHMENT0 };
+		glDrawBuffers(1, ssaoBufferAttachments);*/
+		// Check if Framebuffer is complete before continuing
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			std::cout << "[ERROR] Manual framebuffer is not complete!" << std::endl;
+			ASSERT(0);
+		}
+
+		// SSAO blurring stage framebuffer
+		m_SSAOBlurFramebuffer->Bind();
+		glGenTextures(1, &m_SSAOBlurColourBuffer);
+		glBindTexture(GL_TEXTURE_2D, m_SSAOBlurColourBuffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RED, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_SSAOBlurColourBuffer, 0);
+		// Tell OpenGL to use the above colour attachment for rendering 
+		/*unsigned int ssaoBlurBufferAttachments[1] = { GL_COLOR_ATTACHMENT0 };
+		glDrawBuffers(1, ssaoBlurBufferAttachments);*/
+		// Check if Framebuffer is complete before continuing
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			std::cout << "[ERROR] Manual framebuffer is not complete!" << std::endl;
+			ASSERT(0);
+		}
+
+		// Rebind default framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 		// Ambient Occlusion hemisphere sampling kernel setup
 		std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between [0.0, 1.0]
 		std::default_random_engine generator;
-		std::vector<glm::vec3> ssaoKernel;
 		for (unsigned int i = 0; i < m_MaxSamples; ++i)
 		{
 			glm::vec3 sample(
@@ -261,7 +375,7 @@ namespace test
 			// Linear interpolate to make most samples closer to the original fragment position
 			float scale = (float) i / m_MaxSamples;
 			sample *= lerp(0.1f, 1.0f, scale * scale);
-			ssaoKernel.push_back(sample);
+			m_SSAOKernel.push_back(sample);
 		}
 		// Random kernel rotations 
 		std::vector<glm::vec3> ssaoNoise;
@@ -273,8 +387,8 @@ namespace test
 			ssaoNoise.push_back(noise);
 		}
 		// Generate repeating 4x4 texture of above noise kernel rotations
-		glGenTextures(1, &m_NoiseTexture);
-		glBindTexture(GL_TEXTURE_2D, m_NoiseTexture);
+		glGenTextures(1, &m_NoiseTextureID);
+		glBindTexture(GL_TEXTURE_2D, m_NoiseTextureID);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -290,16 +404,16 @@ namespace test
 		glFrontFace(GL_CCW); // tell OpenGL that front faces have CCW winding order
 
 		// Bind shader program and set uniforms
-		m_GBufferShader->Bind();
+		m_GeometryPassShader->Bind();
 		// Reset matrices on activation
 		glm::mat4 modelMatrix = glm::mat4(1.0);
 		//modelMatrix = glm::translate(modelMatrix, glm::vec3(50.0, 0.0, 36.0));
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
 		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
 		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
-		m_GBufferShader->SetMatrix4f("model", modelMatrix);
-		m_GBufferShader->SetMatrix4f("view", viewMatrix);
-		m_GBufferShader->SetMatrix4f("proj", projMatrix);
+		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
+		m_GeometryPassShader->SetMatrix4f("view", viewMatrix);
+		m_GeometryPassShader->SetMatrix4f("proj", projMatrix);
 
 		// Enable OpenGL z-buffer depth comparisons
 		glEnable(GL_DEPTH_TEST);

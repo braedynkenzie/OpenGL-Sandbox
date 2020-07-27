@@ -1239,6 +1239,8 @@
     <None Include="res\shaders\DeferredRenderingQuad.shader" />
     <None Include="res\shaders\GBufferSSAO.shader" />
     <None Include="res\shaders\SSAOQuad.shader" />
+    <None Include="res\shaders\SSAO.shader" />
+    <None Include="res\shaders\SSAOBlur.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">

@@ -19,6 +19,7 @@ in vec2 v_TexCoords;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
+uniform sampler2D ssaoTexture;
 uniform vec3 viewPos;
 
 out vec4 FragColour;
@@ -31,15 +32,20 @@ void main()
     vec4 albedoSpecSample   = texture(gAlbedoSpec,  v_TexCoords);
     vec3 Diffuse            = albedoSpecSample.rgb; 
     //float Specular          = albedoSpecSample.a;
+    float AmbientOcclusion = texture(ssaoTexture, v_TexCoords).r;
+    //vec3 AmbientOcclusion = texture(ssaoTexture, v_TexCoords).rgb; // debugging
 
     vec3 viewDir = normalize(viewPos - FragPos);
 
-
     // Testing
+    //FragColour = vec4(AmbientOcclusion * Diffuse, 1.0);
+    FragColour = vec4(vec3(AmbientOcclusion), 1.0);
     //FragColour = vec4(Diffuse, 1.0);
     //FragColour = vec4(vec3(Specular), 1.0);
     //FragColour = vec4(FragPos, 1.0);
-    FragColour = vec4(vec3(1.0 + FragPos.z / 6.0), 1.0);
+    //FragColour = vec4(vec3(1.0 + FragPos.z / 6.0), 1.0);
     //FragColour = vec4(Diffuse, Specular);
     //FragColour = vec4(Normal, 1.0);
+    //FragColour = vec4(AmbientOcclusion, 1.0);
+    //FragColour = vec4(v_TexCoords.x, v_TexCoords.y, 0.0, 1.0);
 }
