@@ -20,15 +20,16 @@ namespace test
 
 	TestSSAO::TestSSAO(GLFWwindow*& mainWindow)
 		: m_MainWindow(mainWindow),
-		modelLoaded(false),
-		m_Model(nullptr),
+		modelsLoaded(false),
+		m_BackpackModel(nullptr),
+		m_TeacupModel(nullptr),
 		m_GeometryPassShader(new Shader("res/shaders/GBufferSSAO.shader")),
 		m_SSAOShader(new Shader("res/shaders/SSAO.shader")),
 		m_BlurShader(new Shader("res/shaders/SSAOBlur.shader")),
 		m_QuadShader(new Shader("res/shaders/SSAOQuad.shader")),
 		m_GroundTexture(new Texture("res/textures/wooden_floor_texture.png")),
 		m_SecondaryTexture(new Texture("res/textures/metal_scratched_texture.png")),
-		m_CameraPos(glm::vec3(0.0f, 0.0f, 3.0f)),
+		m_CameraPos(glm::vec3(0.0f, -7.0f, 3.0f)),
 		m_CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)),
 		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)),
 		m_Camera(Camera(m_CameraPos, 60.0f)),
@@ -137,8 +138,8 @@ namespace test
 		//
 		// Create model, view, projection matrices 
 		// Send combined MVP matrix to shader
-		glm::mat4 modelMatrix = glm::mat4(1.0);
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
+		glm::mat4 modelMatrix = glm::mat4(1.0f);
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f));
 		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
 		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
 		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
@@ -165,11 +166,21 @@ namespace test
 		modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
 		renderer.DrawTriangles(*m_VA_Ground, *m_IB_Ground, *m_GeometryPassShader);
-		// Reset model matrix
-		modelMatrix = glm::mat4(1.0);
+		// Change position of the backpack model
+		modelMatrix = glm::mat4(1.0f);
+		glm::vec3 modelPosition = glm::vec3(-4.0f, -9.0f, 0.0f);
+		modelMatrix = glm::translate(modelMatrix, modelPosition);
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
-		// Load model's uniforms and render the loaded backpack models
-		m_Model->Draw(m_GeometryPassShader);
+		// Load model's uniforms and render the loaded backpack model
+		m_BackpackModel->Draw(m_GeometryPassShader);
+		modelMatrix = glm::mat4(1.0f);
+		modelPosition = glm::vec3(2.0f, -10.1f, -2.0f);
+		modelMatrix = glm::translate(modelMatrix, modelPosition);
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(20.0f));
+		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
+		// Load model's uniforms and render the loaded coffe cup model
+		m_TeacupModel->Draw(m_GeometryPassShader);
 		// At this point, the GBuffer has been filled with all necessary information for SSAO (Screen-Space Ambient Occlusion)
 
 		// Step 2. Generate SSAO texture using GBuffer data
@@ -246,6 +257,7 @@ namespace test
 		//glBindTexture(GL_TEXTURE_2D, m_SSAOBlurColourBuffer);
 		glBindTexture(GL_TEXTURE_2D, m_SSAOColourBuffer); // testing
 		m_QuadShader->SetInt("ssaoTexture", 3);
+		m_QuadShader->SetVec3f("clearColour", clearColour[0], clearColour[1], clearColour[2]);
 		renderer.DrawTriangles(*m_VA_Quad, *m_IB_Quad, *m_QuadShader);
 	}
 
@@ -263,14 +275,15 @@ namespace test
 	void TestSSAO::OnActivated()
 	{
 		// Only want to load the model the first time we activate this OpenGL test
-		if (!modelLoaded)
+		if (!modelsLoaded)
 		{
 			// Flip texture along y axis before loading
 			stbi_set_flip_vertically_on_load(true);
-			m_Model = new Model((char*)"res/models/backpack/backpack.obj");
+			m_BackpackModel = new Model((char*)"res/models/backpack/backpack.obj");
 			//m_Model = new Model((char*)"res/models/donut tutorial/donut_icing.obj");
 			//m_Model = new Model((char*)"res/models/donut tutorial/coffee_cup.obj");
-			modelLoaded = true;
+			m_TeacupModel = new Model((char*)"res/models/donut tutorial/coffee_cup.obj");
+			modelsLoaded = true;
 		}
 
 		// Setup manual framebuffers (geometry GBuffer and SSAO framebuffers)
@@ -403,18 +416,6 @@ namespace test
 		glCullFace(GL_BACK); // cull back faces
 		glFrontFace(GL_CCW); // tell OpenGL that front faces have CCW winding order
 
-		// Bind shader program and set uniforms
-		m_GeometryPassShader->Bind();
-		// Reset matrices on activation
-		glm::mat4 modelMatrix = glm::mat4(1.0);
-		//modelMatrix = glm::translate(modelMatrix, glm::vec3(50.0, 0.0, 36.0));
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0));
-		glm::mat4 viewMatrix = m_Camera.GetViewMatrix();
-		glm::mat4 projMatrix = glm::perspective(glm::radians(m_Camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 200.0f);
-		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
-		m_GeometryPassShader->SetMatrix4f("view", viewMatrix);
-		m_GeometryPassShader->SetMatrix4f("proj", projMatrix);
-
 		// Enable OpenGL z-buffer depth comparisons
 		glEnable(GL_DEPTH_TEST);
 		// Render only those fragments with lower depth values
@@ -489,13 +490,13 @@ namespace test
 
 		// Camera position movement
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			ssaoCamera->ProcessKeyboard(FORWARD, deltaTime);
+			ssaoCamera->ProcessKeyboardForWalkingView(FORWARD, deltaTime, -7.0f);
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			ssaoCamera->ProcessKeyboard(BACKWARD, deltaTime);
+			ssaoCamera->ProcessKeyboardForWalkingView(BACKWARD, deltaTime, -7.0f);
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			ssaoCamera->ProcessKeyboard(LEFT, deltaTime);
+			ssaoCamera->ProcessKeyboardForWalkingView(LEFT, deltaTime, -7.0f);
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			ssaoCamera->ProcessKeyboard(RIGHT, deltaTime);
+			ssaoCamera->ProcessKeyboardForWalkingView(RIGHT, deltaTime, -7.0f);
 	}
 
 	float lerp(float a, float b, float f)

@@ -20,8 +20,9 @@ namespace test
 	private:
 		static TestSSAO* instance;
 		GLFWwindow* m_MainWindow;
-		bool modelLoaded;
-		Model* m_Model;
+		bool modelsLoaded;
+		Model* m_BackpackModel;
+		Model* m_TeacupModel;
 		VertexArray* m_VA_Ground;
 		VertexBuffer* m_VB_Ground;
 		IndexBuffer* m_IB_Ground;

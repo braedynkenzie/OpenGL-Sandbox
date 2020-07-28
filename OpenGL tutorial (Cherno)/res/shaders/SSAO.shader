@@ -32,17 +32,17 @@ uniform vec3 samples[64];
 
 // SSAO parameters (you'd probably want to use them as uniforms to more easily tweak the effect)
 int kernelSize = 64;
-float radius = 1.0; // 0.5;
-float bias = 0.025;
+float radius = 0.5;
+float bias = 0.1; //0.025;
 
 void main()
 {
     // Get input data for SSAO algorithm from filled GBuffer textures
     vec3 fragPos = texture(gPosition, v_TexCoords).xyz;
     vec3 normal = normalize(texture(gNormal, v_TexCoords).rgb);
-    // tile noise texture over screen based on screen dimensions
-    vec2 noiseScale = vec2(u_Screen_Width / 4.0, u_Screen_Height / 4.0);
-    vec3 randomVec = normalize(texture(texNoise, v_TexCoords * noiseScale).xyz);
+    // Scale the tex coords for the noise texture to tile over screen based on screen dimensions
+    vec2 noiseTexScale = vec2(u_Screen_Width / 4.0, u_Screen_Height / 4.0);
+    vec3 randomVec = normalize(texture(texNoise, v_TexCoords * noiseTexScale).xyz);
     // create TBN change-of-basis matrix: from tangent-space to view-space
     vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
     vec3 bitangent = cross(normal, tangent);
