@@ -53,6 +53,8 @@ namespace test
 		unsigned int m_MaxSamples;
 		unsigned int m_NoiseTextureID;
 		std::vector<glm::vec3> m_SSAOKernel;
+		bool m_AmbientOcclusionMode;
+		bool m_UsingLighting;
 		// Point lights parameters
 		const unsigned int NUM_LIGHTS;
 		std::vector<glm::vec3> m_LightPositions;
@@ -66,6 +68,9 @@ namespace test
 		void OnRender() override;
 		void OnImGuiRender() override;
 		void OnActivated() override;
+
+		void ToggleAOMode(const bool flag);
+		void ToggleLighting(const bool flag);
 
 		Camera* GetCamera() { return &m_Camera; }
 		static TestSSAO* GetInstance() { return instance; }

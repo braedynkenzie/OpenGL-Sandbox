@@ -22,6 +22,8 @@ uniform sampler2D gAlbedoSpec;
 uniform sampler2D ssaoTexture;
 uniform vec3 viewPos;
 uniform vec3 clearColour;
+uniform bool u_OnlyAO;
+uniform bool u_UsingLighting;
 
 out vec4 FragColour;
 
@@ -41,43 +43,50 @@ void main()
     vec3 FragPos            = texture(gPosition,    v_TexCoords).rgb;
     vec3 Normal             = texture(gNormal,      v_TexCoords).rgb;
     vec4 albedoSpecSample   = texture(gAlbedoSpec,  v_TexCoords);
-    //vec3 Diffuse            = albedoSpecSample.rgb; 
-    vec3 Diffuse            = clearColour; // testing
-    //vec3 Diffuse            = vec3(0.95); // testing
     float Specular          = albedoSpecSample.a;
     float AmbientOcclusion = texture(ssaoTexture, v_TexCoords).r;
 
-    // Blinn-Phong lighting model with screen-space ambient occlusion
-    vec3 lighting = vec3(0.0);
-    vec3 ambient = vec3(Diffuse * AmbientOcclusion * 0.4);
-    vec3 viewDir = normalize(-FragPos); // viewpos is (0.0.0)
-    for (int i = 0; i < NUM_POINTLIGHTS; ++i)
-    {
-        // diffuse lighting component
-        vec3 lightDir = normalize(pointLights[i].Position - FragPos);
-        vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * pointLights[i].Colour;
-        // specular lighting component
-        vec3 halfwayDir = normalize(lightDir + viewDir);
-        float spec = pow(max(dot(Normal, halfwayDir), 0.0), 4.0); // shinniness
-        vec3 specular = pointLights[i].Colour * spec;
-        // attenuation
-        float distance = length(pointLights[i].Position - FragPos);
-        float attenuation = 1.0 / (1.0 + pointLights[i].Linear * distance + pointLights[i].Quadratic * distance * distance);
-        diffuse *= attenuation;
-        specular *= attenuation;
-        // Combine lighting
-        lighting += ambient;
-        lighting += diffuse;
-        lighting += specular;
+    vec3 Diffuse;
+    if (u_OnlyAO) {
+        Diffuse = clearColour;
+    }
+    else {
+        Diffuse = albedoSpecSample.rgb;
     }
 
-    FragColour = vec4(lighting, 1.0);
+    if (u_UsingLighting) {
+        // Blinn-Phong lighting model with screen-space ambient occlusion
+        vec3 lighting = vec3(0.0);
+        vec3 ambient = vec3(Diffuse * AmbientOcclusion * 0.4);
+        vec3 viewDir = normalize(-FragPos); // viewpos is (0.0.0)
+        for (int i = 0; i < NUM_POINTLIGHTS; ++i)
+        {
+            // diffuse lighting component
+            vec3 lightDir = normalize(pointLights[i].Position - FragPos);
+            vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * pointLights[i].Colour;
+            // specular lighting component
+            vec3 halfwayDir = normalize(lightDir + viewDir);
+            float spec = pow(max(dot(Normal, halfwayDir), 0.0), 4.0); // shinniness
+            vec3 specular = pointLights[i].Colour * spec;
+            // attenuation
+            float distance = length(pointLights[i].Position - FragPos);
+            float attenuation = 1.0 / (1.0 + pointLights[i].Linear * distance + pointLights[i].Quadratic * distance * distance);
+            diffuse *= attenuation;
+            specular *= attenuation;
+            // Combine lighting
+            lighting += ambient;
+            lighting += diffuse;
+            lighting += specular;
+        }
 
+        FragColour = vec4(lighting, 1.0);
+    }
+    else {
+        FragColour = vec4(Diffuse, 1.0);
+    }
+    
 
-
-
-
-    // Testing
+    // Debugging
     //FragColour = vec4(AmbientOcclusion * Diffuse, 1.0);
     //FragColour = vec4(vec3(AmbientOcclusion), 1.0);
     //FragColour = vec4(AmbientOcclusion * clearColour, 1.0);

@@ -25,15 +25,12 @@ uniform int u_Screen_Width;
 uniform int u_Screen_Height;
 uniform mat4 projMatrix;
 
-// Debugging purposes only
-uniform sampler2D gAlbedoSpec;
+uniform vec3 samples[26];
 
-uniform vec3 samples[32];
-
-// SSAO parameters (you'd probably want to use them as uniforms to more easily tweak the effect)
-int kernelSize = 32;
-float radius = 0.8;
-float bias = 0.1; //0.025;
+// SSAO parameters
+uniform int u_KernelSize;
+uniform float u_SSAORadius; // = 0.6;
+uniform float u_SSAOBias; // = 0.1; //0.025;
 
 void main()
 {
@@ -49,11 +46,11 @@ void main()
     mat3 TBN = mat3(tangent, bitangent, normal);
     // iterate over the sample kernel and calculate occlusion factor
     float occlusion = 0.0;
-    for (int i = 0; i < kernelSize; ++i)
+    for (int i = 0; i < u_KernelSize; ++i)
     {
         // get sample position
         vec3 sample = TBN * samples[i]; // from tangent to view-space
-        sample = fragPos + sample * radius;
+        sample = fragPos + sample * u_SSAORadius;
 
         // project sample position (to sample texture) (to get position on screen/texture)
         vec4 offset = vec4(sample, 1.0);
@@ -65,18 +62,12 @@ void main()
         float sampleDepth = texture(gPosition, offset.xy).z; // get depth value of kernel sample
 
         // range check
-        float rangeCheck = smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));
+        float rangeCheck = smoothstep(0.0, 1.0, u_SSAORadius / abs(fragPos.z - sampleDepth));
         // accumulate number of points that are occluded
-        occlusion += (sampleDepth >= sample.z + bias ? 1.0 : 0.0) * rangeCheck;
+        occlusion += (sampleDepth >= sample.z + u_SSAOBias ? 1.0 : 0.0) * rangeCheck;
     }
-    occlusion = 1.0 - (occlusion / kernelSize);
+    occlusion = 1.0 - (occlusion / u_KernelSize);
 
     // FragColour is a single float for this framebuffer's colour attachment
     FragColour = occlusion;
-    
-
-
-    // Testing
-    //vec3 diffuse = texture(gAlbedoSpec, v_TexCoords).xyz; // Debugging purposes only
-    //FragColour = diffuse;
 }

@@ -443,6 +443,9 @@ namespace test
 		m_SkyboxTexture->BindCubemap(4);
 		m_SkyboxShader->SetInt("u_SkyboxTexture", 4);
 
+		// Switch to rocky gound texture
+		ToggleGroundTexture(false);
+
 		// Enable OpenGL z-buffer depth comparisons
 		glEnable(GL_DEPTH_TEST);
 		// Render only those fragments with lower depth values

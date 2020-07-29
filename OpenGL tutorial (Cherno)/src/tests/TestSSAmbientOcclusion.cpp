@@ -44,9 +44,11 @@ namespace test
 		m_SSAOBlurFramebuffer(new FrameBuffer()),
 		m_SSAOColourBuffer(-1),
 		m_SSAOBlurColourBuffer(-1),
-		m_MaxSamples(32),
+		m_MaxSamples(26), // also change length of sample array in SSAOShader
 		m_NoiseTextureID(-1),
 		m_SSAOKernel(std::vector<glm::vec3>()),
+		m_AmbientOcclusionMode(false),
+		m_UsingLighting(true),
 		// Point lights parameters
 		NUM_LIGHTS(2),
 		m_LightPositions(std::vector<glm::vec3>()),
@@ -170,20 +172,35 @@ namespace test
 		modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
 		renderer.DrawTriangles(*m_VA_Ground, *m_IB_Ground, *m_GeometryPassShader);
+		// Load model's uniforms and render the loaded backpack model twice
 		// Change position of the backpack model
 		modelMatrix = glm::mat4(1.0f);
-		glm::vec3 modelPosition = glm::vec3(-4.0f, -9.0f, 0.0f);
+		glm::vec3 modelPosition = glm::vec3(-4.0f, -9.0f, -3.0f);
 		modelMatrix = glm::translate(modelMatrix, modelPosition);
-		modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)); // lay flat on ground
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(70.0f), glm::vec3(0.0f, 0.0f, 1.0f)); // rotate around y axis
 		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
-		// Load model's uniforms and render the loaded backpack model
+		// Render first backpack
 		m_BackpackModel->Draw(m_GeometryPassShader);
+		// Change position of the backpack model
 		modelMatrix = glm::mat4(1.0f);
-		modelPosition = glm::vec3(2.0f, -10.1f, 4.0f);
+		modelPosition = glm::vec3(5.0f, -9.0f, 6.0f);
 		modelMatrix = glm::translate(modelMatrix, modelPosition);
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(20.0f));
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)); // lay flat on ground
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(-45.0f), glm::vec3(0.0f, 0.0f, 1.0f)); // rotate around y axis
 		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
+		// Render second backpack
+		m_BackpackModel->Draw(m_GeometryPassShader);
 		// Load model's uniforms and render the loaded coffee cup model
+		modelMatrix = glm::mat4(1.0f);
+		modelPosition = glm::vec3(5.0f, -10.1f, -6.0f);
+		modelMatrix = glm::translate(modelMatrix, modelPosition);
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(26.0f));
+		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
+		// Bind coffee cup diffuse texture
+		m_SecondaryTexture->BindAndSetRepeating(0);
+		m_GeometryPassShader->SetUniform1i("texture_diffuse0", 0);
+		// Render coffee cup
 		m_TeacupModel->Draw(m_GeometryPassShader);
 		// At this point, the GBuffer has been filled with all necessary information for SSAO (Screen-Space Ambient Occlusion)
 
@@ -199,7 +216,7 @@ namespace test
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)); // not using the stencil buffer
 		// Take the filled gBuffers (world position, normal, albedo, specular) and run a single SSAO fragment shader 
 		m_SSAOShader->Bind();
-		m_SSAOShader->SetVec3("viewPos", m_Camera.Position);
+		// m_SSAOShader->SetVec3("viewPos", m_Camera.Position); // don't need because viewPos is origin of viewing coords
 		// Bind all three GBuffer attachments to the sampler2D uniforms
 		GLCall(glActiveTexture(GL_TEXTURE0));
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_PositionGBuffer));
@@ -207,18 +224,19 @@ namespace test
 		GLCall(glActiveTexture(GL_TEXTURE1));
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_NormalGBuffer));
 		m_SSAOShader->SetInt("gNormal", 1);
-		GLCall(glActiveTexture(GL_TEXTURE2));
-		GLCall(glBindTexture(GL_TEXTURE_2D, m_AlbedoSpecGBuffer));
-		m_SSAOShader->SetInt("gAlbedoSpec", 2);
-		glActiveTexture(GL_TEXTURE3);
+		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, m_NoiseTextureID);
-		m_SSAOShader->SetInt("texNoise", 3);		
+		m_SSAOShader->SetInt("texNoise", 2);		
 		// Pass SSAO kernel and noise (random rotation) textures to the SSAO shader
 		for (unsigned int i = 0; i < m_MaxSamples; ++i)
 			m_SSAOShader->SetVec3("samples[" + std::to_string(i) + "]", m_SSAOKernel[i]);
 		m_SSAOShader->SetMatrix4f("projMatrix", projMatrix);
 		m_SSAOShader->SetInt("u_Screen_Width", SCREEN_WIDTH);
 		m_SSAOShader->SetInt("u_Screen_Height", SCREEN_HEIGHT);
+		// Other SSAO parameters
+		m_SSAOShader->SetInt("u_KernelSize", m_MaxSamples);
+		m_SSAOShader->SetFloat("u_SSAORadius", 2.6);
+		m_SSAOShader->SetFloat("u_SSAOBias", 0.025);
 		// Draw the completed AO effects to the m_SSAOColourBuffer attached to the current framebuffer
 		renderer.DrawTriangles(*m_VA_Quad, *m_IB_Quad, *m_SSAOShader);
 		m_SSAOFramebuffer->Unbind();
@@ -269,12 +287,18 @@ namespace test
 		m_QuadShader->SetInt("ssaoTexture", 3);
 		// Pass clear colour as ambient colour
 		m_QuadShader->SetVec3f("clearColour", clearColour[0], clearColour[1], clearColour[2]);
+		m_QuadShader->SetBool("u_OnlyAO", m_AmbientOcclusionMode);
+		m_QuadShader->SetBool("u_UsingLighting", m_UsingLighting);
 		renderer.DrawTriangles(*m_VA_Quad, *m_IB_Quad, *m_QuadShader);
 	}
 
 	void TestSSAO::OnImGuiRender()
 	{
 		// ImGui interface
+		ImGui::Text("PRESS 3: Show Ambient Occlusion effect only");
+		ImGui::Text("PRESS 4: Show object textures");
+		ImGui::Text("PRESS 5: Turn off Ambient Occlusion");
+		ImGui::Text("PRESS 6: Turn on Ambient Occlusion");
 		ImGui::Text(" - - - ");
 		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
 		ImGui::Text("- Use WASD keys to move camera");
@@ -309,9 +333,9 @@ namespace test
 			float zPos = ((rand() % 100) / 100.0f) * 10.0f - 5.0f; // z between -5 and +5
 			m_LightPositions.push_back(glm::vec3(xPos, yPos, zPos));
 			// also calculate random color
-			float rColour = ((rand() % 80) / 100.0f) + 0.2; // between 0.2 and 1.0
-			float gColour = ((rand() % 80) / 100.0f) + 0.2; // between 0.2 and 1.0
-			float bColour = ((rand() % 80) / 100.0f) + 0.2; // between 0.2 and 1.0
+			float rColour = ((rand() % 70) / 100.0f); // between 0.0 and 0.7
+			float gColour = ((rand() % 70) / 100.0f); // between 0.0 and 0.7
+			float bColour = ((rand() % 70) / 100.0f); // between 0.0 and 0.7
 			m_LightColours.push_back(glm::vec3(rColour, gColour, bColour));
 		}
 
@@ -474,6 +498,16 @@ namespace test
 		GLCall(glBlendFunc(GL_ONE, GL_ZERO));
 	}
 
+	void TestSSAO::ToggleAOMode(const bool flag)
+	{
+		m_AmbientOcclusionMode = flag;
+	}
+
+	void TestSSAO::ToggleLighting(const bool flag)
+	{
+		m_UsingLighting = flag;
+	}
+
 	void scroll_callbackSSAO(GLFWwindow* window, double xOffset, double yOffset)
 	{
 		test::TestSSAO* ssaoTest = test::TestSSAO::GetInstance();
@@ -519,6 +553,18 @@ namespace test
 			ssaoCamera->ProcessKeyboardForWalkingView(LEFT, deltaTime, -7.0f);
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 			ssaoCamera->ProcessKeyboardForWalkingView(RIGHT, deltaTime, -7.0f);
+
+		// Toggle AO only mode
+		if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+			ssaoTest->ToggleAOMode(true);
+		if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+			ssaoTest->ToggleAOMode(false);
+
+		// Toggle lighting effects
+		if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+			ssaoTest->ToggleLighting(false);
+		if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
+			ssaoTest->ToggleLighting(true);
 	}
 
 	float lerp(float a, float b, float f)
