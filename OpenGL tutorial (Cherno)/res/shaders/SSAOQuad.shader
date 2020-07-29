@@ -25,23 +25,62 @@ uniform vec3 clearColour;
 
 out vec4 FragColour;
 
+struct PointLight {
+    vec3 Position;
+    vec3 Colour;
+
+    float Linear;
+    float Quadratic;
+};
+const int NUM_POINTLIGHTS = 2;
+uniform PointLight pointLights[NUM_POINTLIGHTS];
+
 void main()
 {
     // Retrieve all the fragment data from the SSAO GBuffer
     vec3 FragPos            = texture(gPosition,    v_TexCoords).rgb;
     vec3 Normal             = texture(gNormal,      v_TexCoords).rgb;
     vec4 albedoSpecSample   = texture(gAlbedoSpec,  v_TexCoords);
-    vec3 Diffuse            = albedoSpecSample.rgb; 
+    //vec3 Diffuse            = albedoSpecSample.rgb; 
+    vec3 Diffuse            = clearColour; // testing
+    //vec3 Diffuse            = vec3(0.95); // testing
     float Specular          = albedoSpecSample.a;
     float AmbientOcclusion = texture(ssaoTexture, v_TexCoords).r;
-    //vec3 AmbientOcclusion = texture(ssaoTexture, v_TexCoords).rgb; // debugging
 
-    vec3 viewDir = normalize(viewPos - FragPos);
+    // Blinn-Phong lighting model with screen-space ambient occlusion
+    vec3 lighting = vec3(0.0);
+    vec3 ambient = vec3(Diffuse * AmbientOcclusion * 0.4);
+    vec3 viewDir = normalize(-FragPos); // viewpos is (0.0.0)
+    for (int i = 0; i < NUM_POINTLIGHTS; ++i)
+    {
+        // diffuse lighting component
+        vec3 lightDir = normalize(pointLights[i].Position - FragPos);
+        vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * pointLights[i].Colour;
+        // specular lighting component
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+        float spec = pow(max(dot(Normal, halfwayDir), 0.0), 4.0); // shinniness
+        vec3 specular = pointLights[i].Colour * spec;
+        // attenuation
+        float distance = length(pointLights[i].Position - FragPos);
+        float attenuation = 1.0 / (1.0 + pointLights[i].Linear * distance + pointLights[i].Quadratic * distance * distance);
+        diffuse *= attenuation;
+        specular *= attenuation;
+        // Combine lighting
+        lighting += ambient;
+        lighting += diffuse;
+        lighting += specular;
+    }
+
+    FragColour = vec4(lighting, 1.0);
+
+
+
+
 
     // Testing
     //FragColour = vec4(AmbientOcclusion * Diffuse, 1.0);
     //FragColour = vec4(vec3(AmbientOcclusion), 1.0);
-    FragColour = vec4(AmbientOcclusion * clearColour, 1.0);
+    //FragColour = vec4(AmbientOcclusion * clearColour, 1.0);
     //FragColour = vec4(Diffuse, 1.0);
     //FragColour = vec4(vec3(Specular), 1.0);
     //FragColour = vec4(FragPos, 1.0);

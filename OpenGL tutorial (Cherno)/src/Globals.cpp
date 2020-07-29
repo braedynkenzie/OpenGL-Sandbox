@@ -14,4 +14,4 @@ float lastCursorY = SCREEN_HEIGHT / 2.0f;
 
 float yaw = 0.0f;
 float pitch = 0.0f;
-bool firstMouseCapture = true; // TODO: update to true again when returning to main sandbox menu
+bool firstMouseCapture = true; 

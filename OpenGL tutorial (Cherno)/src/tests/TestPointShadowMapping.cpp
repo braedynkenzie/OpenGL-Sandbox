@@ -314,8 +314,8 @@ namespace test
 		// ImGui interface
 		ImGui::Text("PRESS '3' to decrease shadow map resolution");
 		ImGui::Text("PRESS '4' to increase shadow map resolution");
-		ImGui::Text("PRESS '5' to turn off normal mapping");
-		ImGui::Text("PRESS '6' to turn on normal mapping");
+		/*ImGui::Text("PRESS '5' to turn off normal mapping");
+		ImGui::Text("PRESS '6' to turn on normal mapping");*/
 		ImGui::Text(" - - - ");
 		ImGui::Text("PRESS 'BACKSPACE' TO EXIT");
 		ImGui::Text("- Use WASD keys to move camera");

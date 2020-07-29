@@ -53,6 +53,10 @@ namespace test
 		unsigned int m_MaxSamples;
 		unsigned int m_NoiseTextureID;
 		std::vector<glm::vec3> m_SSAOKernel;
+		// Point lights parameters
+		const unsigned int NUM_LIGHTS;
+		std::vector<glm::vec3> m_LightPositions;
+		std::vector<glm::vec3> m_LightColours;
 
 	public:
 		TestSSAO(GLFWwindow*& mainWindow);

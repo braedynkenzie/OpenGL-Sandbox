@@ -28,11 +28,11 @@ uniform mat4 projMatrix;
 // Debugging purposes only
 uniform sampler2D gAlbedoSpec;
 
-uniform vec3 samples[64];
+uniform vec3 samples[32];
 
 // SSAO parameters (you'd probably want to use them as uniforms to more easily tweak the effect)
-int kernelSize = 64;
-float radius = 0.5;
+int kernelSize = 32;
+float radius = 0.8;
 float bias = 0.1; //0.025;
 
 void main()

@@ -14,13 +14,14 @@ uniform mat4 proj;
 
 void main() {
 	// TODO: should pass this as a uniform to optimize (costly to perform matrix inverse in shaders)
-	mat3 normalMatrix = mat3(transpose(inverse(model)));
+	mat3 normalMatrix = transpose(inverse(mat3(view * model)));
 	Normal = normalMatrix * a_Normal;
 
 	// Want to pass FragPosition in view space since SSAO is a screen-space algorithm
-	FragPosition = (view * model * vec4(a_Position, 1.0)).xyz;
+	vec4 viewPos = view * model * vec4(a_Position, 1.0);
+	FragPosition = viewPos.xyz;
 	TexCoords = a_TextureCoords;
-	gl_Position = proj * view * model * vec4(a_Position, 1.0);
+	gl_Position = proj * viewPos;
 }
 
 

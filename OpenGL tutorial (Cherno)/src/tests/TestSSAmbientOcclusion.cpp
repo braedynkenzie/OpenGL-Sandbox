@@ -29,7 +29,7 @@ namespace test
 		m_QuadShader(new Shader("res/shaders/SSAOQuad.shader")),
 		m_GroundTexture(new Texture("res/textures/wooden_floor_texture.png")),
 		m_SecondaryTexture(new Texture("res/textures/metal_scratched_texture.png")),
-		m_CameraPos(glm::vec3(0.0f, -7.0f, 3.0f)),
+		m_CameraPos(glm::vec3(-4.0f, -7.0f, 7.0f)),
 		m_CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)),
 		m_CameraUp(glm::vec3(0.0f, 1.0f, 0.0f)),
 		m_Camera(Camera(m_CameraPos, 60.0f)),
@@ -44,9 +44,13 @@ namespace test
 		m_SSAOBlurFramebuffer(new FrameBuffer()),
 		m_SSAOColourBuffer(-1),
 		m_SSAOBlurColourBuffer(-1),
-		m_MaxSamples(64),
+		m_MaxSamples(32),
 		m_NoiseTextureID(-1),
-		m_SSAOKernel(std::vector<glm::vec3>())
+		m_SSAOKernel(std::vector<glm::vec3>()),
+		// Point lights parameters
+		NUM_LIGHTS(2),
+		m_LightPositions(std::vector<glm::vec3>()),
+		m_LightColours(std::vector<glm::vec3>())
 	{
 		instance = this;
 
@@ -125,7 +129,7 @@ namespace test
 		float darknessFactor = 2.0f;
 
 		// Step 1. Geometry pass: Render geometry/colour data into GBuffer
-		// -----------------------------------------------------------------
+		// ----------------------------------------------------------------
 		// Bind manually created framebuffer with the special attachment components that we want to write to
 		m_GBufferSSAO->Bind();
 		GLCall(glClearColor(clearColour[0] / darknessFactor,
@@ -175,11 +179,11 @@ namespace test
 		// Load model's uniforms and render the loaded backpack model
 		m_BackpackModel->Draw(m_GeometryPassShader);
 		modelMatrix = glm::mat4(1.0f);
-		modelPosition = glm::vec3(2.0f, -10.1f, -2.0f);
+		modelPosition = glm::vec3(2.0f, -10.1f, 4.0f);
 		modelMatrix = glm::translate(modelMatrix, modelPosition);
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(20.0f));
 		m_GeometryPassShader->SetMatrix4f("model", modelMatrix);
-		// Load model's uniforms and render the loaded coffe cup model
+		// Load model's uniforms and render the loaded coffee cup model
 		m_TeacupModel->Draw(m_GeometryPassShader);
 		// At this point, the GBuffer has been filled with all necessary information for SSAO (Screen-Space Ambient Occlusion)
 
@@ -210,40 +214,46 @@ namespace test
 		glBindTexture(GL_TEXTURE_2D, m_NoiseTextureID);
 		m_SSAOShader->SetInt("texNoise", 3);		
 		// Pass SSAO kernel and noise (random rotation) textures to the SSAO shader
-		for (unsigned int i = 0; i < 64; ++i)
+		for (unsigned int i = 0; i < m_MaxSamples; ++i)
 			m_SSAOShader->SetVec3("samples[" + std::to_string(i) + "]", m_SSAOKernel[i]);
 		m_SSAOShader->SetMatrix4f("projMatrix", projMatrix);
 		m_SSAOShader->SetInt("u_Screen_Width", SCREEN_WIDTH);
 		m_SSAOShader->SetInt("u_Screen_Height", SCREEN_HEIGHT);
 		// Draw the completed AO effects to the m_SSAOColourBuffer attached to the current framebuffer
-		renderer.DrawTriangles(*m_VA_Quad, *m_IB_Quad, *m_SSAOShader); 
+		renderer.DrawTriangles(*m_VA_Quad, *m_IB_Quad, *m_SSAOShader);
 		m_SSAOFramebuffer->Unbind();
 		// At this point, the m_SSAOColourBuffer should be filled with the noisy ambient occlusion
 
 		// Step 3. Blur the created SSAO texture to remove noise
-		// ------------------------------------------------
-		/*glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOBlurFramebuffer);
-		glClear(GL_COLOR_BUFFER_BIT);
+		// ------------------------------------------------------
+		m_SSAOBlurFramebuffer->Bind();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		m_BlurShader->Bind();
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
-		renderQuad();
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
-		// At this point, the m_SSAOBlurColourBuffer should have the ambient occlusion texture which we can use in the final lighting step
+		glBindTexture(GL_TEXTURE_2D, m_SSAOColourBuffer);
+		m_BlurShader->SetInt("ssaoTexture", 0);
+		// Draw call for blurring effect shader
+		renderer.DrawTriangles(*m_VA_Quad, *m_IB_Quad, *m_BlurShader);
+		m_SSAOBlurFramebuffer->Unbind();
+		// At this point, the m_SSAOBlurColourBuffer should have the completed SS ambient occlusion texture which we can use in the final lighting step
 
 		// Step 4. Lighting pass: Deferred Blinn-Phong lighting using the SSAO texture from m_SSAOBlurColourBuffer
-		// ---------------------------------------------------------------------------
+		// -------------------------------------------------------------------------------------------------------
+		// Rebind default framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		m_QuadShader->Bind();
-		// send light relevant uniforms
-		//glm::vec3 lightPosView = glm::vec3(m_Camera.GetViewMatrix() * glm::vec4(lightPos, 1.0));
-		//m_QuadShader->SetVec3("light.Position", lightPosView);
-		//m_QuadShader->SetVec3("light.Color", lightColour);
-		// Update attenuation parameters
-		//const float linear = 0.09;
-		//const float quadratic = 0.032;
-		//m_QuadShader->SetFloat("light.Linear", linear);
-		//m_QuadShader->SetFloat("light.Quadratic", quadratic);
+		// Set properties for all pointlights
+		const float linearAttenuation = 0.4;
+		const float quadraticAttenuation = 0.02;
+		for (unsigned int i = 0; i < m_LightPositions.size(); i++)
+		{
+			glm::vec3 lightPosViewCoords = glm::vec3(viewMatrix * glm::vec4(m_LightPositions[i], 1.0));
+			m_QuadShader->SetVec3("pointLights[" + std::to_string(i) + "].Position", lightPosViewCoords);
+			m_QuadShader->SetVec3("pointLights[" + std::to_string(i) + "].Colour", m_LightColours[i]);
+			m_QuadShader->SetFloat("pointLights[" + std::to_string(i) + "].Linear", linearAttenuation);
+			m_QuadShader->SetFloat("pointLights[" + std::to_string(i) + "].Quadratic", quadraticAttenuation);
+		}
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, m_PositionGBuffer);
 		m_QuadShader->SetInt("gPosition", 0);
@@ -253,10 +263,11 @@ namespace test
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, m_AlbedoSpecGBuffer);
 		m_QuadShader->SetInt("gAlbedoSpec", 2);
-		glActiveTexture(GL_TEXTURE3); // add extra SSAO texture to lighting pass
-		//glBindTexture(GL_TEXTURE_2D, m_SSAOBlurColourBuffer);
-		glBindTexture(GL_TEXTURE_2D, m_SSAOColourBuffer); // testing
+		glActiveTexture(GL_TEXTURE3); // pass completed SSAO texture to lighting shader
+		glBindTexture(GL_TEXTURE_2D, m_SSAOBlurColourBuffer);
+		//glBindTexture(GL_TEXTURE_2D, m_SSAOColourBuffer); // testing
 		m_QuadShader->SetInt("ssaoTexture", 3);
+		// Pass clear colour as ambient colour
 		m_QuadShader->SetVec3f("clearColour", clearColour[0], clearColour[1], clearColour[2]);
 		renderer.DrawTriangles(*m_VA_Quad, *m_IB_Quad, *m_QuadShader);
 	}
@@ -284,6 +295,24 @@ namespace test
 			//m_Model = new Model((char*)"res/models/donut tutorial/coffee_cup.obj");
 			m_TeacupModel = new Model((char*)"res/models/donut tutorial/coffee_cup.obj");
 			modelsLoaded = true;
+		}
+
+		// Setup pointlights 
+		m_LightColours.clear();
+		m_LightPositions.clear();
+		srand(glfwGetTime()); // random seed
+		for (unsigned int i = 0; i < NUM_LIGHTS; i++)
+		{
+			// calculate slightly random offsets
+			float xPos = ((rand() % 100) / 100.0f) * 10.0f - 5.0f; // x between -5 and +5
+			float yPos = ((rand() % 100) / 100.0f) * 6.0f  - 3.0f; // y between -3 and +3
+			float zPos = ((rand() % 100) / 100.0f) * 10.0f - 5.0f; // z between -5 and +5
+			m_LightPositions.push_back(glm::vec3(xPos, yPos, zPos));
+			// also calculate random color
+			float rColour = ((rand() % 80) / 100.0f) + 0.2; // between 0.2 and 1.0
+			float gColour = ((rand() % 80) / 100.0f) + 0.2; // between 0.2 and 1.0
+			float bColour = ((rand() % 80) / 100.0f) + 0.2; // between 0.2 and 1.0
+			m_LightColours.push_back(glm::vec3(rColour, gColour, bColour));
 		}
 
 		// Setup manual framebuffers (geometry GBuffer and SSAO framebuffers)
@@ -337,7 +366,7 @@ namespace test
 		m_SSAOFramebuffer->Bind();
 		glGenTextures(1, &m_SSAOColourBuffer);
 		glBindTexture(GL_TEXTURE_2D, m_SSAOColourBuffer);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RED, GL_FLOAT, NULL); // just a single float per pixel
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RED, GL_FLOAT, NULL); // just a single float per window pixel
 		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL); // Testing
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -356,7 +385,7 @@ namespace test
 		m_SSAOBlurFramebuffer->Bind();
 		glGenTextures(1, &m_SSAOBlurColourBuffer);
 		glBindTexture(GL_TEXTURE_2D, m_SSAOBlurColourBuffer);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RED, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RED, GL_FLOAT, NULL); // just a single float per window pixel
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_SSAOBlurColourBuffer, 0);
@@ -454,13 +483,6 @@ namespace test
 
 	void mouse_callbackSSAO(GLFWwindow* window, double xpos, double ypos)
 	{
-		// Fixes first mouse cursor capture by OpenGL window
-		if (firstMouseCapture)
-		{
-			lastCursorX = xpos;
-			lastCursorY = ypos;
-			firstMouseCapture = false;
-		}
 		float xOffset = xpos - lastCursorX;
 		float yOffset = lastCursorY - ypos; // reverse the y-coordinates
 		float cursorSensitivity = 0.08f;
