@@ -1,10 +1,7 @@
-
 *.ipch
 *.html
 *.tlog
 *.idb
-*.hpp
-*.inl
 *.log
 *.css
 *.txt
