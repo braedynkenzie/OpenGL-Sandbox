@@ -6,9 +6,9 @@ Following the style of The Cherno's test framework in his OpenGL tutorial, with 
 
 
 # Some examples 
+Bloom (please excuse the .gif compression)
+![](BloomEffect.gif)
 Perspective Shadow Mapping
 ![](PerspectiveShadowMapping.gif)
-Bloom
-![](BloomEffect.gif)
 Screen Space Ambient Occlusion
 ![](ScreenSpaceAmbientOcclusion.gif)
