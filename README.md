@@ -6,9 +6,15 @@ Following the style of The Cherno's test framework in his OpenGL tutorial, with 
 
 
 # Some examples 
+Blinn-Phong Lighting 
+![](BlinnPhongModel.gif)
 Bloom (please excuse the .gif compression)
-![](BloomEffect.gif)
+![](BloomEffect.gif) 
+Skybox/cubemaps 
+![](SkyboxCubeMapping.gif)
 Perspective Shadow Mapping
 ![](PerspectiveShadowMapping.gif)
 Screen Space Ambient Occlusion
-![](ScreenSpaceAmbientOcclusion.gif)
+![](ScreenSpaceAmbientOcclusion.gif) 
+Geometry shader 
+![](GeometryShader.gif)
