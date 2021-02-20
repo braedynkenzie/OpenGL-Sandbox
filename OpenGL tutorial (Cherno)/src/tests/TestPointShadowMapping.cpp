@@ -147,14 +147,6 @@ namespace test
 		m_IB_Cube = new IndexBuffer(cubeIndices, 6 * 6);
 	}
 
-	TestPointShadowMapping::~TestPointShadowMapping()
-	{
-	}
-
-	void TestPointShadowMapping::OnUpdate(float deltaTime)
-	{
-	}
-
 	void TestPointShadowMapping::OnRender()
 	{
 		float* clearColour = test::TestClearColour::GetClearColour();
@@ -453,7 +445,6 @@ namespace test
 		float cameraYPosition = shadowMappingCamera->Position.y;
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 			shadowMappingCamera->ProcessKeyboard(FORWARD,  deltaTime);
-			//shadowMappingCamera->ProcessKeyboardForWalkingView(FORWARD,  deltaTime, cameraYPosition);
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 			shadowMappingCamera->ProcessKeyboard(BACKWARD, deltaTime);
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)

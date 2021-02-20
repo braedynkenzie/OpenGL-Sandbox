@@ -2,7 +2,7 @@
 #version 330 core
 layout(location = 0) in vec3 aPos;
 
-uniform mat4 lightSpaceMatrix; // view * proj matrix
+uniform mat4 lightSpaceMatrix; // proj * view matrix
 uniform mat4 lightModel;
 
 void main()

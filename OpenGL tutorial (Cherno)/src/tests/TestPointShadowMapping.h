@@ -53,9 +53,8 @@ namespace test
 		unsigned int m_DepthMapFBO;
 	public:
 		TestPointShadowMapping(GLFWwindow*& mainWindow);
-		~TestPointShadowMapping();
+		~TestPointShadowMapping() = default;
 
-		void OnUpdate(float deltaTime) override;
 		void OnRender() override;
 		void OnImGuiRender() override;
 		void OnActivated() override;

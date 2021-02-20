@@ -59,7 +59,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(1920, 1080, "OpenGL sandbox", NULL, NULL);
+    window = glfwCreateWindow(960, 540, "OpenGL sandbox", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -148,10 +148,10 @@ int main(void)
             if (activeTest)
             {
                 activeTest->OnUpdate(0.0f);
-                //double timestampBefore = glfwGetTime();
+                //double timestampBeforeRender = glfwGetTime();
                 //std::cout << "LOG: Before OnRender" << std::endl;
                 activeTest->OnRender();
-                //double onRenderTime = (glfwGetTime() - timestampBefore);
+                //double onRenderTime = (glfwGetTime() - timestampBeforeRender);
                 //std::cout << "LOG: After OnRender, took " << onRenderTime << " ms" <<std::endl;
                 //std::cout << std::endl << std::endl << std::endl;
                 ImGui::Begin("Test directory");

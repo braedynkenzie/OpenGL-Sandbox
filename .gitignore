@@ -89,3 +89,12 @@ OpenGL tutorial (Cherno)/x64/Release/TestSSAmbientOcclusion.obj
 OpenGL tutorial (Cherno)/x64/Debug/TestSSAmbientOcclusion.obj
 x64/Release/*
 *.obj
+.vs/VSWorkspaceState.json
+.vs/slnx.sqlite
+.vs/ProjectSettings.json
+.vs/OpenGL-Sandbox/v16/Browse.VC.db
+.vs/OpenGL-Sandbox/v16/.suo
+.vs/OpenGL tutorial (Cherno)/v16/Browse.VC.db-wal
+.vs/OpenGL tutorial (Cherno)/v16/Browse.VC.db-shm
+.vs/OpenGL tutorial (Cherno)/v16/.suo
+OpenGL tutorial (Cherno)/x64/Debug/OpenGL tutorial (Cherno).exe.recipe
